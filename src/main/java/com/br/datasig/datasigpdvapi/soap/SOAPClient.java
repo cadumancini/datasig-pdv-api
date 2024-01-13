@@ -20,9 +20,8 @@ public class SOAPClient {
     private final String wsUrlEnd = "?wsdl";
 
     public SOAPClient(Environment env) {
-        String envValue = env.getProperty("env");
-        String domain = envValue.equals("prod") ? "sapiensweb" : "baseteste";
-        wsUrl = String.format("http://%s.feelingestofados.com.br/g5-senior-services/sapiens_Sync", domain); //TODO: Corrigir URL
+        String webServicesUrl = env.getProperty("webservices.url");
+        wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webServicesUrl);
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params) throws IOException {
@@ -35,7 +34,7 @@ public class SOAPClient {
         return response;
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws IOException {
+    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws IOException { //TODO: Precisamos?
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
         String url = wsUrl + wsPath + wsUrlEnd;
         System.out.println("URL: " + url);
@@ -45,7 +44,7 @@ public class SOAPClient {
         return response;
     }
 
-    private static String prepareXmlBody(String service, String usr, String pswd, String encryption, HashMap params) {
+    private static String prepareXmlBody(String service, String usr, String pswd, String encryption, HashMap params) { //TODO: Refatorar
         StringBuilder xmlBuilder = new StringBuilder("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">");
         xmlBuilder.append("<soapenv:Body>");
         xmlBuilder.append("<ser:" + service + ">");
