@@ -6,6 +6,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ import java.util.HashMap;
 
 @Component
 public class SOAPClient {
+    private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
 
     private final String wsUrl;
     private final String wsUrlEnd = "?wsdl";
@@ -24,24 +27,28 @@ public class SOAPClient {
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webServicesUrl);
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params) throws IOException {
+    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params) throws SOAPClientException {
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
         String url = wsUrl + wsPath + wsUrlEnd;
-        System.out.println("URL: " + url);
-        System.out.println("Params: " + xmlBody);
-        String response = postRequest(url, xmlBody);
-
-        return response;
+        logger.info("Requisição para URL %s\nParâmetros: %s".formatted(url, params));
+        return makeRequest(wsPath, xmlBody);
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws IOException { //TODO: Precisamos?
+    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
         String url = wsUrl + wsPath + wsUrlEnd;
-        System.out.println("URL: " + url);
-        System.out.println("Params: " + xmlBody);
-        String response = postRequest(url, xmlBody);
+        logger.info("Requisição para URL %s\nParâmetros: %s".formatted(url, params));
+        return makeRequest(wsPath, xmlBody);
+    }
 
-        return response;
+    private String makeRequest(String url, String xmlBody) throws SOAPClientException {
+        try {
+            return postRequest(url, xmlBody);
+        } catch (IOException e) {
+            String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
+            logger.error(msg);
+            throw new SOAPClientException(msg);
+        }
     }
 
     private static String prepareXmlBody(String service, String usr, String pswd, String encryption, HashMap params) { //TODO: Refatorar
