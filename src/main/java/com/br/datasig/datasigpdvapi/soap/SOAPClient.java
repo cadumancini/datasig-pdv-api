@@ -23,22 +23,23 @@ public class SOAPClient {
     private final String wsUrlEnd = "?wsdl";
 
     public SOAPClient(Environment env) {
-        String webServicesUrl = env.getProperty("webservices.url");
-        wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webServicesUrl);
+        String webservicesUrl = env.getProperty("webservicesUrl");
+        logger.info("URL: {}", webservicesUrl);
+        wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webservicesUrl);
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params) throws SOAPClientException {
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
         String url = wsUrl + wsPath + wsUrlEnd;
-        logger.info("Requisição para URL %s\nParâmetros: %s".formatted(url, params));
-        return makeRequest(wsPath, xmlBody);
+        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        return makeRequest(url, xmlBody);
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
         String url = wsUrl + wsPath + wsUrlEnd;
-        logger.info("Requisição para URL %s\nParâmetros: %s".formatted(url, params));
-        return makeRequest(wsPath, xmlBody);
+        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        return makeRequest(url, xmlBody);
     }
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
