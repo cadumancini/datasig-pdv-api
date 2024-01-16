@@ -6,6 +6,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 public class SIDService {
+    private static final Logger logger = LoggerFactory.getLogger(SIDService.class);
     private final String sidUrl;
     private final String processBaixaOP = "970"; //TODO: colocar numeros de regra em application.properties
 
