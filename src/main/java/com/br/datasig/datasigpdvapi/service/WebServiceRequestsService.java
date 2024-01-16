@@ -23,15 +23,15 @@ public class WebServiceRequestsService {
 
     public String performLogin(String user, String pswd) throws SOAPClientException {
         HashMap<String, String> emptyParams = new HashMap<>();
-        logger.info("Tentativa de login para usuário %s".formatted(user));
+        logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
 
         if(response.contains("Credenciais inválidas")) {
-            logger.error("Credenciais inválidas para usuário %s".formatted(user));
+            logger.error("Credenciais inválidas para usuário {}", user);
             return "Credenciais inválidas";
         }
         else {
-            logger.info("Login bem sucedido para usuário %s".formatted(user));
+            logger.info("Login bem sucedido para usuário {}", user);
             Date currentDateTime = Calendar.getInstance().getTime();
             String hash = DigestUtils.sha256Hex(user + pswd + currentDateTime);
             TokensManager.getInstance().addToken(hash, user, pswd);
