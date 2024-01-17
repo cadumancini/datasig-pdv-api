@@ -20,24 +20,26 @@ public class SOAPClient {
     private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
 
     private final String wsUrl;
-    private final String wsUrlEnd = "?wsdl";
+    private final String wsUrlSuffix = "?wsdl";
+    private final String webservicesUrl;
+    private final String identificadorSistema;
 
     public SOAPClient(Environment env) {
-        String webservicesUrl = env.getProperty("webservicesUrl");
-        logger.info("URL: {}", webservicesUrl);
+        webservicesUrl = env.getProperty("webservicesUrl");
+        identificadorSistema = env.getProperty("identificadorSistema");
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webservicesUrl);
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params) throws SOAPClientException {
-        String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
-        String url = wsUrl + wsPath + wsUrlEnd;
+    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
+        String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params, includeIdentificador);
+        String url = wsUrl + wsPath + wsUrlSuffix;
         logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
         return makeRequest(url, xmlBody);
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
-        String url = wsUrl + wsPath + wsUrlEnd;
+        String url = wsUrl + wsPath + wsUrlSuffix;
         logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
         return makeRequest(url, xmlBody);
     }
@@ -52,7 +54,7 @@ public class SOAPClient {
         }
     }
 
-    private static String prepareXmlBody(String service, String usr, String pswd, String encryption, HashMap params) { //TODO: Refatorar
+    private String prepareXmlBody(String service, String usr, String pswd, String encryption, HashMap params, boolean includeIdentificador) { //TODO: Refatorar
         StringBuilder xmlBuilder = new StringBuilder("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">");
         xmlBuilder.append("<soapenv:Body>");
         xmlBuilder.append("<ser:" + service + ">");
@@ -95,6 +97,9 @@ public class SOAPClient {
                     xmlBuilder.append("<" + key + ">" + value + "</" + key + ">");
                 }
             });
+            if (includeIdentificador) {
+                xmlBuilder.append("<identificadorSistema>" + identificadorSistema + "</identificadorSistema>");
+            }
             xmlBuilder.append("</parameters>");
         }
         xmlBuilder.append("</ser:" + service + ">");

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "DataSIG - PDV - API", description = "API RESTful para operações com o sistema PDV")
+@Tag(name = "DataSIG - PDV - Usuários", description = "Operações de usuário com o sistema PDV")
 public class UserController {
     @Autowired
     private WebServiceRequestsService wsRequestsService;
