@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
+import com.br.datasig.datasigpdvapi.entity.Cliente;
 import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -74,6 +75,37 @@ public class WebServiceRequestsService {
             }
         }
         return representantes;
+    }
+
+    public List<Cliente> getClientes(String codEmp, String codFil, String token) throws Exception {
+        HashMap<String, String> params = prepareParamsForRepresentantesEClientes(codEmp, codFil);
+        String user = TokensManager.getInstance().getUserNameFromToken(token);
+        String pswd = TokensManager.getInstance().getPasswordFromToken(token);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", user, pswd, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+
+        return getClientesFromXml(xml);
+    }
+
+    // TODO: refatorar
+    private List<Cliente> getClientesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<Cliente> clientes = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "cliente");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) nNode;
+                String codCli = element.getElementsByTagName("codCli").item(0).getTextContent();
+                String nomCli = element.getElementsByTagName("nomCli").item(0).getTextContent();
+                String apeCli = element.getElementsByTagName("apeCli").item(0).getTextContent();
+                String cgcCpf = element.getElementsByTagName("cgcCpf").item(0).getTextContent();
+
+                clientes.add(new Cliente(codCli, nomCli, apeCli, cgcCpf));
+            }
+        }
+        return clientes;
     }
 
     private HashMap<String, String> prepareParamsForRepresentantesEClientes(String codEmp, String codFil) {
