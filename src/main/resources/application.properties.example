@@ -1,2 +1,8 @@
-webservices.url=
+# URL onde acessar os WebServices Senior
+webservicesUrl=
+
+# Identificador de Integração
 identificadorSistema=
+
+# Se true, ao rodar o projeto e acessar a home (ex: http://localhost:8080) via browser, irá abrir o Swagger com todos os Endpoints disponíveis
+springdoc.swagger-ui.use-root-path=true
