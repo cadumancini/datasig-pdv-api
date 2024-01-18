@@ -4,25 +4,19 @@ import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
-import com.br.datasig.datasigpdvapi.util.ResourceNotFoundException;
-import com.br.datasig.datasigpdvapi.util.WebServiceRuntimeException;
+import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
@@ -57,7 +51,7 @@ public class WebServiceRequestsService {
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", user, pswd, "0", params, true);
 
-        validateResult(xml);
+        XmlUtils.validateXmlResponse(xml);
 
         return getRepresentantesFromXml(xml);
     }
@@ -65,7 +59,7 @@ public class WebServiceRequestsService {
     // TODO: refatorar
     private List<Representante> getRepresentantesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<Representante> representantes = new ArrayList<>();
-        NodeList nList = getNodeListByElementName(xml, "representante");
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "representante");
 
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
@@ -87,38 +81,6 @@ public class WebServiceRequestsService {
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
         return params;
-    }
-
-    private void validateResult(String xml) throws ParserConfigurationException, IOException, SAXException {
-        if (xml.contains("<erroExecucao>")) {
-            String executionError = getMessageFromXml(xml, "result", "erroExecucao");
-            logger.error(executionError);
-            throw new WebServiceRuntimeException(executionError);
-        } else if (xml.contains("<mensagemErro>")) {
-            String executionError = getMessageFromXml(xml, "erros", "mensagemErro");
-            logger.error(executionError);
-            if (executionError.contains("não encontrado")) {
-                throw new ResourceNotFoundException(executionError);
-            } else {
-                throw new WebServiceRuntimeException(executionError);
-            }
-        }
-    }
-
-    private String getMessageFromXml(String xml, String parentElement, String desiredElement) throws ParserConfigurationException, IOException, SAXException {
-        NodeList nListError = getNodeListByElementName(xml, parentElement);
-        Element element = (Element) nListError.item(0);
-        return element.getElementsByTagName(desiredElement).item(0).getTextContent();
-    }
-
-    private NodeList getNodeListByElementName(String xml, String elementName) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-        Document doc = builder.parse(input);
-        doc.getDocumentElement().normalize();
-        return doc.getElementsByTagName(elementName);
     }
 }
 

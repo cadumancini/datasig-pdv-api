@@ -1,9 +1,9 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.token.TokensManager;
-import com.br.datasig.datasigpdvapi.util.InvalidTokenException;
-import com.br.datasig.datasigpdvapi.util.ResourceNotFoundException;
-import com.br.datasig.datasigpdvapi.util.WebServiceRuntimeException;
+import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
+import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;

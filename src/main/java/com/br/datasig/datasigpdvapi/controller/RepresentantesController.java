@@ -2,7 +2,7 @@ package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
-import com.br.datasig.datasigpdvapi.util.InvalidTokenException;
+import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
