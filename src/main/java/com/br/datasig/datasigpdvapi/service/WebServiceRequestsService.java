@@ -4,6 +4,8 @@ import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
+import com.br.datasig.datasigpdvapi.util.ResourceNotFoundException;
+import com.br.datasig.datasigpdvapi.util.WebServiceRuntimeException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,19 +57,15 @@ public class WebServiceRequestsService {
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", user, pswd, "0", params, true);
 
+        validateResult(xml);
+
         return getRepresentantesFromXml(xml);
     }
 
     // TODO: refatorar
     private List<Representante> getRepresentantesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<Representante> representantes = new ArrayList<>();
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
-        Document doc = builder.parse(input);
-        doc.getDocumentElement().normalize();
-        NodeList nList = doc.getElementsByTagName("representante");
+        NodeList nList = getNodeListByElementName(xml, "representante");
 
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
@@ -89,6 +87,38 @@ public class WebServiceRequestsService {
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
         return params;
+    }
+
+    private void validateResult(String xml) throws ParserConfigurationException, IOException, SAXException {
+        if (xml.contains("<erroExecucao>")) {
+            String executionError = getMessageFromXml(xml, "result", "erroExecucao");
+            logger.error(executionError);
+            throw new WebServiceRuntimeException(executionError);
+        } else if (xml.contains("<mensagemErro>")) {
+            String executionError = getMessageFromXml(xml, "erros", "mensagemErro");
+            logger.error(executionError);
+            if (executionError.contains("não encontrado")) {
+                throw new ResourceNotFoundException(executionError);
+            } else {
+                throw new WebServiceRuntimeException(executionError);
+            }
+        }
+    }
+
+    private String getMessageFromXml(String xml, String parentElement, String desiredElement) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nListError = getNodeListByElementName(xml, parentElement);
+        Element element = (Element) nListError.item(0);
+        return element.getElementsByTagName(desiredElement).item(0).getTextContent();
+    }
+
+    private NodeList getNodeListByElementName(String xml, String elementName) throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+
+        ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+        Document doc = builder.parse(input);
+        doc.getDocumentElement().normalize();
+        return doc.getElementsByTagName(elementName);
     }
 }
 

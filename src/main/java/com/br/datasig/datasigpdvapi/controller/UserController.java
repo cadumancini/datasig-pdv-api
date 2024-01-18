@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "DataSIG - PDV - Usuários", description = "Operações de usuário com o sistema PDV")
+@Tag(name = "Usuários", description = "Operações de usuário com o sistema PDV")
 public class UserController {
     @Autowired
     private WebServiceRequestsService wsRequestsService;
@@ -18,7 +18,7 @@ public class UserController {
             summary = "Realizar login no sistema PDV",
             description = "Cria um token baseado no usuário, senha e timestamp de login, que é retornado ao FrontEnd e utilizado nas outras requisições"
     )
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
     @ResponseBody
     public String performLogin(@RequestParam String user, @RequestParam String pswd) throws SOAPClientException {
         return wsRequestsService.performLogin(user, pswd);
