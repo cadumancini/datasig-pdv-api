@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.soap;
 
+import com.br.datasig.datasigpdvapi.token.TokensManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -30,8 +31,16 @@ public class SOAPClient {
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", webservicesUrl);
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
-        String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params, includeIdentificador);
+    public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
+        String url = wsUrl + wsPath + wsUrlSuffix;
+        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        return makeRequest(url, xmlBody);
+    }
+    public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
+        String user = TokensManager.getInstance().getUserNameFromToken(token);
+        String pswd = TokensManager.getInstance().getPasswordFromToken(token);
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
         String url = wsUrl + wsPath + wsUrlSuffix;
         logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
         return makeRequest(url, xmlBody);
