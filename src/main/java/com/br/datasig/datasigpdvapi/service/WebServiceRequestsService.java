@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.Cliente;
+import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
 import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -47,7 +48,7 @@ public class WebServiceRequestsService {
     }
 
     public List<Representante> getRepresentantes(String codEmp, String codFil, String token) throws Exception {
-        HashMap<String, String> params = prepareParamsForRepresentantesEClientes(codEmp, codFil);
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", user, pswd, "0", params, true);
@@ -78,7 +79,7 @@ public class WebServiceRequestsService {
     }
 
     public List<Cliente> getClientes(String codEmp, String codFil, String token) throws Exception {
-        HashMap<String, String> params = prepareParamsForRepresentantesEClientes(codEmp, codFil);
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", user, pswd, "0", params, true);
@@ -108,11 +109,60 @@ public class WebServiceRequestsService {
         return clientes;
     }
 
-    private HashMap<String, String> prepareParamsForRepresentantesEClientes(String codEmp, String codFil) {
+    private HashMap<String, String> prepareBaseParams(String codEmp, String codFil) {
         HashMap<String, String> params = new HashMap<>();
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
         return params;
+    }
+
+    public List<ProdutoDerivacao> getProdutos(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        addParamsForProdutos(params);
+        String user = TokensManager.getInstance().getUserNameFromToken(token);
+        String pswd = TokensManager.getInstance().getPasswordFromToken(token);
+
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_produtos", "ConsultarGeral_4", user, pswd, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getProdutosFromXml(xml);
+    }
+
+    // TODO: refatorar
+    private List<ProdutoDerivacao> getProdutosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<ProdutoDerivacao> produtos = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "produto");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element element = (Element) nNode;
+                String codPro = element.getElementsByTagName("codPro").item(0).getTextContent();
+                String codMar = element.getElementsByTagName("codMar").item(0).getTextContent();
+                String desPro = element.getElementsByTagName("desNfv").item(0).getTextContent();
+
+                NodeList derivacoes = element.getElementsByTagName("derivacao");
+                for (int y = 0; y < derivacoes.getLength(); y++) {
+                    Node nNodeDer = derivacoes.item(i);
+                    if (nNodeDer.getNodeType() == Node.ELEMENT_NODE) {
+                        Element elDer = (Element) nNodeDer;
+                        String codDer = elDer.getElementsByTagName("codDer").item(0).getTextContent();
+                        String desDer = elDer.getElementsByTagName("desDer").item(0).getTextContent();
+                        String codBa2 = elDer.getElementsByTagName("codBa2").item(0).getTextContent();
+                        String desCpl = String.format("%s %s", desPro, desDer);
+
+                        produtos.add(new ProdutoDerivacao(codPro, codDer, codMar, desCpl, codBa2));
+                    }
+                }
+            }
+        }
+        return produtos;
+    }
+
+    private void addParamsForProdutos(HashMap<String, String> params) {
+        params.put("sitPro", "A");
+        params.put("sitDer", "A");
+        params.put("sitDer", "A");
     }
 }
 
