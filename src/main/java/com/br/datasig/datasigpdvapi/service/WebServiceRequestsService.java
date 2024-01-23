@@ -1,8 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.Cliente;
-import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
-import com.br.datasig.datasigpdvapi.entity.Representante;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -27,6 +25,7 @@ public class WebServiceRequestsService {
     @Autowired
     private SOAPClient soapClient;
 
+    /* Login */
     public String performLogin(String user, String pswd) throws SOAPClientException {
         HashMap<String, String> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
@@ -46,6 +45,7 @@ public class WebServiceRequestsService {
         }
     }
 
+    /* Representantes */
     public List<Representante> getRepresentantes(String codEmp, String codFil, String token) throws Exception {
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", token, "0", params, true);
@@ -67,6 +67,7 @@ public class WebServiceRequestsService {
         return representantes;
     }
 
+    /* Clientes */
     public List<Cliente> getClientes(String codEmp, String codFil, String token) throws Exception {
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", token, "0", params, true);
@@ -88,6 +89,7 @@ public class WebServiceRequestsService {
         return clientes;
     }
 
+    /* Produtos */
     public List<ProdutoDerivacao> getProdutos(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutos(params);
@@ -99,6 +101,8 @@ public class WebServiceRequestsService {
 
     private List<ProdutoDerivacao> getProdutosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<ProdutoDerivacao> produtos = new ArrayList<>();
+
+
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "produto");
 
         for (int i = 0; i < nList.getLength(); i++) {
@@ -108,6 +112,52 @@ public class WebServiceRequestsService {
             }
         }
         return produtos;
+    }
+
+    /* Condicoes de Pagamento */
+    public List<CondicaoPagamento> getCondicoesPagamento(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        addParamsForCondicao(params);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_condicaopagamento", "ConsultarGeral", token, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getCondicoesPagamentoFromXml(xml);
+    }
+
+    private List<CondicaoPagamento> getCondicoesPagamentoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<CondicaoPagamento> condicoes = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "condicaoDePagamento");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                condicoes.add(CondicaoPagamento.fromXml(nNode));
+            }
+        }
+        return condicoes;
+    }
+
+    /* Formas de Pagamento */
+    public List<FormaPagamento> getFormasPagamento(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        addParamsForFormas(params);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_formapagamento", "ConsultarGeral", token, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getFormasPagamentoFromXml(xml);
+    }
+
+    private List<FormaPagamento> getFormasPagamentoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<FormaPagamento> formas = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "formaDePagamento");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                formas.add(FormaPagamento.fromXml(nNode));
+            }
+        }
+        return formas;
     }
 
     private HashMap<String, String> prepareBaseParams(String codEmp, String codFil) {
@@ -120,6 +170,14 @@ public class WebServiceRequestsService {
     private void addParamsForProdutos(HashMap<String, String> params) {
         params.put("sitPro", "A");
         params.put("sitDer", "A");
+    }
+
+    private void addParamsForCondicao(HashMap<String, String> params) {
+        params.put("sitCpg", "A");
+    }
+
+    private void addParamsForFormas(HashMap<String, String> params) {
+        params.put("sitCpg", "A");
     }
 }
 
