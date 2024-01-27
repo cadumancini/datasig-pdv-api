@@ -22,8 +22,8 @@ public class TokensManager {
         return validTokens;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil));
     }
 
     public void removeInvalidTokens() {
@@ -33,6 +33,8 @@ public class TokensManager {
     public boolean isTokenValid(String token) {
         return validTokens.stream().anyMatch(o -> o.getValue().equals(token));
     }
+
+    //TODO: refatorar getters
 
     public String getUserNameFromToken(String tokenValue) {
         for (Token token : validTokens) {
@@ -46,6 +48,22 @@ public class TokensManager {
         for (Token token : validTokens) {
             if(token.getValue().equals(tokenValue) && token.isValid())
                 return token.getPassword();
+        }
+        return "";
+    }
+
+    public String getCodEmpFromToken(String tokenValue) {
+        for (Token token : validTokens) {
+            if(token.getValue().equals(tokenValue) && token.isValid())
+                return token.getCodEmp();
+        }
+        return "";
+    }
+
+    public String getCodFilFromToken(String tokenValue) {
+        for (Token token : validTokens) {
+            if(token.getValue().equals(tokenValue) && token.isValid())
+                return token.getCodFil();
         }
         return "";
     }

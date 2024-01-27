@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.controller;
 
+import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
@@ -25,6 +26,12 @@ public class DataSIGController {
     @ExceptionHandler({ResourceNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String resourceNotFoundException(ResourceNotFoundException ex) {
+        return getJsonMessage(ex.getMessage());
+    }
+
+    @ExceptionHandler({WebServiceNotFoundException.class})
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public String webServiceNotFoundException(WebServiceNotFoundException ex) {
         return getJsonMessage(ex.getMessage());
     }
 

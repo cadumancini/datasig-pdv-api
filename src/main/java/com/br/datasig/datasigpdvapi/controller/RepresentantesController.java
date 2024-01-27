@@ -23,9 +23,9 @@ public class RepresentantesController extends DataSIGController {
     )
     @GetMapping(value= "", produces = "application/json")
     @ResponseBody
-    public List<Representante> getRepresentantes(@RequestParam String codEmp, @RequestParam String codFil, @RequestParam String token) throws Exception {
+    public List<Representante> getRepresentantes(@RequestParam String token) throws Exception {
         if(isTokenValid(token))
-            return wsRequestsService.getRepresentantes(codEmp, codFil, token);
+            return wsRequestsService.getRepresentantes(token);
         else
             throw new InvalidTokenException();
     }

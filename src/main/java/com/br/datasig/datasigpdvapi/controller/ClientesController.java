@@ -23,9 +23,9 @@ public class ClientesController extends DataSIGController {
     )
     @GetMapping(value= "", produces = "application/json")
     @ResponseBody
-    public List<Cliente> getClientes(@RequestParam String codEmp, @RequestParam String codFil, @RequestParam String token) throws Exception {
+    public List<Cliente> getClientes(@RequestParam String token) throws Exception {
         if(isTokenValid(token))
-            return wsRequestsService.getClientes(codEmp, codFil, token);
+            return wsRequestsService.getClientes(token);
         else
             throw new InvalidTokenException();
     }

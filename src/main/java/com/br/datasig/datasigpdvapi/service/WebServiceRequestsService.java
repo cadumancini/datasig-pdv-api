@@ -39,14 +39,22 @@ public class WebServiceRequestsService {
             logger.info("Login bem sucedido para usuário {}", user);
             Date currentDateTime = Calendar.getInstance().getTime();
             String hash = DigestUtils.sha256Hex(user + pswd + currentDateTime);
-            TokensManager.getInstance().addToken(hash, user, pswd);
+
+            List<String> paramsEmpFil = defineCodEmpCodFil();
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.get(0), paramsEmpFil.get(1));
 
             return hash;
         }
     }
 
+    private List<String> defineCodEmpCodFil() { //TODO: buscar usando WS a ser disponibilizado
+        return Arrays.asList("1", "7");
+    }
+
     /* Representantes */
-    public List<Representante> getRepresentantes(String codEmp, String codFil, String token) throws Exception {
+    public List<Representante> getRepresentantes(String token) throws Exception {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", token, "0", params, true);
 
@@ -68,7 +76,9 @@ public class WebServiceRequestsService {
     }
 
     /* Clientes */
-    public List<Cliente> getClientes(String codEmp, String codFil, String token) throws Exception {
+    public List<Cliente> getClientes(String token) throws Exception {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", token, "0", params, true);
 
@@ -90,7 +100,9 @@ public class WebServiceRequestsService {
     }
 
     /* Produtos */
-    public List<ProdutoDerivacao> getProdutos(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<ProdutoDerivacao> getProdutos(String token) throws IOException, ParserConfigurationException, SAXException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutos(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_produtos", "ConsultarGeral_4", token, "0", params, true);
@@ -101,8 +113,6 @@ public class WebServiceRequestsService {
 
     private List<ProdutoDerivacao> getProdutosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<ProdutoDerivacao> produtos = new ArrayList<>();
-
-
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "produto");
 
         for (int i = 0; i < nList.getLength(); i++) {
@@ -115,7 +125,9 @@ public class WebServiceRequestsService {
     }
 
     /* Condicoes de Pagamento */
-    public List<CondicaoPagamento> getCondicoesPagamento(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<CondicaoPagamento> getCondicoesPagamento(String token) throws IOException, ParserConfigurationException, SAXException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         addParamsForCondicao(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_condicaopagamento", "ConsultarGeral", token, "0", params, true);
@@ -138,7 +150,9 @@ public class WebServiceRequestsService {
     }
 
     /* Formas de Pagamento */
-    public List<FormaPagamento> getFormasPagamento(String codEmp, String codFil, String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<FormaPagamento> getFormasPagamento(String token) throws IOException, ParserConfigurationException, SAXException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
         addParamsForFormas(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_formapagamento", "ConsultarGeral", token, "0", params, true);

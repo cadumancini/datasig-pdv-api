@@ -25,9 +25,9 @@ public class PagamentoController extends DataSIGController {
     )
     @GetMapping(value= "/condicoes", produces = "application/json")
     @ResponseBody
-    public List<CondicaoPagamento> getCondicoes(@RequestParam String codEmp, @RequestParam String codFil, @RequestParam String token) throws Exception {
+    public List<CondicaoPagamento> getCondicoes(@RequestParam String token) throws Exception {
         if(isTokenValid(token))
-            return wsRequestsService.getCondicoesPagamento(codEmp, codFil, token);
+            return wsRequestsService.getCondicoesPagamento(token);
         else
             throw new InvalidTokenException();
     }
@@ -38,9 +38,9 @@ public class PagamentoController extends DataSIGController {
     )
     @GetMapping(value= "/formas", produces = "application/json")
     @ResponseBody
-    public List<FormaPagamento> getFormas(@RequestParam String codEmp, @RequestParam String codFil, @RequestParam String token) throws Exception {
+    public List<FormaPagamento> getFormas(@RequestParam String token) throws Exception {
         if(isTokenValid(token))
-            return wsRequestsService.getFormasPagamento(codEmp, codFil, token);
+            return wsRequestsService.getFormasPagamento(token);
         else
             throw new InvalidTokenException();
     }

@@ -23,9 +23,9 @@ public class ProdutosController extends DataSIGController {
     )
     @GetMapping(value= "", produces = "application/json")
     @ResponseBody
-    public List<ProdutoDerivacao> getProdutos(@RequestParam String codEmp, @RequestParam String codFil, @RequestParam String token) throws Exception {
+    public List<ProdutoDerivacao> getProdutos(@RequestParam String token) throws Exception {
         if(isTokenValid(token))
-            return wsRequestsService.getProdutos(codEmp, codFil, token);
+            return wsRequestsService.getProdutos(token);
         else
             throw new InvalidTokenException();
     }

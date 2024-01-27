@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.soap;
 
+import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -143,6 +144,9 @@ public class SOAPClient {
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
+        if (httpResponse.getStatusLine().getStatusCode() == 404) {
+            throw new WebServiceNotFoundException("Serviço não encontrado");
+        }
         return EntityUtils.toString(httpResponse.getEntity());
     }
 }

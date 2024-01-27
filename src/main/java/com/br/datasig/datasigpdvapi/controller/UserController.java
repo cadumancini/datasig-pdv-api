@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @Tag(name = "Usuários", description = "Operações de usuário com o sistema PDV")
-public class UserController {
+public class UserController extends DataSIGController {
     @Autowired
     private WebServiceRequestsService wsRequestsService;
 
