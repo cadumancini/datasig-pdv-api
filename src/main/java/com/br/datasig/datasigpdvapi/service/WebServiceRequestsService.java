@@ -1,8 +1,8 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.*;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
-import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -26,7 +26,7 @@ public class WebServiceRequestsService {
     private SOAPClient soapClient;
 
     /* Login */
-    public String performLogin(String user, String pswd) throws SOAPClientException {
+    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException {
         HashMap<String, String> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams, false);
@@ -40,15 +40,30 @@ public class WebServiceRequestsService {
             Date currentDateTime = Calendar.getInstance().getTime();
             String hash = DigestUtils.sha256Hex(user + pswd + currentDateTime);
 
-            List<String> paramsEmpFil = defineCodEmpCodFil();
-            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.get(0), paramsEmpFil.get(1));
+            ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
 
             return hash;
         }
     }
 
-    private List<String> defineCodEmpCodFil() { //TODO: buscar usando WS a ser disponibilizado
-        return Arrays.asList("1", "7");
+    private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException {
+        logger.info("Buscando empresa e filial ativas para usuário {}", user);
+        HashMap<String, String> params = prepareParamsForEmpresaAtiva(user);
+        String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params, false);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getParamsEmpresaFromXml(xml);
+    }
+
+    private ParamsEmpresa getParamsEmpresaFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
+
+        if (nList.getLength() == 1) {
+            return ParamsEmpresa.fromXml(nList.item(0));
+        } else {
+            throw new ResourceNotFoundException("Parâmetros não encontrados para o usuário");
+        }
     }
 
     /* Representantes */
@@ -178,6 +193,12 @@ public class WebServiceRequestsService {
         HashMap<String, String> params = new HashMap<>();
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
+        return params;
+    }
+
+    private HashMap<String, String> prepareParamsForEmpresaAtiva(String user) {
+        HashMap<String, String> params = new HashMap<>();
+        params.put("NOMUSU", user);
         return params;
     }
 

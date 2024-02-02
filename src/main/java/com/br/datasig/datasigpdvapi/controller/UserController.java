@@ -1,11 +1,14 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
-import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/users")
@@ -20,7 +23,7 @@ public class UserController extends DataSIGController {
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
     @ResponseBody
-    public String performLogin(@RequestParam String user, @RequestParam String pswd) throws SOAPClientException {
+    public String performLogin(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException {
         return wsRequestsService.performLogin(user, pswd);
     }
 }
