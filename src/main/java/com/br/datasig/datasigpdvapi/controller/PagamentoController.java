@@ -1,15 +1,18 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.entity.Cliente;
 import com.br.datasig.datasigpdvapi.entity.CondicaoPagamento;
 import com.br.datasig.datasigpdvapi.entity.FormaPagamento;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
+import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -24,8 +27,7 @@ public class PagamentoController extends DataSIGController {
             description = "Busca as condições de pagamento cadastradas"
     )
     @GetMapping(value= "/condicoes", produces = "application/json")
-    @ResponseBody
-    public List<CondicaoPagamento> getCondicoes(@RequestParam String token) throws Exception {
+    public List<CondicaoPagamento> getCondicoes(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return wsRequestsService.getCondicoesPagamento(token);
         else
@@ -37,8 +39,7 @@ public class PagamentoController extends DataSIGController {
             description = "Busca as formas de pagamento cadastradas"
     )
     @GetMapping(value= "/formas", produces = "application/json")
-    @ResponseBody
-    public List<FormaPagamento> getFormas(@RequestParam String token) throws Exception {
+    public List<FormaPagamento> getFormas(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return wsRequestsService.getFormasPagamento(token);
         else
