@@ -10,21 +10,29 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Component
 public class WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(WebServiceRequestsService.class);
+    private final String numRegTpr;
 
     @Autowired
     private SOAPClient soapClient;
+
+    public WebServiceRequestsService(Environment env) {
+        numRegTpr = env.getProperty("numRegTpr");
+    }
 
     /* Login */
     public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
@@ -149,13 +157,38 @@ public class WebServiceRequestsService {
 
         XmlUtils.validateXmlResponse(xml);
         List<ProdutoDerivacao> produtosFromXml = getProdutosFromXml(xml);
-        populatePrices(produtosFromXml);
+        populatePrices(produtosFromXml, codEmp, codTpr, token);
 
         return produtosFromXml;
     }
 
-    private void populatePrices(List<ProdutoDerivacao> produtosFromXml) {
-        
+    private void populatePrices(List<ProdutoDerivacao> produtosFromXml, String codEmp, String codTpr, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        String datIni = getCurrentDate();
+        String qtdBas = "1";
+        for (ProdutoDerivacao produtoDerivacao : produtosFromXml) {
+            String params = prepareParamsForConsultaPrecos(codEmp, codTpr, produtoDerivacao.getCodPro(), produtoDerivacao.getCodDer(), datIni, qtdBas);
+            String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
+            XmlUtils.validateXmlResponse(xml);
+            produtoDerivacao.setPreBas(getPriceFromXml(xml));
+        }
+    }
+
+    private String getCurrentDate() {
+        Date currentDate = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        return dateFormat.format(currentDate);
+    }
+
+    private Double getPriceFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
+        if (nList.getLength() == 1) {
+            Element element = (Element) nList.item(0);
+            String preBas = element.getElementsByTagName("resultado").item(0).getTextContent();
+            preBas = preBas.replace(",", ".");
+            return Double.valueOf(preBas);
+        } else {
+            throw new ResourceNotFoundException("Preço não encontrado para o produto");
+        }
     }
 
     private List<ProdutoDerivacao> getProdutosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
@@ -231,6 +264,20 @@ public class WebServiceRequestsService {
     private HashMap<String, String> prepareParamsForEmpresaAtiva(String user) {
         HashMap<String, String> params = new HashMap<>();
         params.put("NOMUSU", user);
+        return params;
+    }
+
+    private String prepareParamsForConsultaPrecos(String codEmp, String codTpr, String codPro, String codDer, String datIni, String qtdPdv) { //TODO: refatorar
+        String params = "";
+        params += "<SID><param>acao=sid.srv.regra</param></SID>";
+        params += "<SID><param>numreg=" + numRegTpr + "</param></SID>";
+        params += "<SID><param>acao=sid.srv.regra</param></SID>";
+        params += "<SID><param>aCodEmpPdv=" + codEmp + "</param></SID>";
+        params += "<SID><param>aCodTprPdv=" + codTpr + "</param></SID>";
+        params += "<SID><param>aCodProPdv=" + codPro + "</param></SID>";
+        params += "<SID><param>aCodDerPdv=" + codDer + "</param></SID>";
+        params += "<SID><param>aDatIniPdv=" + datIni + "</param></SID>";
+        params += "<SID><param>aQtdMaxPdv=" + qtdPdv + "</param></SID>";
         return params;
     }
 

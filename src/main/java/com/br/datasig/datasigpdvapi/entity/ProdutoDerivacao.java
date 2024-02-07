@@ -17,6 +17,7 @@ public class ProdutoDerivacao { //TODO: ver se o FrontEnd vai precisar de mais d
     private String codMar;
     private String desPro;
     private String codBa2;
+    private Double preBas;
 
     public static List<ProdutoDerivacao> fromXml(Node nNode) {
         List<ProdutoDerivacao> produtos = new ArrayList<>();
@@ -35,7 +36,7 @@ public class ProdutoDerivacao { //TODO: ver se o FrontEnd vai precisar de mais d
                 String codBa2 = elDer.getElementsByTagName("codBa2").item(0).getTextContent();
                 String desCpl = String.format("%s %s", desPro, desDer);
 
-                produtos.add(new ProdutoDerivacao(codPro, codDer, codMar, desCpl, codBa2));
+                produtos.add(new ProdutoDerivacao(codPro, codDer, codMar, desCpl, codBa2, (double) 0));
             }
         }
         return produtos;

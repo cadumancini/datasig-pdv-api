@@ -48,8 +48,10 @@ public class SOAPClient {
         return makeRequest(url, xmlBody);
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
-        String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
+    public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
+        String user = TokensManager.getInstance().getUserNameFromToken(token);
+        String pswd = TokensManager.getInstance().getPasswordFromToken(token);
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params);
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(requestLogMessage, url, params);
         return makeRequest(url, xmlBody);

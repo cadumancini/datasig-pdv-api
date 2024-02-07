@@ -6,3 +6,6 @@ identificadorSistema=
 
 # Se true, ao rodar o projeto e acessar a home (ex: http://localhost:8080) via browser, irá abrir o Swagger com todos os Endpoints disponíveis
 springdoc.swagger-ui.use-root-path=true
+
+# Numero de regra para consulta de precos
+numRegTpr=
