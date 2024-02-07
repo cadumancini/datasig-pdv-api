@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
+import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -26,7 +27,7 @@ public class WebServiceRequestsService {
     private SOAPClient soapClient;
 
     /* Login */
-    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException {
+    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         HashMap<String, String> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams, false);
@@ -47,7 +48,7 @@ public class WebServiceRequestsService {
         }
     }
 
-    private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException {
+    private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         logger.info("Buscando empresa e filial ativas para usuário {}", user);
         HashMap<String, String> params = prepareParamsForEmpresaAtiva(user);
         String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params, false);
@@ -67,7 +68,7 @@ public class WebServiceRequestsService {
     }
 
     /* Representantes */
-    public List<Representante> getRepresentantes(String token) throws Exception {
+    public List<Representante> getRepresentantes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -90,8 +91,32 @@ public class WebServiceRequestsService {
         return representantes;
     }
 
+    public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        addParamsForTabelaPreco(params, codRep);
+        String xml = soapClient.requestFromSeniorWS("ConsultaTabeladePreco", "Representante", token, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getTabelasPrecoFromXml(xml);
+    }
+
+    private List<TabelaPreco> getTabelasPrecoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<TabelaPreco> tabelas = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "TABELA");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                tabelas.add(TabelaPreco.fromXml(nNode));
+            }
+        }
+        return tabelas;
+    }
+
     /* Clientes */
-    public List<Cliente> getClientes(String token) throws Exception {
+    public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -115,7 +140,7 @@ public class WebServiceRequestsService {
     }
 
     /* Produtos */
-    public List<ProdutoDerivacao> getProdutos(String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<ProdutoDerivacao> getProdutos(String token, String codTpr) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -123,7 +148,14 @@ public class WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_produtos", "ConsultarGeral_4", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
-        return getProdutosFromXml(xml);
+        List<ProdutoDerivacao> produtosFromXml = getProdutosFromXml(xml);
+        populatePrices(produtosFromXml);
+
+        return produtosFromXml;
+    }
+
+    private void populatePrices(List<ProdutoDerivacao> produtosFromXml) {
+        
     }
 
     private List<ProdutoDerivacao> getProdutosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
@@ -140,7 +172,7 @@ public class WebServiceRequestsService {
     }
 
     /* Condicoes de Pagamento */
-    public List<CondicaoPagamento> getCondicoesPagamento(String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<CondicaoPagamento> getCondicoesPagamento(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -165,7 +197,7 @@ public class WebServiceRequestsService {
     }
 
     /* Formas de Pagamento */
-    public List<FormaPagamento> getFormasPagamento(String token) throws IOException, ParserConfigurationException, SAXException {
+    public List<FormaPagamento> getFormasPagamento(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -205,6 +237,10 @@ public class WebServiceRequestsService {
     private void addParamsForProdutos(HashMap<String, String> params) {
         params.put("sitPro", "A");
         params.put("sitDer", "A");
+    }
+
+    private void addParamsForTabelaPreco(HashMap<String, String> params, String codRep) {
+        params.put("CODREP", codRep);
     }
 
     private void addParamsForCondicao(HashMap<String, String> params) {

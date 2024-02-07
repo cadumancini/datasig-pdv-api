@@ -22,9 +22,10 @@ public class SOAPClient {
     private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
 
     private final String wsUrl;
-    private final String wsUrlSuffix = "?wsdl";
+    private final static String WS_URL_SUFFIX = "?wsdl";
     private final String webservicesUrl;
     private final String identificadorSistema;
+    private final String requestLogMessage = "Requisição para URL {}\nParâmetros: {}";
 
     public SOAPClient(Environment env) {
         webservicesUrl = env.getProperty("webservicesUrl");
@@ -34,30 +35,30 @@ public class SOAPClient {
 
     public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
         String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
-        String url = wsUrl + wsPath + wsUrlSuffix;
-        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        String url = wsUrl + wsPath + WS_URL_SUFFIX;
+        logger.info(requestLogMessage, url, params);
         return makeRequest(url, xmlBody);
     }
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, HashMap params, boolean includeIdentificador) throws SOAPClientException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
-        String url = wsUrl + wsPath + wsUrlSuffix;
-        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        String url = wsUrl + wsPath + WS_URL_SUFFIX;
+        logger.info(requestLogMessage, url, params);
         return makeRequest(url, xmlBody);
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String usr, String pswd, String encryption, String params) throws SOAPClientException { //TODO: Precisamos?
         String xmlBody = prepareXmlBody(service, usr, pswd, encryption, params);
-        String url = wsUrl + wsPath + wsUrlSuffix;
-        logger.info("Requisição para URL {}\nParâmetros: {}", url, params);
+        String url = wsUrl + wsPath + WS_URL_SUFFIX;
+        logger.info(requestLogMessage, url, params);
         return makeRequest(url, xmlBody);
     }
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
         try {
             return postRequest(url, xmlBody);
-        } catch (IOException e) {
+        } catch (Exception e) {
             String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
             logger.error(msg);
             throw new SOAPClientException(msg);
