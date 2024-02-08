@@ -26,9 +26,21 @@ public class ProdutosController extends DataSIGController {
             description = "Busca os produtos ativos (produto e derivação) cadastrados"
     )
     @GetMapping(value= "", produces = "application/json")
-    public List<ProdutoDerivacao> getProdutos(@RequestParam String token, @RequestParam String codTpr) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<ProdutoDerivacao> getProdutos(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
-            return wsRequestsService.getProdutos(token, codTpr);
+            return wsRequestsService.getProdutos(token);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Consultar preço",
+            description = "Busca o preço do produto na tabela de preços informada"
+    )
+    @GetMapping(value= "/preco", produces = "text/plain;charset=UTF-8")
+    public String getPreco(@RequestParam String token, @RequestParam String codPro, @RequestParam String codDer, @RequestParam String codTpr, @RequestParam String qtdPdv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return wsRequestsService.getPreco(token, codPro, codDer, codTpr, qtdPdv);
         else
             throw new InvalidTokenException();
     }

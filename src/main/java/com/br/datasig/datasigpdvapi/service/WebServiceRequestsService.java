@@ -148,7 +148,7 @@ public class WebServiceRequestsService {
     }
 
     /* Produtos */
-    public List<ProdutoDerivacao> getProdutos(String token, String codTpr) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+    public List<ProdutoDerivacao> getProdutos(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
@@ -156,21 +156,17 @@ public class WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_produtos", "ConsultarGeral_4", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
-        List<ProdutoDerivacao> produtosFromXml = getProdutosFromXml(xml);
-        populatePrices(produtosFromXml, codEmp, codTpr, token);
-
-        return produtosFromXml;
+        return getProdutosFromXml(xml);
     }
 
-    private void populatePrices(List<ProdutoDerivacao> produtosFromXml, String codEmp, String codTpr, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public String getPreco(String token, String codPro, String codDer, String codTpr, String qtdPdv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String datIni = getCurrentDate();
-        String qtdBas = "1";
-        for (ProdutoDerivacao produtoDerivacao : produtosFromXml) {
-            String params = prepareParamsForConsultaPrecos(codEmp, codTpr, produtoDerivacao.getCodPro(), produtoDerivacao.getCodDer(), datIni, qtdBas);
-            String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
-            XmlUtils.validateXmlResponse(xml);
-            produtoDerivacao.setPreBas(getPriceFromXml(xml));
-        }
+
+        String params = prepareParamsForConsultaPrecos(codEmp, codTpr, codPro, codDer, datIni, qtdPdv);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
+        XmlUtils.validateXmlResponse(xml);
+        return getPriceFromXml(xml);
     }
 
     private String getCurrentDate() {
@@ -179,13 +175,11 @@ public class WebServiceRequestsService {
         return dateFormat.format(currentDate);
     }
 
-    private Double getPriceFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+    private String getPriceFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
         if (nList.getLength() == 1) {
             Element element = (Element) nList.item(0);
-            String preBas = element.getElementsByTagName("resultado").item(0).getTextContent();
-            preBas = preBas.replace(",", ".");
-            return Double.valueOf(preBas);
+            return element.getElementsByTagName("resultado").item(0).getTextContent();
         } else {
             throw new ResourceNotFoundException("Preço não encontrado para o produto");
         }
