@@ -179,7 +179,8 @@ public class WebServiceRequestsService {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
         if (nList.getLength() == 1) {
             Element element = (Element) nList.item(0);
-            return element.getElementsByTagName("resultado").item(0).getTextContent();
+            String preBas = element.getElementsByTagName("resultado").item(0).getTextContent();
+            return preBas.replace(",", ".");
         } else {
             throw new ResourceNotFoundException("Preço não encontrado para o produto");
         }
