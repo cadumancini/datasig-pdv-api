@@ -266,7 +266,6 @@ public class WebServiceRequestsService {
         String params = "";
         params += "<SID><param>acao=sid.srv.regra</param></SID>";
         params += "<SID><param>numreg=" + numRegTpr + "</param></SID>";
-        params += "<SID><param>acao=sid.srv.regra</param></SID>";
         params += "<SID><param>aCodEmpPdv=" + codEmp + "</param></SID>";
         params += "<SID><param>aCodTprPdv=" + codTpr + "</param></SID>";
         params += "<SID><param>aCodProPdv=" + codPro + "</param></SID>";
