@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.Pedido;
+import com.br.datasig.datasigpdvapi.entity.RetornoPedido;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -24,8 +25,8 @@ public class PedidoController extends DataSIGController {
             summary = "Buscar condições de pagamento",
             description = "Busca as condições de pagamento cadastradas"
     )
-    @PutMapping(value = "", produces = "application/json")
-    public String putPedido(@RequestParam String token, @RequestBody Pedido pedido) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    @PutMapping(value = "", produces = "application/json", consumes = "application/json")
+    public RetornoPedido putPedido(@RequestParam String token, @RequestBody Pedido pedido) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return wsRequestsService.createPedido(token, pedido);
         else

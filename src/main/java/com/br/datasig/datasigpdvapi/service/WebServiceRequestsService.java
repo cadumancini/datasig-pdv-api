@@ -2,6 +2,7 @@ package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
+import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -250,15 +251,16 @@ public class WebServiceRequestsService {
     }
 
     /* Pedido */
-    public String createPedido(String token, Pedido pedido) {
+    public RetornoPedido createPedido(String token, Pedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         pedido.setCodEmp(codEmp);
         pedido.setCodFil(codFil);
 
-        HashMap<String, Object> paramsPedido = prepareParamsForPedido(pedido);
-        System.out.println(paramsPedido);
-        return "OK";
+        HashMap<String, Object> params = prepareParamsForPedido(pedido);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, true);
+        XmlUtils.validateXmlResponse(xml);
+        return getRetornoPedidoFromXml(xml);
     }
 
     private HashMap<String, Object> prepareParamsForPedido(Pedido pedido) {
@@ -305,6 +307,16 @@ public class WebServiceRequestsService {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "respostaPedido");
+
+        if (nList.getLength() == 1) {
+            return RetornoPedido.fromXml(nList.item(0));
+        } else {
+            throw new WebServiceRuntimeException("Erro ao extrair retorno de pedido da resposta do servidor.");
+        }
     }
 
     private HashMap<String, String> prepareBaseParams(String codEmp, String codFil) {
