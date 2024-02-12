@@ -2,7 +2,7 @@ package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.Cliente;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
-import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
+import com.br.datasig.datasigpdvapi.service.ClientesService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +19,7 @@ import java.util.List;
 @Tag(name = "Clientes", description = "Operações de clientes com o sistema PDV")
 public class ClientesController extends DataSIGController {
     @Autowired
-    private WebServiceRequestsService wsRequestsService;
+    private ClientesService clientesService;
 
     @Operation(
             summary = "Buscar clientes",
@@ -28,7 +28,7 @@ public class ClientesController extends DataSIGController {
     @GetMapping(value= "", produces = "application/json")
     public List<Cliente> getClientes(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if(isTokenValid(token))
-            return wsRequestsService.getClientes(token);
+            return clientesService.getClientes(token);
         else
             throw new InvalidTokenException();
     }

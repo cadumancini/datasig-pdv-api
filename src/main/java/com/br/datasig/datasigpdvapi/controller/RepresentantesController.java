@@ -2,7 +2,7 @@ package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.entity.TabelaPreco;
-import com.br.datasig.datasigpdvapi.service.WebServiceRequestsService;
+import com.br.datasig.datasigpdvapi.service.RepresentantesService;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +20,7 @@ import java.util.List;
 @Tag(name = "Representantes", description = "Operações de representantes com o sistema PDV")
 public class RepresentantesController extends DataSIGController {
     @Autowired
-    private WebServiceRequestsService wsRequestsService;
+    private RepresentantesService representantesService;
 
     @Operation(
             summary = "Buscar representantes",
@@ -29,7 +29,7 @@ public class RepresentantesController extends DataSIGController {
     @GetMapping(value= "", produces = "application/json")
     public List<Representante> getRepresentantes(@RequestParam String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         if(isTokenValid(token))
-            return wsRequestsService.getRepresentantes(token);
+            return representantesService.getRepresentantes(token);
         else
             throw new InvalidTokenException();
     }
@@ -41,7 +41,7 @@ public class RepresentantesController extends DataSIGController {
     @GetMapping(value= "/tabelasPreco", produces = "application/json")
     public List<TabelaPreco> getTabelasPrecoPorRepresentantes(@RequestParam String token, @RequestParam String codRep) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
-            return wsRequestsService.getTabelasPrecoPorRepresentantes(token, codRep);
+            return representantesService.getTabelasPrecoPorRepresentantes(token, codRep);
         else
             throw new InvalidTokenException();
     }
