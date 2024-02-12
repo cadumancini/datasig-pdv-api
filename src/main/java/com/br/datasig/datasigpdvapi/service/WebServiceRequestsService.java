@@ -249,6 +249,64 @@ public class WebServiceRequestsService {
         return formas;
     }
 
+    /* Pedido */
+    public String createPedido(String token, Pedido pedido) {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+        pedido.setCodEmp(codEmp);
+        pedido.setCodFil(codFil);
+
+        HashMap<String, Object> paramsPedido = prepareParamsForPedido(pedido);
+        System.out.println(paramsPedido);
+        return "OK";
+    }
+
+    private HashMap<String, Object> prepareParamsForPedido(Pedido pedido) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+        paramsPedido.put("converterQtdUnidadeEstoque", "N");
+        paramsPedido.put("converterQtdUnidadeVenda", "N");
+        paramsPedido.put("converterQtdUnidadeVenda", "N");
+        paramsPedido.put("dataBuild", "");
+        paramsPedido.put("flowInstanceID", "");
+        paramsPedido.put("flowName", "");
+        paramsPedido.put("ignorarErrosItens", "N");
+        paramsPedido.put("ignorarErrosParcela", "N");
+        paramsPedido.put("ignorarErrosPedidos", "N");
+        paramsPedido.put("ignorarPedidoBloqueado", "N");
+        paramsPedido.put("inserirApenasPedidoCompleto", "S");
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", pedido.getCodEmp());
+        params.put("codFil", pedido.getCodFil());
+        params.put("codCli", pedido.getCodCli());
+        params.put("codCpg", pedido.getCodCpg());
+        params.put("codFpg", pedido.getCodFpg());
+        params.put("codRep", pedido.getCodRep());
+        params.put("cifFob", "X");
+        params.put("indPre", "1");
+        params.put("opeExe", "I");
+        params.put("tnsPro", "90199");
+
+        List<HashMap<String, Object>> listaItens = new ArrayList<>();
+        pedido.getItens().forEach(itemPedido -> {
+            HashMap<String, Object> paramsItem = new HashMap<>();
+            paramsItem.put("codPro", itemPedido.getCodPro());
+            paramsItem.put("codDer", itemPedido.getCodDer());
+            paramsItem.put("qtdPed", itemPedido.getQtdPed());
+            paramsItem.put("codTpr", itemPedido.getCodTpr());
+            paramsItem.put("codDep", "1000");
+            paramsItem.put("tnsPro", "90199");
+            paramsItem.put("resEst", "N");
+            paramsItem.put("pedPrv", "N");
+            paramsItem.put("opeExe", "I");
+            listaItens.add(paramsItem);
+        });
+        params.put("produto", listaItens);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
+    }
+
     private HashMap<String, String> prepareBaseParams(String codEmp, String codFil) {
         HashMap<String, String> params = new HashMap<>();
         params.put("codEmp", codEmp);
@@ -291,5 +349,6 @@ public class WebServiceRequestsService {
     private void addParamsForFormas(HashMap<String, String> params) {
         params.put("sitCpg", "A");
     }
+
 }
 
