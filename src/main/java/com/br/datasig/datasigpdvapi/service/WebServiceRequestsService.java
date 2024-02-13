@@ -12,8 +12,8 @@ public class WebServiceRequestsService {
     @Autowired
     protected SOAPClient soapClient;
 
-    protected HashMap<String, String> prepareBaseParams(String codEmp, String codFil) {
-        HashMap<String, String> params = new HashMap<>();
+    protected HashMap<String, Object> prepareBaseParams(String codEmp, String codFil) {
+        HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
         return params;

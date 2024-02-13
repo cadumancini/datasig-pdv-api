@@ -26,7 +26,7 @@ public class PedidoService extends WebServiceRequestsService {
         pedido.setCodFil(codFil);
 
         HashMap<String, Object> params = prepareParamsForPedido(pedido);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
         return getRetornoPedidoFromXml(xml);
     }
@@ -34,7 +34,6 @@ public class PedidoService extends WebServiceRequestsService {
     private HashMap<String, Object> prepareParamsForPedido(Pedido pedido) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
         paramsPedido.put("converterQtdUnidadeEstoque", "N");
-        paramsPedido.put("converterQtdUnidadeVenda", "N");
         paramsPedido.put("converterQtdUnidadeVenda", "N");
         paramsPedido.put("dataBuild", "");
         paramsPedido.put("flowInstanceID", "");

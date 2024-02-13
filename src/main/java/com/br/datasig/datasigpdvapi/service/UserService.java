@@ -22,7 +22,7 @@ import java.util.HashMap;
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
-        HashMap<String, String> emptyParams = new HashMap<>();
+        HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams, false);
 
@@ -44,7 +44,7 @@ public class UserService extends WebServiceRequestsService {
 
     private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         logger.info("Buscando empresa e filial ativas para usuário {}", user);
-        HashMap<String, String> params = prepareParamsForEmpresaAtiva(user);
+        HashMap<String, Object> params = prepareParamsForEmpresaAtiva(user);
         String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
@@ -61,8 +61,8 @@ public class UserService extends WebServiceRequestsService {
         }
     }
 
-    private HashMap<String, String> prepareParamsForEmpresaAtiva(String user) {
-        HashMap<String, String> params = new HashMap<>();
+    private HashMap<String, Object> prepareParamsForEmpresaAtiva(String user) {
+        HashMap<String, Object> params = new HashMap<>();
         params.put("NOMUSU", user);
         return params;
     }

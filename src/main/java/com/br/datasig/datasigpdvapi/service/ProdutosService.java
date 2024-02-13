@@ -31,7 +31,7 @@ public class ProdutosService extends WebServiceRequestsService{
     public List<ProdutoDerivacao> getProdutos(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutos(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_produtos", "ConsultarGeral_4", token, "0", params, true);
 
@@ -79,20 +79,26 @@ public class ProdutosService extends WebServiceRequestsService{
         return produtos;
     }
 
-    private String prepareParamsForConsultaPrecos(String codEmp, String codTpr, String codPro, String codDer, String datIni, String qtdPdv) { //TODO: refatorar
-        String params = "";
-        params += "<SID><param>acao=sid.srv.regra</param></SID>";
-        params += "<SID><param>numreg=" + numRegTpr + "</param></SID>";
-        params += "<SID><param>aCodEmpPdv=" + codEmp + "</param></SID>";
-        params += "<SID><param>aCodTprPdv=" + codTpr + "</param></SID>";
-        params += "<SID><param>aCodProPdv=" + codPro + "</param></SID>";
-        params += "<SID><param>aCodDerPdv=" + codDer + "</param></SID>";
-        params += "<SID><param>aDatIniPdv=" + datIni + "</param></SID>";
-        params += "<SID><param>aQtdMaxPdv=" + qtdPdv + "</param></SID>";
-        return params;
+    private String prepareParamsForConsultaPrecos(String codEmp, String codTpr, String codPro, String codDer, String datIni, String qtdPdv) {
+        StringBuilder paramsBuilder = new StringBuilder();
+
+        appendParam(paramsBuilder, "acao", "sid.srv.regra");
+        appendParam(paramsBuilder, "numreg", numRegTpr);
+        appendParam(paramsBuilder, "aCodEmpPdv", codEmp);
+        appendParam(paramsBuilder, "aCodTprPdv", codTpr);
+        appendParam(paramsBuilder, "aCodProPdv", codPro);
+        appendParam(paramsBuilder, "aCodDerPdv", codDer);
+        appendParam(paramsBuilder, "aDatIniPdv", datIni);
+        appendParam(paramsBuilder, "aQtdMaxPdv", qtdPdv);
+
+        return paramsBuilder.toString();
     }
 
-    private void addParamsForProdutos(HashMap<String, String> params) {
+    private void appendParam(StringBuilder builder, String paramName, String paramValue) {
+        builder.append("<SID><param>").append(paramName).append("=").append(paramValue).append("</param></SID>");
+    }
+
+    private void addParamsForProdutos(HashMap<String, Object> params) {
         params.put("sitPro", "A");
         params.put("sitDer", "A");
     }

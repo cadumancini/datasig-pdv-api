@@ -20,7 +20,7 @@ public class ClientesService extends WebServiceRequestsService{
     public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);

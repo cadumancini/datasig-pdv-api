@@ -21,7 +21,7 @@ public class RepresentantesService extends WebServiceRequestsService {
     public List<Representante> getRepresentantes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
@@ -44,7 +44,7 @@ public class RepresentantesService extends WebServiceRequestsService {
     public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForTabelaPreco(params, codRep);
         String xml = soapClient.requestFromSeniorWS("ConsultaTabeladePreco", "Representante", token, "0", params, true);
 
@@ -65,7 +65,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         return tabelas;
     }
 
-    private void addParamsForTabelaPreco(HashMap<String, String> params, String codRep) {
+    private void addParamsForTabelaPreco(HashMap<String, Object> params, String codRep) {
         params.put("CODREP", codRep);
     }
 }

@@ -21,7 +21,7 @@ public class PagamentoService extends WebServiceRequestsService {
     public List<CondicaoPagamento> getCondicoesPagamento(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForCondicao(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_condicaopagamento", "ConsultarGeral", token, "0", params, true);
 
@@ -45,7 +45,7 @@ public class PagamentoService extends WebServiceRequestsService {
     public List<FormaPagamento> getFormasPagamento(String token) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, String> params = prepareBaseParams(codEmp, codFil);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForFormas(params);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_formapagamento", "ConsultarGeral", token, "0", params, true);
 
@@ -66,11 +66,11 @@ public class PagamentoService extends WebServiceRequestsService {
         return formas;
     }
 
-    private void addParamsForCondicao(HashMap<String, String> params) {
+    private void addParamsForCondicao(HashMap<String, Object> params) {
         params.put("sitCpg", "A");
     }
 
-    private void addParamsForFormas(HashMap<String, String> params) {
+    private void addParamsForFormas(HashMap<String, Object> params) {
         params.put("sitCpg", "A");
     }
 }
