@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.soap;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -32,7 +33,7 @@ public class SOAPClient {
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException {
-        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador));
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
@@ -40,10 +41,14 @@ public class SOAPClient {
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
-        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, includeIdentificador);
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador));
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
+    }
+
+    private String getIdentificadorSistema(boolean includeIdentificador) {
+        return includeIdentificador ? "<identificadorSistema>" + identificadorSistema + "</identificadorSistema>" : "";
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, String params) throws SOAPClientException {
@@ -57,7 +62,8 @@ public class SOAPClient {
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
         try {
-            return postRequest(url, xmlBody);
+            String header = xmlBody.contains("GravarPedido") ? "text/xml;charset=ISO-8859-1" : "text/xml";
+            return postRequest(url, xmlBody, header);
         } catch (Exception e) {
             String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
             logger.error(msg);
@@ -65,7 +71,7 @@ public class SOAPClient {
         }
     }
 
-    private String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, boolean includeIdentificador) {
+    private String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) {
         StringBuilder xmlBuilder = new StringBuilder("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">");
         xmlBuilder.append("<soapenv:Body>");
         xmlBuilder.append("<ser:").append(service).append(">");
@@ -75,9 +81,7 @@ public class SOAPClient {
 
         xmlBuilder.append("<parameters>");
         buildXmlParameters(xmlBuilder, params);
-        if (includeIdentificador) {
-            xmlBuilder.append("<identificadorSistema>").append(identificadorSistema).append("</identificadorSistema>");
-        }
+        xmlBuilder.append(identificador);
         xmlBuilder.append("</parameters>");
 
         xmlBuilder.append("</ser:").append(service).append(">");
@@ -89,25 +93,17 @@ public class SOAPClient {
 
     @SuppressWarnings("unchecked")
     private void buildXmlParameters(StringBuilder xmlBuilder, Map<String, Object> params) {
-
         params.forEach((key, value) -> {
+            xmlBuilder.append("<").append(key).append(">");
             if (value instanceof HashMap) {
-                buildXmlParameters(xmlBuilder.append("<").append(key).append(">"), (HashMap<String, Object>) value);
-                xmlBuilder.append("</").append(key).append(">");
+                buildXmlParameters(xmlBuilder, (HashMap<String, Object>) value);
             } else if (value instanceof ArrayList) {
-                ((ArrayList<Object>) value).forEach(item -> {
-                    if (item instanceof HashMap) {
-                        buildXmlParameters(xmlBuilder.append("<").append(key).append(">"), (HashMap<String, Object>) item);
-                        xmlBuilder.append("</").append(key).append(">");
-                    } else {
-                        xmlBuilder.append("<").append(key).append(">").append(item).append("</").append(key).append(">");
-                    }
-                });
+                ((ArrayList<Object>) value).forEach(item -> buildXmlParameters(xmlBuilder, (HashMap<String, Object>) item));
             } else {
-                xmlBuilder.append("<").append(key).append(">").append(value).append("</").append(key).append(">");
+                xmlBuilder.append(value);
             }
+            xmlBuilder.append("</").append(key).append(">");
         });
-
     }
 
     private static String prepareXmlBody(String service, String usr, String pswd, String encryption, String params) {
@@ -124,17 +120,19 @@ public class SOAPClient {
                 "</soapenv:Envelope>";
     }
 
-    private static String postRequest(String url, String xmlBody) throws IOException {
+    private static String postRequest(String url, String xmlBody, String header) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
-        String header = xmlBody.contains("GravarPedido") ?  "text/xml;charset=ISO-8859-1" :  "text/xml";
         httpRequest.setHeader("Content-Type", header);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
-        if (httpResponse.getStatusLine().getStatusCode() == 404) {
-            throw new WebServiceNotFoundException("Serviço não encontrado");
-        }
+        validateStatusCode(httpResponse.getStatusLine().getStatusCode());
         return EntityUtils.toString(httpResponse.getEntity());
+    }
+
+    private static void validateStatusCode(int code) {
+        if (code == HttpStatus.SC_NOT_FOUND)
+            throw new WebServiceNotFoundException("Serviço não encontrado");
     }
 }
