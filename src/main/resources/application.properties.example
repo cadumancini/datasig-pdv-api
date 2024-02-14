@@ -9,3 +9,6 @@ springdoc.swagger-ui.use-root-path=true
 
 # Numero de regra para consulta de precos
 numRegTpr=
+
+# Numero de regra para geração de NFC-e
+numRegNFC=

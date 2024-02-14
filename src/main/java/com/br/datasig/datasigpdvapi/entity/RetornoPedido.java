@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -18,6 +22,7 @@ public class RetornoPedido {
     private String sitPed;
     private String tipPed;
     private String tipRet;
+    private List<RetornoItemPedido> itens;
 
     public static RetornoPedido fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -32,6 +37,24 @@ public class RetornoPedido {
         String tipPed = element.getElementsByTagName("tipPed").item(0).getTextContent();
         String tipRet = element.getElementsByTagName("tipRet").item(0).getTextContent();
 
-        return new RetornoPedido(cnpjFilial, codEmp, codFil, ideExt, msgRet, numPed, retorno, sitPed, tipPed, tipRet);
+        List<RetornoItemPedido> gridProList = new ArrayList<>();
+        NodeList gridPro = element.getElementsByTagName("gridPro");
+        for (int i = 0; i < gridPro.getLength(); i++) {
+            Node nNodePro = gridPro.item(i);
+            if (nNodePro.getNodeType() == Node.ELEMENT_NODE) {
+                Element elPro = (Element) nNodePro;
+                String cnpjFilialPro = elPro.getElementsByTagName("cnpjFilial").item(0).getTextContent();
+                String codEmpPro = elPro.getElementsByTagName("codEmp").item(0).getTextContent();
+                String codFilPro = elPro.getElementsByTagName("codFil").item(0).getTextContent();
+                String numPedPro = elPro.getElementsByTagName("numPed").item(0).getTextContent();
+                String seqIpdPro = elPro.getElementsByTagName("seqIpd").item(0).getTextContent();
+                String retornoPro = elPro.getElementsByTagName("retorno").item(0).getTextContent();
+                String sitIpdPro = elPro.getElementsByTagName("sitIpd").item(0).getTextContent();
+
+                gridProList.add(new RetornoItemPedido(cnpjFilialPro, codEmpPro, codFilPro, numPedPro, seqIpdPro, retornoPro, sitIpdPro));
+            }
+        }
+
+        return new RetornoPedido(cnpjFilial, codEmp, codFil, ideExt, msgRet, numPed, retorno, sitPed, tipPed, tipRet, gridProList);
     }
 }

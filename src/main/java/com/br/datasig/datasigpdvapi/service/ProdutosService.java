@@ -82,20 +82,16 @@ public class ProdutosService extends WebServiceRequestsService{
     private String prepareParamsForConsultaPrecos(String codEmp, String codTpr, String codPro, String codDer, String datIni, String qtdPdv) {
         StringBuilder paramsBuilder = new StringBuilder();
 
-        appendParam(paramsBuilder, "acao", "sid.srv.regra");
-        appendParam(paramsBuilder, "numreg", numRegTpr);
-        appendParam(paramsBuilder, "aCodEmpPdv", codEmp);
-        appendParam(paramsBuilder, "aCodTprPdv", codTpr);
-        appendParam(paramsBuilder, "aCodProPdv", codPro);
-        appendParam(paramsBuilder, "aCodDerPdv", codDer);
-        appendParam(paramsBuilder, "aDatIniPdv", datIni);
-        appendParam(paramsBuilder, "aQtdMaxPdv", qtdPdv);
+        appendSIDParam(paramsBuilder, "acao", "sid.srv.regra");
+        appendSIDParam(paramsBuilder, "numreg", numRegTpr);
+        appendSIDParam(paramsBuilder, "aCodEmpPdv", codEmp);
+        appendSIDParam(paramsBuilder, "aCodTprPdv", codTpr);
+        appendSIDParam(paramsBuilder, "aCodProPdv", codPro);
+        appendSIDParam(paramsBuilder, "aCodDerPdv", codDer);
+        appendSIDParam(paramsBuilder, "aDatIniPdv", datIni);
+        appendSIDParam(paramsBuilder, "aQtdMaxPdv", qtdPdv);
 
         return paramsBuilder.toString();
-    }
-
-    private void appendParam(StringBuilder builder, String paramName, String paramValue) {
-        builder.append("<SID><param>").append(paramName).append("=").append(paramValue).append("</param></SID>");
     }
 
     private void addParamsForProdutos(HashMap<String, Object> params) {

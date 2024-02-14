@@ -6,6 +6,7 @@ import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -18,6 +19,11 @@ import java.util.List;
 
 @Component
 public class PedidoService extends WebServiceRequestsService {
+    private final String numRegNFC;
+
+    public PedidoService(Environment env) {
+        numRegNFC = env.getProperty("numRegNFC");
+    }
 
     public RetornoPedido createPedido(String token, Pedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
@@ -84,5 +90,26 @@ public class PedidoService extends WebServiceRequestsService {
         } else {
             throw new WebServiceRuntimeException("Erro ao extrair retorno de pedido da resposta do servidor.");
         }
+    }
+
+    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+        String paramsNFCe = prepareParamsForGeracaoNFCe(codEmp, codFil, numPed);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", paramsNFCe);
+        XmlUtils.validateXmlResponse(xml);
+        return "NFC-e criada com sucesso!";
+    }
+
+    private String prepareParamsForGeracaoNFCe(String codEmp, String codFil, String numPed) {
+        StringBuilder paramsBuilder = new StringBuilder();
+
+        appendSIDParam(paramsBuilder, "acao", "sid.srv.regra");
+        appendSIDParam(paramsBuilder, "numreg", numRegNFC);
+        appendSIDParam(paramsBuilder, "aCodEmpPdv", codEmp);
+        appendSIDParam(paramsBuilder, "aCodFilPdv", codFil);
+        appendSIDParam(paramsBuilder, "aNumPedPdv", numPed);
+
+        return paramsBuilder.toString();
     }
 }

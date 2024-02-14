@@ -18,5 +18,9 @@ public class WebServiceRequestsService {
         params.put("codFil", codFil);
         return params;
     }
+
+    protected void appendSIDParam(StringBuilder builder, String paramName, String paramValue) {
+        builder.append("<SID><param>").append(paramName).append("=").append(paramValue).append("</param></SID>");
+    }
 }
 
