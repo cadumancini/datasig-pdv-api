@@ -23,6 +23,7 @@ import java.util.List;
 @Component
 public class ProdutosService extends WebServiceRequestsService{
     private final String numRegTpr;
+    private static final String PRICE_NOT_FOUND = "Preço não encontrado para o produto";
 
     public ProdutosService(Environment env) {
         numRegTpr = env.getProperty("numRegTpr");
@@ -60,9 +61,19 @@ public class ProdutosService extends WebServiceRequestsService{
         if (nList.getLength() == 1) {
             Element element = (Element) nList.item(0);
             String preBas = element.getElementsByTagName("resultado").item(0).getTextContent();
-            return preBas.replace(",", ".");
+            preBas = preBas.replace(",", ".");
+            validatePrice(preBas);
+            return preBas;
         } else {
-            throw new ResourceNotFoundException("Preço não encontrado para o produto");
+            throw new ResourceNotFoundException(PRICE_NOT_FOUND);
+        }
+    }
+
+    private void validatePrice(String preBas) {
+        try {
+            Double.parseDouble(preBas); // tentar transformar em número para ter certeza que o preço foi retornado
+        } catch (Exception e) {
+            throw new ResourceNotFoundException(PRICE_NOT_FOUND);
         }
     }
 
