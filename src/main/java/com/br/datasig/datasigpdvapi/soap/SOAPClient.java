@@ -94,15 +94,36 @@ public class SOAPClient {
     @SuppressWarnings("unchecked")
     private void buildXmlParameters(StringBuilder xmlBuilder, Map<String, Object> params) {
         params.forEach((key, value) -> {
-            xmlBuilder.append("<").append(key).append(">");
-            if (value instanceof HashMap) {
-                buildXmlParameters(xmlBuilder, (HashMap<String, Object>) value);
-            } else if (value instanceof ArrayList) {
-                ((ArrayList<Object>) value).forEach(item -> buildXmlParameters(xmlBuilder, (HashMap<String, Object>) item));
-            } else {
-                xmlBuilder.append(value);
+            if(value instanceof HashMap) {
+                xmlBuilder.append("<" + key + ">");
+                ((HashMap<?, ?>) value).forEach((key1, value1) -> {
+                    if(value1 instanceof ArrayList) {
+                        ((ArrayList) value1).forEach(produto -> {
+                            xmlBuilder.append("<" + key1 + ">");
+                            ((HashMap<?, ?>) produto).forEach((key2, value2) -> {
+                                if(value2 instanceof  ArrayList) {
+                                    ((ArrayList) value2).forEach(campo -> {
+                                        xmlBuilder.append("<" + key2 + ">");
+                                        ((HashMap<?, ?>) campo).forEach((key3, value3) -> {
+                                            xmlBuilder.append("<" + key3 + ">" + value3 + "</" + key3 + ">");
+                                        });
+                                        xmlBuilder.append("</" + key2 + ">");
+                                    });
+                                } else {
+                                    xmlBuilder.append("<" + key2 + ">" + value2 + "</" + key2 + ">");
+                                }
+                            });
+                            xmlBuilder.append("</" + key1 + ">");
+                        });
+                    } else {
+                        xmlBuilder.append("<" + key1 + ">" + value1 + "</" + key1+ ">");
+                    }
+                });
+                xmlBuilder.append("</" + key + ">");
             }
-            xmlBuilder.append("</").append(key).append(">");
+            else {
+                xmlBuilder.append("<" + key + ">" + value + "</" + key + ">");
+            }
         });
     }
 
