@@ -1,10 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
+import com.br.datasig.datasigpdvapi.exceptions.*;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
-import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
-import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
-import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +29,12 @@ public class DataSIGController {
     @ExceptionHandler({WebServiceNotFoundException.class})
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public String webServiceNotFoundException(WebServiceNotFoundException ex) {
+        return getJsonMessage(ex.getMessage());
+    }
+
+    @ExceptionHandler({OrderException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String orderException(OrderException ex) {
         return getJsonMessage(ex.getMessage());
     }
 
