@@ -2,6 +2,7 @@ package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.Representante;
 import com.br.datasig.datasigpdvapi.entity.TabelaPreco;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
@@ -62,6 +63,7 @@ public class RepresentantesService extends WebServiceRequestsService {
                 tabelas.add(TabelaPreco.fromXml(nNode));
             }
         }
+        if (tabelas.isEmpty()) throw new ResourceNotFoundException("Nenhuma tabela de preço encontrada para o representante!");
         return tabelas;
     }
 
