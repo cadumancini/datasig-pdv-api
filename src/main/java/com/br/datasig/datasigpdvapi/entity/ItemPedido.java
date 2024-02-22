@@ -8,4 +8,5 @@ public class ItemPedido {
     private String codDer;
     private String codTpr;
     private String qtdPed;
+    private String vlrTot;
 }

@@ -12,3 +12,6 @@ numRegTpr=
 
 # Numero de regra para geração de NFC-e
 numRegNFC=
+
+#Indica se o estabelecimento usa pagamento por TEF
+usaTEF=

@@ -1,14 +1,12 @@
 package com.br.datasig.datasigpdvapi.controller;
 
+import com.br.datasig.datasigpdvapi.entity.TokenResponse;
 import com.br.datasig.datasigpdvapi.service.UserService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -28,5 +26,14 @@ public class UserController extends DataSIGController {
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
     public String performLogin(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         return userService.performLogin(user, pswd);
+    }
+
+    @Operation(
+            summary = "Buscar parâmetros usuário",
+            description = "Retorna os parâmetros do usuário baseados no token"
+    )
+    @GetMapping(value = "/params", produces = "application/json")
+    public TokenResponse performLogin(@RequestParam String token) {
+        return userService.getParamsFromToken(token);
     }
 }

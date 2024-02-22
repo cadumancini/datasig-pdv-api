@@ -15,6 +15,7 @@ public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais 
     private String codCpg;
     private String abrCpg;
     private String desCpg;
+    private int qtdParCpg;
     private List<Parcela> parcelas;
 
     public static CondicaoPagamento fromXml(Node nNode) {
@@ -22,6 +23,7 @@ public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais 
         String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
         String abrCpg = element.getElementsByTagName("abrCpg").item(0).getTextContent();
         String desCpg = element.getElementsByTagName("desCpg").item(0).getTextContent();
+        int qtdParCpg = Integer.parseInt(element.getElementsByTagName("qtdPar").item(0).getTextContent());
 
         List<Parcela> parcelasList = new ArrayList<>();
         NodeList parcelasNode = element.getElementsByTagName("parcelas");
@@ -37,14 +39,6 @@ public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais 
             }
         }
 
-        return new CondicaoPagamento(codCpg, abrCpg, desCpg, parcelasList);
-    }
-
-    @Data
-    @AllArgsConstructor
-    private static class Parcela {
-        private int seqIcp;
-        private int diaPar;
-        private int qtdPar;
+        return new CondicaoPagamento(codCpg, abrCpg, desCpg, qtdParCpg, parcelasList);
     }
 }

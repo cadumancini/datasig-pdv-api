@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
+import com.br.datasig.datasigpdvapi.entity.Parcela;
 import com.br.datasig.datasigpdvapi.entity.Pedido;
 import com.br.datasig.datasigpdvapi.entity.RetornoItemPedido;
 import com.br.datasig.datasigpdvapi.entity.RetornoPedido;
@@ -16,16 +17,20 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @Component
 public class PedidoService extends WebServiceRequestsService {
     private final String numRegNFC;
+    private final boolean usaTEF;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     public PedidoService(Environment env) {
         numRegNFC = env.getProperty("numRegNFC");
+        usaTEF = env.getProperty("usaTEF").equals("S");
     }
 
     public RetornoPedido createPedido(String token, Pedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
@@ -71,7 +76,20 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("indPre", "1");
         params.put("opeExe", "I");
         params.put("tnsPro", "90199");
+        params.put("temPar", "S");
+        params.put("acePar", "N");
 
+        List<HashMap<String, Object>> itens = definirParamsItens(pedido);
+        params.put("produto", itens);
+
+        List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
+        params.put("parcelas", parcelas);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
+    }
+
+    List<HashMap<String, Object>> definirParamsItens(Pedido pedido) {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
             HashMap<String, Object> paramsItem = new HashMap<>();
@@ -86,10 +104,54 @@ public class PedidoService extends WebServiceRequestsService {
             paramsItem.put("opeExe", "I");
             listaItens.add(paramsItem);
         });
-        params.put("produto", listaItens);
 
-        paramsPedido.put("pedido", params);
-        return paramsPedido;
+        return listaItens;
+    }
+
+    List<HashMap<String, Object>> definirParamsParcelas(Pedido pedido) {
+        Date dataParcela = new Date();
+        String valorParcela = definirValorParcela(pedido);
+        pedido.getParcelas().sort(Comparator.comparing(o -> o.getSeqIcp()));
+        int seqPar = 0;
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        for (Parcela parcela : pedido.getParcelas()) {
+            for (int i = 0; i < parcela.getQtdPar(); i++) {
+                seqPar++;
+                dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
+                HashMap<String, Object> paramsParcela = new HashMap<>();
+                paramsParcela.put("opeExe", "I");
+                paramsParcela.put("seqPar", String.valueOf(seqPar));
+                paramsParcela.put("vctPar", dateFormat.format(dataParcela));
+                paramsParcela.put("vlrPar", valorParcela);
+                paramsParcela.put("tipInt", getTipInt(pedido));
+                paramsParcela.put("banOpe", pedido.getBanOpe());
+                paramsParcela.put("catTef", pedido.getCatTef());
+                paramsParcela.put("nsuTef", pedido.getNsuTef());
+                paramsParcela.put("cgcCre", pedido.getCgcCre());
+                parcelas.add(paramsParcela);
+            }
+        }
+        return parcelas;
+    }
+
+    private String definirValorParcela(Pedido pedido) {
+        double valorParcela = pedido.getVlrTot() / pedido.getQtdPar();
+
+        BigDecimal bd = BigDecimal.valueOf(valorParcela);
+        bd = bd.setScale(2, RoundingMode.HALF_UP);
+
+        return String.format("%.2f", bd.doubleValue());
+    }
+
+    private Date definirDataParcela(Date date, int days) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(Calendar.DATE, days);
+        return c.getTime();
+    }
+
+    private String getTipInt(Pedido pedido) {
+        return usaTEF && pedido.getDesFpg().contains("OUTROS") ? "1" : "2"; //TODO: trocar 'OUTROS' para quando definir TEF
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {

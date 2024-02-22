@@ -22,8 +22,8 @@ public class TokensManager {
         return validTokens;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, boolean usaTEF) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, usaTEF));
     }
 
     public void removeInvalidTokens() {
@@ -66,5 +66,13 @@ public class TokensManager {
                 return token.getCodFil();
         }
         return "";
+    }
+
+    public Token getTokenByValue(String tokenValue) {
+        for (Token token : validTokens) {
+            if(token.getValue().equals(tokenValue) && token.isValid())
+                return token;
+        }
+        return null;
     }
 }
