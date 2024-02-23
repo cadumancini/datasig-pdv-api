@@ -98,9 +98,9 @@ public class SOAPClient {
                 xmlBuilder.append("<" + key + ">");
                 ((HashMap<?, ?>) value).forEach((key1, value1) -> {
                     if(value1 instanceof ArrayList) {
-                        ((ArrayList) value1).forEach(produto -> {
+                        ((ArrayList) value1).forEach(listItem -> {
                             xmlBuilder.append("<" + key1 + ">");
-                            ((HashMap<?, ?>) produto).forEach((key2, value2) -> {
+                            ((HashMap<?, ?>) listItem).forEach((key2, value2) -> {
                                 if(value2 instanceof  ArrayList) {
                                     ((ArrayList) value2).forEach(campo -> {
                                         xmlBuilder.append("<" + key2 + ">");

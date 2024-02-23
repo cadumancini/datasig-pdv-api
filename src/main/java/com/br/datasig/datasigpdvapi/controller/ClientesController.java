@@ -1,6 +1,8 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.Cliente;
+import com.br.datasig.datasigpdvapi.entity.ClientePayload;
+import com.br.datasig.datasigpdvapi.entity.ClienteResponse;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.ClientesService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -29,6 +31,18 @@ public class ClientesController extends DataSIGController {
     public List<Cliente> getClientes(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if(isTokenValid(token))
             return clientesService.getClientes(token);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Cadastrar cliente",
+            description = "Cadastrar novo cliente na base"
+    )
+    @PutMapping(value= "", produces = "application/json")
+    public ClienteResponse putCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        if(isTokenValid(token))
+            return clientesService.putCliente(token, cliente);
         else
             throw new InvalidTokenException();
     }

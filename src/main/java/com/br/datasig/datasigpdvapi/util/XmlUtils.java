@@ -20,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 public class XmlUtils {
     private static final Logger logger = LoggerFactory.getLogger(XmlUtils.class);
 
-    public static void validateXmlResponse(String xml) throws ParserConfigurationException, IOException, SAXException {
+    public static void validateXmlResponse(String xml) throws ParserConfigurationException, IOException, SAXException, ResourceNotFoundException, WebServiceRuntimeException {
         if (xml.contains("<erroExecucao>")) {
             String executionError = getMessageFromXml(xml, "result", "erroExecucao");
             logger.error(executionError);
