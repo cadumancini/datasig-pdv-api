@@ -66,7 +66,6 @@ public class ClientesService extends WebServiceRequestsService{
         String endCli = sanitizeString(cliente.getEndCli());
         String baiCli = sanitizeString(cliente.getBaiCli());
         String cplEnd = sanitizeString(cliente.getCplEnd());
-        String cidCli = sanitizeString(cliente.getCidCli());
         String cepCli = sanitizeString(cliente.getCepCli()).replace("-", "");
         String cgcCpf = sanitizeString(cliente.getCgcCpf()).replace("-", "").replace(".", "").replace("/", "");
 
@@ -80,7 +79,7 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDadosGerais.put("nenCli", cliente.getNenCli());
         paramsDadosGerais.put("cplEnd", cplEnd);
         paramsDadosGerais.put("baiCli", baiCli);
-        paramsDadosGerais.put("cidCli", cidCli);
+        paramsDadosGerais.put("cidCli", cliente.getCidCli().toUpperCase());
         paramsDadosGerais.put("sigUfs", cliente.getSigUfs());
         paramsDadosGerais.put("fonCli", cliente.getFonCli());
         paramsDadosGerais.put("fonCl2", cliente.getFonCli());
