@@ -111,6 +111,7 @@ public class PedidoService extends WebServiceRequestsService {
     List<HashMap<String, Object>> definirParamsParcelas(Pedido pedido) {
         Date dataParcela = new Date();
         String valorParcela = definirValorParcela(pedido);
+        String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
         pedido.getParcelas().sort(Comparator.comparing(o -> o.getSeqIcp()));
         int seqPar = 0;
         List<HashMap<String, Object>> parcelas = new ArrayList<>();
@@ -127,11 +128,16 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
                 paramsParcela.put("nsuTef", pedido.getNsuTef());
-                paramsParcela.put("cgcCre", pedido.getCgcCre());
+                paramsParcela.put("cgcCre", cgcCre);
                 parcelas.add(paramsParcela);
             }
         }
         return parcelas;
+    }
+
+    private String definirCgcCre(String codOpe) { //TODO: implementar
+        return ""; // WS possível: sapiens_Synccom_senior_g5_co_int_varejo_operadorascartao (Exportar, Exportar_2, Exportar_3)
+//        https://documentacao.senior.com.br/gestaoempresarialerp/5.10.3/index.htm#webservices/com_senior_g5_co_int_varejo_operadorascartao.htm?Highlight=operadoras%20financeiras
     }
 
     private String definirValorParcela(Pedido pedido) {
@@ -151,7 +157,8 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private String getTipInt(Pedido pedido) {
-        return usaTEF && pedido.getDesFpg().contains("OUTROS") ? "1" : "2"; //TODO: trocar 'OUTROS' para quando definir TEF
+        return usaTEF && pedido.getDesFpg().equals("OUTROS") ? "1" : "2"; //TODO: trocar 'OUTROS' para quando definir TEF
+//        return usaTEF && List.of("6", "7", "8", "17", "18", "19", "20").contains(pedido.getTipFpg()) ? "1" : "2";
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {

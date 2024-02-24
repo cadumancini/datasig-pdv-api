@@ -11,13 +11,17 @@ public class FormaPagamento { //TODO: ver se o FrontEnd vai precisar de mais dad
     private String codFpg;
     private String abrFpg;
     private String desFpg;
+    private String codOpe;
+    private String tipFpg;
 
     public static FormaPagamento fromXml(Node nNode) {
         Element element = (Element) nNode;
         String codFpg = element.getElementsByTagName("codFpg").item(0).getTextContent();
         String abrFpg = element.getElementsByTagName("abrFpg").item(0).getTextContent();
         String desFpg = element.getElementsByTagName("desFpg").item(0).getTextContent();
+        String codOpe = element.getElementsByTagName("codOpe").item(0).getTextContent();
+        String tipFpg = element.getElementsByTagName("tipFpg").item(0).getTextContent();
 
-        return new FormaPagamento(codFpg, abrFpg, desFpg);
+        return new FormaPagamento(codFpg, abrFpg, desFpg, codOpe, tipFpg);
     }
 }
