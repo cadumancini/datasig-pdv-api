@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.Parcela;
-import com.br.datasig.datasigpdvapi.entity.Pedido;
-import com.br.datasig.datasigpdvapi.entity.RetornoItemPedido;
-import com.br.datasig.datasigpdvapi.entity.RetornoPedido;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.OrderException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -146,7 +143,7 @@ public class PedidoService extends WebServiceRequestsService {
         BigDecimal bd = BigDecimal.valueOf(valorParcela);
         bd = bd.setScale(2, RoundingMode.HALF_UP);
 
-        return String.format("%.2f", bd.doubleValue());
+        return String.format("%.2f", bd.doubleValue()).replace(".", ",");
     }
 
     private Date definirDataParcela(Date date, int days) {
@@ -182,7 +179,14 @@ public class PedidoService extends WebServiceRequestsService {
         for (RetornoItemPedido item : retornoPedido.getItens()) {
             if (!item.getRetorno().equals("OK")) {
                 hasErrors = true;
-                message.append(retornoPedido.getRetorno()).append("\n");
+                message.append(item.getRetorno()).append("\n");
+            }
+        }
+
+        for (RetornoParcela parcela : retornoPedido.getParcelas()) {
+            if (!parcela.getRetorno().equals("OK")) {
+                hasErrors = true;
+                message.append(parcela.getRetorno()).append("\n");
             }
         }
 
