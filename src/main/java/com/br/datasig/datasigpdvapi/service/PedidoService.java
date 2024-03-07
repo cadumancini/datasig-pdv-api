@@ -96,7 +96,7 @@ public class PedidoService extends WebServiceRequestsService {
             paramsItem.put("codTpr", itemPedido.getCodTpr());
             paramsItem.put("codDep", "1000");
             paramsItem.put("tnsPro", "90199");
-            paramsItem.put("resEst", "N");
+            paramsItem.put("resEst", "S");
             paramsItem.put("pedPrv", "N");
             paramsItem.put("opeExe", "I");
             listaItens.add(paramsItem);
