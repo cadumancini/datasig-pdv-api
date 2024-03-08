@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class DataSIGController {
 
     @ExceptionHandler({InvalidTokenException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public String invalidTokenError() {
         return getJsonMessage("Token inválido.");
     }
