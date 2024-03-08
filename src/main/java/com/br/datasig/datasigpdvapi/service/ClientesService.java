@@ -26,7 +26,8 @@ public class ClientesService extends WebServiceRequestsService{
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_clientes", "ConsultarGeral_2", token, "0", params, true);
+        addParamsForClientes(params);
+        String xml = soapClient.requestFromSeniorWS("ConsultaCliente", "Cliente", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
         return getClientesFromXml(xml);
@@ -34,7 +35,7 @@ public class ClientesService extends WebServiceRequestsService{
 
     private List<Cliente> getClientesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<Cliente> clientes = new ArrayList<>();
-        NodeList nList = XmlUtils.getNodeListByElementName(xml, "cliente");
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "tabela");
 
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
@@ -126,5 +127,9 @@ public class ClientesService extends WebServiceRequestsService{
             }
         }
         throw new WebServiceRuntimeException("Erro ao obter retorno do cadastro de cliente");
+    }
+
+    private void addParamsForClientes(HashMap<String, Object> params) {
+        params.put("sitCli", "A");
     }
 }
