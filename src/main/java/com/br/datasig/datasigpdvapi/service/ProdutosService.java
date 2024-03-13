@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
+import com.br.datasig.datasigpdvapi.entity.ProdutoTabela;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ProdutosService extends WebServiceRequestsService{
@@ -108,5 +110,36 @@ public class ProdutosService extends WebServiceRequestsService{
     private void addParamsForProdutos(HashMap<String, Object> params) {
         params.put("sitPro", "A");
         params.put("sitDer", "A");
+    }
+
+    public List<ProdutoTabela> getProdutosPorTabelaDePreco(String token, String codTpr) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
+        addParamsForProdutosPorTabelaDePreco(params, codTpr);
+
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_tabelapreco", "Exportar", token, "0", params, true);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getProdutosPorTabelaFromXml(xml, codTpr);
+    }
+
+    private void addParamsForProdutosPorTabelaDePreco(HashMap<String, Object> params, String codTpr) {
+        params.put("codTpr", codTpr);
+        params.put("tipoIntegracao", "T");
+        params.put("QuantidadeRegistros", "999999");
+    }
+
+    private List<ProdutoTabela> getProdutosPorTabelaFromXml(String xml, String codTpr) throws ParserConfigurationException, IOException, SAXException {
+        List<ProdutoTabela> produtos = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "produto");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                produtos.add(ProdutoTabela.fromXml(nNode));
+            }
+        }
+        return produtos.stream().filter(prod -> prod.getCodTpr().equals(codTpr)).collect(Collectors.toList());
     }
 }

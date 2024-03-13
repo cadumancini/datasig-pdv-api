@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
+import com.br.datasig.datasigpdvapi.entity.ProdutoTabela;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.ProdutosService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -44,6 +45,19 @@ public class ProdutosController extends DataSIGController {
     public String getPreco(@RequestParam String token, @RequestParam String codPro, @RequestParam String codDer, @RequestParam String codTpr, @RequestParam String qtdPdv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return produtosService.getPreco(token, codPro, codDer, codTpr, qtdPdv);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar produtos por tabela de preço",
+            description = "Busca todos os produtos presentes numa tabela de preço informada"
+    )
+    @GetMapping(value= "/tabela", produces = "application/json")
+    public List<ProdutoTabela> getPreco(@RequestParam String token, @RequestParam String codTpr) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token)) {
+            return produtosService.getProdutosPorTabelaDePreco(token, codTpr);
+        }
         else
             throw new InvalidTokenException();
     }
