@@ -1,6 +1,8 @@
 package com.br.datasig.datasigpdvapi.service;
 
+import com.br.datasig.datasigpdvapi.entity.FaixaPreco;
 import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
+import com.br.datasig.datasigpdvapi.entity.ProdutoPrecos;
 import com.br.datasig.datasigpdvapi.entity.ProdutoTabela;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -16,10 +18,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -112,27 +111,52 @@ public class ProdutosService extends WebServiceRequestsService{
         params.put("sitDer", "A");
     }
 
-    public List<ProdutoTabela> getProdutosPorTabelaDePreco(String token, String codTpr) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<ProdutoPrecos> getProdutosPorTabelaDePreco(String token, String codTpr) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutosPorTabelaDePreco(params, codTpr);
 
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_tabelapreco", "Exportar", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("ConsultaTabelaPreco", "Consultar", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
-        return getProdutosPorTabelaFromXml(xml, codTpr);
+        List<ProdutoTabela> produtosPorTabela = getProdutosPorTabelaFromXml(xml, codTpr);
+
+        List<ProdutoPrecos> produtosComPreco = groupProdutosPorFaixasPreco(produtosPorTabela);
+
+        return produtosComPreco;
+    }
+
+    private List<ProdutoPrecos> groupProdutosPorFaixasPreco(List<ProdutoTabela> produtosPorTabela) {
+        List<ProdutoPrecos> produtosGrouped = new ArrayList<>();
+
+        produtosPorTabela.sort(Comparator.comparing(ProdutoTabela::getCodPro)
+                .thenComparing(ProdutoTabela::getCodDer)
+                .thenComparing(ProdutoTabela::getQtdMax));
+
+        for(ProdutoTabela produto : produtosPorTabela) {
+            ProdutoPrecos produtoPrecos = produtosGrouped.stream().filter(grouped -> grouped.getCodPro().equals(produto.getCodPro()) && grouped.getCodDer().equals(produto.getCodDer())).findFirst().orElse(null);
+            if (produtoPrecos == null) {
+                List<FaixaPreco> faixasPreco = new ArrayList<>();
+                faixasPreco.add(new FaixaPreco(produto.getPreBas(), produto.getQtdMax()));
+                produtosGrouped.add(new ProdutoPrecos(produto.getCodPro(), produto.getCodDer(), produto.getCodBar(),
+                        produto.getCodTpr(), produto.getDatIni(), produto.getDesPro(), faixasPreco));
+            } else {
+                produtosGrouped.get(produtosGrouped.indexOf(produtoPrecos))
+                        .getFaixasPreco().add(new FaixaPreco(produto.getPreBas(), produto.getQtdMax()));
+            }
+        }
+
+        return produtosGrouped;
     }
 
     private void addParamsForProdutosPorTabelaDePreco(HashMap<String, Object> params, String codTpr) {
         params.put("codTpr", codTpr);
-        params.put("tipoIntegracao", "T");
-        params.put("QuantidadeRegistros", "999999");
     }
 
     private List<ProdutoTabela> getProdutosPorTabelaFromXml(String xml, String codTpr) throws ParserConfigurationException, IOException, SAXException {
         List<ProdutoTabela> produtos = new ArrayList<>();
-        NodeList nList = XmlUtils.getNodeListByElementName(xml, "produto");
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "tabela");
 
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
