@@ -1,6 +1,5 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
 import com.br.datasig.datasigpdvapi.entity.ProdutoPrecos;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.ProdutosService;

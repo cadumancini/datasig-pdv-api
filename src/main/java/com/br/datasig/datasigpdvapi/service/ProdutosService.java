@@ -1,25 +1,22 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.FaixaPreco;
-import com.br.datasig.datasigpdvapi.entity.ProdutoDerivacao;
 import com.br.datasig.datasigpdvapi.entity.ProdutoPrecos;
 import com.br.datasig.datasigpdvapi.entity.ProdutoTabela;
-import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
 
 @Component
 public class ProdutosService extends WebServiceRequestsService{
@@ -34,9 +31,7 @@ public class ProdutosService extends WebServiceRequestsService{
         XmlUtils.validateXmlResponse(xml);
         List<ProdutoTabela> produtosPorTabela = getProdutosPorTabelaFromXml(xml, codTpr);
 
-        List<ProdutoPrecos> produtosComPreco = groupProdutosPorFaixasPreco(produtosPorTabela);
-
-        return produtosComPreco;
+        return groupProdutosPorFaixasPreco(produtosPorTabela);
     }
 
     private List<ProdutoPrecos> groupProdutosPorFaixasPreco(List<ProdutoTabela> produtosPorTabela) {
@@ -76,6 +71,6 @@ public class ProdutosService extends WebServiceRequestsService{
                 produtos.add(ProdutoTabela.fromXml(nNode));
             }
         }
-        return produtos.stream().filter(prod -> prod.getCodTpr().equals(codTpr)).collect(Collectors.toList());
+        return produtos.stream().filter(prod -> prod.getCodTpr().equals(codTpr)).toList();
     }
 }
