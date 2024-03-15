@@ -26,30 +26,6 @@ public class ProdutosController extends DataSIGController {
     private ProdutosService produtosService;
 
     @Operation(
-            summary = "Buscar produtos",
-            description = "Busca os produtos ativos (produto e derivação) cadastrados"
-    )
-    @GetMapping(value= "", produces = "application/json")
-    public List<ProdutoDerivacao> getProdutos(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
-        if(isTokenValid(token))
-            return produtosService.getProdutos(token);
-        else
-            throw new InvalidTokenException();
-    }
-
-    @Operation(
-            summary = "Consultar preço",
-            description = "Busca o preço do produto na tabela de preços informada"
-    )
-    @GetMapping(value= "/preco", produces = "text/plain;charset=UTF-8")
-    public String getPreco(@RequestParam String token, @RequestParam String codPro, @RequestParam String codDer, @RequestParam String codTpr, @RequestParam String qtdPdv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
-        if(isTokenValid(token))
-            return produtosService.getPreco(token, codPro, codDer, codTpr, qtdPdv);
-        else
-            throw new InvalidTokenException();
-    }
-
-    @Operation(
             summary = "Buscar produtos por tabela de preço",
             description = "Busca todos os produtos presentes numa tabela de preço informada"
     )
