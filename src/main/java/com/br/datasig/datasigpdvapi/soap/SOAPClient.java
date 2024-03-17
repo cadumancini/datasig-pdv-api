@@ -24,16 +24,14 @@ public class SOAPClient {
     private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
     private final String wsUrl;
     private static final String WS_URL_SUFFIX = "?wsdl";
-    private final String identificadorSistema;
     private static final String REQUEST_LOG_MESSAGE = "Requisição para URL {}\nParâmetros: {}";
 
     public SOAPClient(Environment env) {
-        identificadorSistema = env.getProperty("identificadorSistema");
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", env.getProperty("webservicesUrl"));
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException {
-        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador));
+    public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params) throws SOAPClientException {
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, "");
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
@@ -41,14 +39,18 @@ public class SOAPClient {
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
-        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador));
+        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador, token));
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
     }
 
-    private String getIdentificadorSistema(boolean includeIdentificador) {
-        return includeIdentificador ? "<identificadorSistema>" + identificadorSistema + "</identificadorSistema>" : "";
+    private String getIdentificadorSistema(boolean includeIdentificador, String token) {
+        return includeIdentificador ? "<identificadorSistema>" + getIdentificadorSistema(token) + "</identificadorSistema>" : "";
+    }
+
+    private String getIdentificadorSistema(String token) {
+        return TokensManager.getInstance().getParamsPDVFromToken(token).getSigInt();
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, String params) throws SOAPClientException {

@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ParamsEmpresa;
+import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
 import com.br.datasig.datasigpdvapi.entity.TokenResponse;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -33,7 +34,7 @@ public class UserService extends WebServiceRequestsService {
     public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
-        String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams, false);
+        String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
 
         if(response.contains("Credenciais inválidas")) {
             logger.error("Credenciais inválidas para usuário {}", user);
@@ -45,7 +46,8 @@ public class UserService extends WebServiceRequestsService {
             String hash = DigestUtils.sha256Hex(user + pswd + currentDateTime);
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
-            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsEmpFil.isUsaTEF());
+            ParamsPDV paramsPDV = defineParamsPDV(paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), user, pswd);
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsEmpFil.isUsaTEF(), paramsPDV);
 
             return hash;
         }
@@ -54,7 +56,7 @@ public class UserService extends WebServiceRequestsService {
     private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         logger.info("Buscando empresa e filial ativas para usuário {}", user);
         HashMap<String, Object> params = prepareParamsForEmpresaAtiva(user);
-        String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params);
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsEmpresaFromXml(xml);
@@ -76,8 +78,35 @@ public class UserService extends WebServiceRequestsService {
         return params;
     }
 
+    private ParamsPDV defineParamsPDV(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        logger.info("Buscando parâmetros PDV para usuário {}", user);
+        HashMap<String, Object> params = prepareParamsForParamsPDV(codEmp, codFil);
+        String xml = soapClient.requestFromSeniorWS("ConsultaParametrosIntegracao", "PDV", user, pswd, "0", params);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getParamsPDVFromXml(xml);
+    }
+
+    private ParamsPDV getParamsPDVFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
+
+        if (nList.getLength() == 1) {
+            return ParamsPDV.fromXml(nList.item(0));
+        } else {
+            throw new ResourceNotFoundException("Parâmetros não encontrados para o usuário");
+        }
+    }
+
+    private HashMap<String, Object> prepareParamsForParamsPDV(String codEmp, String codFil) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", codEmp);
+        params.put("codFil", codFil);
+        return params;
+    }
+
     public TokenResponse getParamsFromToken(String tokenValue) {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
-        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), token.isUsaTEF());
+        ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
+        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), token.isUsaTEF(), paramsPDV);
     }
 }

@@ -1,5 +1,7 @@
 package com.br.datasig.datasigpdvapi.token;
 
+import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +24,8 @@ public class TokensManager {
         return validTokens;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, boolean usaTEF) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, usaTEF));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, boolean usaTEF, ParamsPDV paramsPDV) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, usaTEF, paramsPDV));
     }
 
     public void removeInvalidTokens() {
@@ -66,6 +68,14 @@ public class TokensManager {
                 return token.getCodFil();
         }
         return "";
+    }
+
+    public ParamsPDV getParamsPDVFromToken(String tokenValue) {
+        for (Token token : validTokens) {
+            if(token.getValue().equals(tokenValue) && token.isValid())
+                return token.getParamsPDV();
+        }
+        return null;
     }
 
     public Token getTokenByValue(String tokenValue) {
