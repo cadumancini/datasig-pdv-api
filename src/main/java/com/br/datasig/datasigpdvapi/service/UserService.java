@@ -46,7 +46,7 @@ public class UserService extends WebServiceRequestsService {
             String hash = DigestUtils.sha256Hex(user + pswd + currentDateTime);
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
-            ParamsPDV paramsPDV = defineParamsPDV(paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), user, pswd);
+            ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
             TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsEmpFil.isUsaTEF(), paramsPDV);
 
             return hash;
