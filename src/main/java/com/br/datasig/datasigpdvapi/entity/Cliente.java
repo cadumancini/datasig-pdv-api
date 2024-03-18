@@ -12,6 +12,7 @@ public class Cliente { //TODO: ver se o FrontEnd vai precisar de mais dados. Se 
     private String nomCli;
     private String apeCli;
     private String cgcCpf;
+    private String tipCli;
 
     public static Cliente fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -19,7 +20,8 @@ public class Cliente { //TODO: ver se o FrontEnd vai precisar de mais dados. Se 
         String nomCli = element.getElementsByTagName("nomCli").item(0).getTextContent();
         String apeCli = element.getElementsByTagName("apeCli").item(0).getTextContent();
         String cgcCpf = element.getElementsByTagName("cgcCpf").item(0).getTextContent();
+        String tipCli = element.getElementsByTagName("tipCli").item(0).getTextContent();
 
-        return new Cliente(codCli, nomCli, apeCli, cgcCpf);
+        return new Cliente(codCli, nomCli, apeCli, cgcCpf, tipCli);
     }
 }

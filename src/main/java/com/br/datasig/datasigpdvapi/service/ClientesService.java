@@ -43,7 +43,21 @@ public class ClientesService extends WebServiceRequestsService{
                 clientes.add(Cliente.fromXml(nNode));
             }
         }
+        handleCpf(clientes);
         return clientes;
+    }
+
+    private void handleCpf(List<Cliente> clientes) {
+        for (Cliente cliente : clientes) {
+            int distance = 11 - cliente.getCgcCpf().length();
+            if (cliente.getTipCli().equals("F") && distance > 0) {
+                String newCpf = "";
+                for(int i = 0; i < distance; i++) {
+                    newCpf = "0" + cliente.getCgcCpf();
+                }
+                cliente.setCgcCpf(newCpf);
+            }
+        }
     }
 
     public ClienteResponse putCliente(String token, ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, WebServiceRuntimeException {
@@ -69,6 +83,8 @@ public class ClientesService extends WebServiceRequestsService{
         String cplEnd = sanitizeString(cliente.getCplEnd());
         String cepCli = sanitizeString(cliente.getCepCli()).replace("-", "");
         String cgcCpf = sanitizeString(cliente.getCgcCpf()).replace("-", "").replace(".", "").replace("/", "");
+
+        cgcCpf = removeLeadingZeros(cgcCpf);
 
         HashMap<String, Object> paramsDadosGerais = new HashMap<>();
         paramsDadosGerais.put("tipCli", cliente.getTipCli());
@@ -109,6 +125,13 @@ public class ClientesService extends WebServiceRequestsService{
         HashMap<String, Object> params = new HashMap<>();
         params.put("dadosGeraisCliente", paramsDadosGerais);
         return params;
+    }
+
+    private String removeLeadingZeros(String cgcCpf) {
+        while(cgcCpf.startsWith("0")) {
+            cgcCpf = cgcCpf.substring(1);
+        }
+        return cgcCpf;
     }
 
     private String sanitizeString(String value) {
