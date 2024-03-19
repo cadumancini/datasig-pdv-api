@@ -116,7 +116,7 @@ public class PedidoService extends WebServiceRequestsService {
         Date dataParcela = new Date();
         String valorParcela = definirValorParcela(pedido);
         String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
-        pedido.getParcelas().sort(Comparator.comparing(o -> o.getSeqIcp()));
+        pedido.getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
         int seqPar = 0;
         List<HashMap<String, Object>> parcelas = new ArrayList<>();
         for (Parcela parcela : pedido.getParcelas()) {
