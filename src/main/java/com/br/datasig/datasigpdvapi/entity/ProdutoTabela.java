@@ -25,6 +25,8 @@ public class ProdutoTabela {
         String codTpr = element.getElementsByTagName("codTpr").item(0).getTextContent();
         String datIni = element.getElementsByTagName("datIni").item(0).getTextContent();
         String desPro = element.getElementsByTagName("desPro").item(0).getTextContent();
+        String desDer = element.getElementsByTagName("desDer").item(0).getTextContent();
+        desPro += " " + desDer;
         Double preBas = Double.parseDouble(element.getElementsByTagName("preBas").item(0).getTextContent().replace(",", "."));
         int qtdMax = Integer.parseInt(element.getElementsByTagName("qtdMax").item(0).getTextContent());
 
