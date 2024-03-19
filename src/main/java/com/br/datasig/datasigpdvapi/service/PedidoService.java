@@ -33,7 +33,7 @@ public class PedidoService extends WebServiceRequestsService {
     public RetornoPedido createPedido(String token, Pedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         setEmpFilToPedido(pedido, token);
 
-        HashMap<String, Object> params = prepareParamsForPedido(pedido);
+        HashMap<String, Object> params = prepareParamsForPedido(pedido, token);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
@@ -49,7 +49,7 @@ public class PedidoService extends WebServiceRequestsService {
         pedido.setCodFil(codFil);
     }
 
-    private HashMap<String, Object> prepareParamsForPedido(Pedido pedido) {
+    private HashMap<String, Object> prepareParamsForPedido(Pedido pedido, String token) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
         paramsPedido.put("converterQtdUnidadeEstoque", "N");
         paramsPedido.put("converterQtdUnidadeVenda", "N");
@@ -65,7 +65,7 @@ public class PedidoService extends WebServiceRequestsService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", pedido.getCodEmp());
         params.put("codFil", pedido.getCodFil());
-        params.put("codCli", pedido.getCodCli());
+        params.put("codCli", definirCodCli(pedido.getCodCli(), token));
         params.put("codCpg", pedido.getCodCpg());
         params.put("codFpg", pedido.getCodFpg());
         params.put("codRep", pedido.getCodRep());
@@ -84,6 +84,13 @@ public class PedidoService extends WebServiceRequestsService {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private String definirCodCli(String codCli, String token) {
+        if (codCli == null || codCli.isEmpty())
+            codCli = TokensManager.getInstance().getParamsPDVFromToken(token).getCodCli();
+
+        return codCli;
     }
 
     List<HashMap<String, Object>> definirParamsItens(Pedido pedido) {
