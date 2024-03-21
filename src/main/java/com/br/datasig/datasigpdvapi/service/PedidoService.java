@@ -62,6 +62,8 @@ public class PedidoService extends WebServiceRequestsService {
         paramsPedido.put("ignorarPedidoBloqueado", "N");
         paramsPedido.put("inserirApenasPedidoCompleto", "S");
 
+        String tnsPed = definirTnsPro(token);
+
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", pedido.getCodEmp());
         params.put("codFil", pedido.getCodFil());
@@ -72,11 +74,11 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("cifFob", "X");
         params.put("indPre", "1");
         params.put("opeExe", "I");
-        params.put("tnsPro", "90199");
+        params.put("tnsPro", tnsPed);
         params.put("temPar", "S");
         params.put("acePar", "N");
 
-        List<HashMap<String, Object>> itens = definirParamsItens(pedido);
+        List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
         params.put("produto", itens);
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
@@ -86,6 +88,10 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
+    private String definirTnsPro(String token) {
+        return TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
+    }
+
     private String definirCodCli(String codCli, String token) {
         if (codCli == null || codCli.isEmpty())
             codCli = TokensManager.getInstance().getParamsPDVFromToken(token).getCodCli();
@@ -93,7 +99,7 @@ public class PedidoService extends WebServiceRequestsService {
         return codCli;
     }
 
-    List<HashMap<String, Object>> definirParamsItens(Pedido pedido) {
+    List<HashMap<String, Object>> definirParamsItens(Pedido pedido, String tnsPed, String token) {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
             HashMap<String, Object> paramsItem = new HashMap<>();
@@ -101,8 +107,8 @@ public class PedidoService extends WebServiceRequestsService {
             paramsItem.put("codDer", itemPedido.getCodDer());
             paramsItem.put("qtdPed", itemPedido.getQtdPed());
             paramsItem.put("codTpr", itemPedido.getCodTpr());
-            paramsItem.put("codDep", "1000");
-            paramsItem.put("tnsPro", "90199");
+            paramsItem.put("codDep", definirCodDep(token));
+            paramsItem.put("tnsPro", tnsPed);
             paramsItem.put("resEst", "S");
             paramsItem.put("pedPrv", "N");
             paramsItem.put("opeExe", "I");
@@ -110,6 +116,10 @@ public class PedidoService extends WebServiceRequestsService {
         });
 
         return listaItens;
+    }
+
+    private Object definirCodDep(String token) {
+        return TokensManager.getInstance().getParamsPDVFromToken(token).getCodDep();
     }
 
     List<HashMap<String, Object>> definirParamsParcelas(Pedido pedido) {
