@@ -39,7 +39,7 @@ public class PedidoService extends WebServiceRequestsService {
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoPedido);
-        fecharPedido(retornoPedido, token);
+        if(pedido.isFechar()) fecharPedido(retornoPedido, token);
         return retornoPedido;
     }
 
@@ -74,7 +74,12 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codRep", pedido.getCodRep());
         params.put("cifFob", "X");
         params.put("indPre", "1");
-        params.put("opeExe", "I");
+        if (pedido.getNumPed().equals("0")) {
+            params.put("opeExe", "I");
+        } else {
+            params.put("numPed", pedido.getNumPed());
+            params.put("opeExe", "A");
+        }
         params.put("tnsPro", tnsPed);
         params.put("temPar", "S");
         params.put("acePar", "N");
@@ -112,7 +117,12 @@ public class PedidoService extends WebServiceRequestsService {
             paramsItem.put("tnsPro", tnsPed);
             paramsItem.put("resEst", "S");
             paramsItem.put("pedPrv", "N");
-            paramsItem.put("opeExe", "I");
+            if (itemPedido.getSeqIpd().equals("0")) {
+                paramsItem.put("opeExe", "I");
+            } else {
+                paramsItem.put("seqIpd", itemPedido.getSeqIpd());
+                paramsItem.put("opeExe", "A");
+            }
             listaItens.add(paramsItem);
         });
 

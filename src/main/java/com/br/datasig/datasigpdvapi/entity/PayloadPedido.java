@@ -17,9 +17,11 @@ public class PayloadPedido {
     private String codRep;
     private String banOpe;
     private String catTef;
+    private String numPed;
     private String nsuTef;
     private int qtdPar;
     private Double vlrTot;
     private List<PayloadItemPedido> itens;
     private List<Parcela> parcelas;
+    private boolean fechar;
 }

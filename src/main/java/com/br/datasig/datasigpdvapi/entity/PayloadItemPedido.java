@@ -8,5 +8,6 @@ public class PayloadItemPedido {
     private String codDer;
     private String codTpr;
     private String qtdPed;
+    private String seqIpd;
     private String vlrTot;
 }
