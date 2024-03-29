@@ -311,4 +311,33 @@ public class PedidoService extends WebServiceRequestsService {
         }
         return pedidos;
     }
+
+    public RetornoPedido deleteItem(String token, String numPed, String seqIpd) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsPedido = prepareParamsForDeleteItem(token, numPed, seqIpd);
+        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", paramsPedido, false);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoPedido);
+        return retornoPedido;
+    }
+
+    private HashMap<String, Object> prepareParamsForDeleteItem(String token, String numPed, String seqIpd) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        params.put("codFil",TokensManager.getInstance().getCodFilFromToken(token));
+        params.put("opeExe", "A");
+        params.put("numPed", numPed);
+
+        List<HashMap<String, Object>> listaItens = new ArrayList<>();
+        HashMap<String, Object> paramsItem = new HashMap<>();
+        paramsItem.put("seqIpd", seqIpd);
+        paramsItem.put("opeExe", "E");
+        listaItens.add(paramsItem);
+        params.put("produto", listaItens);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
+    }
 }

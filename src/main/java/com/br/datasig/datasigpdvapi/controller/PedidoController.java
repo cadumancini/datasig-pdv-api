@@ -62,4 +62,16 @@ public class PedidoController extends DataSIGController {
         else
             throw new InvalidTokenException();
     }
+
+    @Operation(
+            summary = "Remover item",
+            description = "Remoção de item do pedido"
+    )
+    @DeleteMapping(value = "/item", produces = "application/json")
+    public RetornoPedido deleteItem(@RequestParam String token, @RequestParam String numPed, @RequestParam String seqIpd) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return pedidoService.deleteItem(token, numPed, seqIpd);
+        else
+            throw new InvalidTokenException();
+    }
 }
