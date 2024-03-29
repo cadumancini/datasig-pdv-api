@@ -9,6 +9,7 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -30,7 +31,7 @@ public class PedidoService extends WebServiceRequestsService {
         usaTEF = env.getProperty("usaTEF").equals("S");
     }
 
-    public RetornoPedido createPedido(String token, Pedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+    public RetornoPedido createPedido(String token, PayloadPedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         setEmpFilToPedido(pedido, token);
 
         HashMap<String, Object> params = prepareParamsForPedido(pedido, token);
@@ -42,14 +43,14 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoPedido;
     }
 
-    private void setEmpFilToPedido(Pedido pedido, String token) {
+    private void setEmpFilToPedido(PayloadPedido pedido, String token) {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         pedido.setCodEmp(codEmp);
         pedido.setCodFil(codFil);
     }
 
-    private HashMap<String, Object> prepareParamsForPedido(Pedido pedido, String token) {
+    private HashMap<String, Object> prepareParamsForPedido(PayloadPedido pedido, String token) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
         paramsPedido.put("converterQtdUnidadeEstoque", "N");
         paramsPedido.put("converterQtdUnidadeVenda", "N");
@@ -99,7 +100,7 @@ public class PedidoService extends WebServiceRequestsService {
         return codCli;
     }
 
-    List<HashMap<String, Object>> definirParamsItens(Pedido pedido, String tnsPed, String token) {
+    List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido, String tnsPed, String token) {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
             HashMap<String, Object> paramsItem = new HashMap<>();
@@ -122,7 +123,7 @@ public class PedidoService extends WebServiceRequestsService {
         return TokensManager.getInstance().getParamsPDVFromToken(token).getCodDep();
     }
 
-    List<HashMap<String, Object>> definirParamsParcelas(Pedido pedido) {
+    List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
         Date dataParcela = new Date();
         String valorParcela = definirValorParcela(pedido);
         String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
@@ -154,7 +155,7 @@ public class PedidoService extends WebServiceRequestsService {
 //        https://documentacao.senior.com.br/gestaoempresarialerp/5.10.3/index.htm#webservices/com_senior_g5_co_int_varejo_operadorascartao.htm?Highlight=operadoras%20financeiras
     }
 
-    private String definirValorParcela(Pedido pedido) {
+    private String definirValorParcela(PayloadPedido pedido) {
         double valorParcela = pedido.getVlrTot() / pedido.getQtdPar();
 
         BigDecimal bd = BigDecimal.valueOf(valorParcela);
@@ -170,7 +171,7 @@ public class PedidoService extends WebServiceRequestsService {
         return c.getTime();
     }
 
-    private String getTipInt(Pedido pedido) {
+    private String getTipInt(PayloadPedido pedido) {
         return usaTEF && pedido.getDesFpg().equals("OUTROS") ? "1" : "2"; //TODO: trocar 'OUTROS' para quando definir TEF
 //        return usaTEF && List.of("6", "7", "8", "17", "18", "19", "20").contains(pedido.getTipFpg()) ? "1" : "2";
     }
@@ -265,5 +266,39 @@ public class PedidoService extends WebServiceRequestsService {
         } else {
             throw new WebServiceRuntimeException("Erro na geração da NFC-e");
         }
+    }
+
+    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipoBusca);
+        String xml = soapClient.requestFromSeniorWS("ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
+        XmlUtils.validateXmlResponse(xml);
+
+        return getConsultaPedidosFromXml(xml);
+    }
+
+    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {
+        String sitPed = switch (tipoBusca) {
+            case ABERTOS -> "1";
+            case TODOS -> "";
+        };
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
+        params.put("codTns", TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed());
+        params.put("sitPed", sitPed);
+        return params;
+    }
+
+    private List<ConsultaPedido> getConsultaPedidosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<ConsultaPedido> pedidos = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "dadosGerais");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                pedidos.add(ConsultaPedido.fromXml(nNode));
+            }
+        }
+        return pedidos;
     }
 }

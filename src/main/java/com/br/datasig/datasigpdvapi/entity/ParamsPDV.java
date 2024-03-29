@@ -21,6 +21,7 @@ public class ParamsPDV {
     private String snfNfc;
     private String tnsNfv;
     private String tnsPed;
+    private String tnsOrc;
 
     public static ParamsPDV fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -37,7 +38,8 @@ public class ParamsPDV {
         String snfNfc = element.getElementsByTagName("snfNfc").item(0).getTextContent();
         String tnsNfv = element.getElementsByTagName("tnsNfv").item(0).getTextContent();
         String tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent();
+        String tnsOrc = element.getElementsByTagName("tnsOrc").item(0).getTextContent();
 
-        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, ideCsc, logNfc, numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed);
+        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, ideCsc, logNfc, numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc);
     }
 }
