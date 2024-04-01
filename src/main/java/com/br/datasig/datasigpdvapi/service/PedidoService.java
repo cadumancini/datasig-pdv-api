@@ -145,7 +145,10 @@ public class PedidoService extends WebServiceRequestsService {
                 seqPar++;
                 dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
                 HashMap<String, Object> paramsParcela = new HashMap<>();
-                paramsParcela.put("opeExe", "I");
+                if (pedido.getNumPed().equals("0"))
+                    paramsParcela.put("opeExe", "I");
+                else
+                    paramsParcela.put("opeExe", "A");
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                 paramsParcela.put("vlrPar", valorParcela);
@@ -288,7 +291,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {
         String sitPed = switch (tipoBusca) {
-            case ABERTOS -> "1";
+            case ABERTOS -> "9";
             case TODOS -> "";
         };
 
