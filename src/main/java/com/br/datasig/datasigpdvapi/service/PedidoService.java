@@ -63,7 +63,7 @@ public class PedidoService extends WebServiceRequestsService {
         paramsPedido.put("ignorarPedidoBloqueado", "N");
         paramsPedido.put("inserirApenasPedidoCompleto", "S");
 
-        String tnsPed = definirTnsPro(token);
+        String tnsPed = definirTnsPro(pedido, token);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", pedido.getCodEmp());
@@ -94,8 +94,9 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    private String definirTnsPro(String token) {
-        return TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
+    private String definirTnsPro(PayloadPedido pedido, String token) {
+        return pedido.isFechar() ? TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed() :
+                TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
     }
 
     private String definirCodCli(String codCli, String token) {
@@ -109,19 +110,24 @@ public class PedidoService extends WebServiceRequestsService {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
             HashMap<String, Object> paramsItem = new HashMap<>();
-            paramsItem.put("codPro", itemPedido.getCodPro());
-            paramsItem.put("codDer", itemPedido.getCodDer());
-            paramsItem.put("qtdPed", itemPedido.getQtdPed());
-            paramsItem.put("codTpr", itemPedido.getCodTpr());
-            paramsItem.put("codDep", definirCodDep(token));
-            paramsItem.put("tnsPro", tnsPed);
-            paramsItem.put("resEst", "S");
-            paramsItem.put("pedPrv", "N");
-            if (itemPedido.getSeqIpd().equals("0")) {
-                paramsItem.put("opeExe", "I");
-            } else {
+            if (itemPedido.isExcluir()) {
                 paramsItem.put("seqIpd", itemPedido.getSeqIpd());
-                paramsItem.put("opeExe", "A");
+                paramsItem.put("opeExe", "E");
+            } else {
+                paramsItem.put("codPro", itemPedido.getCodPro());
+                paramsItem.put("codDer", itemPedido.getCodDer());
+                paramsItem.put("qtdPed", itemPedido.getQtdPed());
+                paramsItem.put("codTpr", itemPedido.getCodTpr());
+                paramsItem.put("codDep", definirCodDep(token));
+                paramsItem.put("tnsPro", tnsPed);
+                paramsItem.put("resEst", "S");
+                paramsItem.put("pedPrv", "N");
+                if (itemPedido.getSeqIpd().equals("0")) {
+                    paramsItem.put("opeExe", "I");
+                } else {
+                    paramsItem.put("seqIpd", itemPedido.getSeqIpd());
+                    paramsItem.put("opeExe", "A");
+                }
             }
             listaItens.add(paramsItem);
         });
@@ -290,16 +296,15 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {
-        String sitPed = switch (tipoBusca) {
-            case ABERTOS -> "9";
+        String tnsPed = switch (tipoBusca) {
+            case ABERTOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
             case TODOS -> "";
         };
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
-        params.put("codTns", TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed());
-        params.put("sitPed", sitPed);
+        params.put("codTns", tnsPed);
         return params;
     }
 
@@ -313,34 +318,5 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return pedidos;
-    }
-
-    public RetornoPedido deleteItem(String token, String numPed, String seqIpd) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        HashMap<String, Object> paramsPedido = prepareParamsForDeleteItem(token, numPed, seqIpd);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", paramsPedido, false);
-        XmlUtils.validateXmlResponse(xml);
-        RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
-        validateRetornoPedido(retornoPedido);
-        return retornoPedido;
-    }
-
-    private HashMap<String, Object> prepareParamsForDeleteItem(String token, String numPed, String seqIpd) {
-        HashMap<String, Object> paramsPedido = new HashMap<>();
-
-        HashMap<String, Object> params = new HashMap<>();
-        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
-        params.put("codFil",TokensManager.getInstance().getCodFilFromToken(token));
-        params.put("opeExe", "A");
-        params.put("numPed", numPed);
-
-        List<HashMap<String, Object>> listaItens = new ArrayList<>();
-        HashMap<String, Object> paramsItem = new HashMap<>();
-        paramsItem.put("seqIpd", seqIpd);
-        paramsItem.put("opeExe", "E");
-        listaItens.add(paramsItem);
-        params.put("produto", listaItens);
-
-        paramsPedido.put("pedido", params);
-        return paramsPedido;
     }
 }

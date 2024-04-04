@@ -10,4 +10,5 @@ public class PayloadItemPedido {
     private String qtdPed;
     private String seqIpd;
     private String vlrTot;
+    private boolean excluir;
 }
