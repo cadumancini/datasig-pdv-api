@@ -21,6 +21,7 @@ public class PayloadPedido {
     private String nsuTef;
     private int qtdPar;
     private Double vlrTot;
+    private Double vlrDar;
     private List<PayloadItemPedido> itens;
     private List<Parcela> parcelas;
     private boolean fechar;

@@ -83,6 +83,8 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("tnsPro", tnsPed);
         params.put("temPar", "S");
         params.put("acePar", "N");
+        if (pedido.getVlrDar() > 0)
+            params.put("vlrDar", getDesconto(pedido));
 
         List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
         params.put("produto", itens);
@@ -167,6 +169,10 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return parcelas;
+    }
+
+    private static String getDesconto(PayloadPedido pedido) {
+        return String.format("%.2f", pedido.getVlrDar()).replace(".", ",");
     }
 
     private String definirCgcCre(String codOpe) { //TODO: implementar
