@@ -39,7 +39,7 @@ public class RepresentantesService extends WebServiceRequestsService {
                 representantes.add(Representante.fromXml(nNode));
             }
         }
-        return representantes;
+        return representantes.stream().filter(representante -> representante.getIndPdv().equals("S")).toList();
     }
 
     public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
