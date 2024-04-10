@@ -6,6 +6,7 @@ import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
+import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
@@ -143,7 +144,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
         Date dataParcela = new Date();
-        String valorParcela = definirValorParcela(pedido);
+        ParcelaParametro parcelaParametro = definirValorParcela(pedido);
         String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
         pedido.getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
         int seqPar = 0;
@@ -159,7 +160,8 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("opeExe", "A");
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-                paramsParcela.put("vlrPar", valorParcela);
+                paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
+                paramsParcela.put("perPar", parcelaParametro.perPar);
                 paramsParcela.put("tipInt", getTipInt(pedido));
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
@@ -172,7 +174,7 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private static String getDesconto(PayloadPedido pedido) {
-        return String.format("%.2f", pedido.getVlrDar()).replace(".", ",");
+        return "-" + String.format("%.2f", pedido.getVlrDar()).replace(".", ",");
     }
 
     private String definirCgcCre(String codOpe) { //TODO: implementar
@@ -180,13 +182,16 @@ public class PedidoService extends WebServiceRequestsService {
 //        https://documentacao.senior.com.br/gestaoempresarialerp/5.10.3/index.htm#webservices/com_senior_g5_co_int_varejo_operadorascartao.htm?Highlight=operadoras%20financeiras
     }
 
-    private String definirValorParcela(PayloadPedido pedido) {
+    private ParcelaParametro definirValorParcela(PayloadPedido pedido) {
         double valorParcela = pedido.getVlrTot() / pedido.getQtdPar();
+        double percentualParcela = valorParcela / pedido.getVlrTot() * 100;
 
-        BigDecimal bd = BigDecimal.valueOf(valorParcela);
-        bd = bd.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal bdVlr = BigDecimal.valueOf(valorParcela);
+        bdVlr = bdVlr.setScale(2, RoundingMode.HALF_UP);
 
-        return String.format("%.2f", bd.doubleValue()).replace(".", ",");
+        String vlrParStr = String.format("%.2f", bdVlr.doubleValue()).replace(".", ",");
+        String perParStr = String.format("%.4f", percentualParcela).replace(".", ",");
+        return new ParcelaParametro(vlrParStr, perParStr);
     }
 
     private Date definirDataParcela(Date date, int days) {
@@ -324,5 +329,11 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return pedidos;
+    }
+
+    @AllArgsConstructor
+    private static class ParcelaParametro {
+        String vlrPar;
+        String perPar;
     }
 }
