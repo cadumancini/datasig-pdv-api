@@ -37,7 +37,7 @@ public class ConsultaPedido {
         String datEmi = element.getElementsByTagName("datEmi").item(0).getTextContent();
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
-        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent();
+        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
         return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, itens);
