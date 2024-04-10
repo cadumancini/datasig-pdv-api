@@ -119,6 +119,7 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDefinicoesCliente.put("codRep", cliente.getCodRep());
         paramsDefinicoesCliente.put("conFin", "S");
         paramsDefinicoesCliente.put("indPre", "1");
+        paramsDefinicoesCliente.put("exiLcp", "N");
         listaDefinicoes.add(paramsDefinicoesCliente);
         paramsDadosGerais.put("definicoesCliente", listaDefinicoes);
 
