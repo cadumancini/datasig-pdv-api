@@ -36,7 +36,10 @@ public class PedidoService extends WebServiceRequestsService {
         setEmpFilToPedido(pedido, token);
         if(pedido.getNumPed().equals("0")) {
             RetornoPedido retornoPedido = sendPedidoRequest(pedido, token);
-            if (pedido.isFechar()) fecharPedido(pedido, token);
+            if (pedido.isFechar()) {
+                pedido.setNumPed(retornoPedido.getNumPed());
+                fecharPedido(pedido, token);
+            }
             return retornoPedido;
         } else {
             return handlePedidoExistente(pedido, token);
@@ -264,7 +267,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private RetornoPedido fecharPedido(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token);
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido, token);
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido);
 
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", paramsAlterarTransacao, false);
         XmlUtils.validateXmlResponse(xml);
@@ -278,7 +281,7 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForFecharPedido(PayloadPedido pedido, String token) {
+    private HashMap<String, Object> prepareParamsForFecharPedido(PayloadPedido pedido) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
