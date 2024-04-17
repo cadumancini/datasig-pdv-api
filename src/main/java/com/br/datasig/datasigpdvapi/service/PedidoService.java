@@ -340,13 +340,16 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca, String order) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipoBusca);
         String xml = soapClient.requestFromSeniorWS("ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
         String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
-        return getConsultaPedidosFromXml(xml, tnsOrc);
+        List<ConsultaPedido> pedidos = getConsultaPedidosFromXml(xml, tnsOrc);
+
+        if(order.equals("DESC")) pedidos.sort(Comparator.comparing(ConsultaPedido::getNumPedInt).reversed());
+        return pedidos;
     }
 
     private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {

@@ -56,9 +56,9 @@ public class PedidoController extends DataSIGController {
             description = "Busca de pedidos para consulta no PDV"
     )
     @GetMapping(value = "", produces = "application/json")
-    public List<ConsultaPedido> getPedidos(@RequestParam String token, @RequestParam TipoBuscaPedidos statusPedido) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<ConsultaPedido> getPedidos(@RequestParam String token, @RequestParam TipoBuscaPedidos statusPedido, @RequestParam String order) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
-            return pedidoService.getPedidos(token, statusPedido);
+            return pedidoService.getPedidos(token, statusPedido, order);
         else
             throw new InvalidTokenException();
     }

@@ -24,6 +24,7 @@ public class ConsultaPedido {
     private String sitPed;
     private String vlrDar;
     private String staPed;
+    private int numPedInt;
     private List<ConsultaItemPedido> itens;
 
     public static ConsultaPedido fromXml(Node node, String tnsOrc) {
@@ -42,7 +43,7 @@ public class ConsultaPedido {
         String staPed = codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, itens);
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, Integer.parseInt(numPed), itens);
     }
 
     private static List<ConsultaItemPedido> getItensPedido(Element element) {
