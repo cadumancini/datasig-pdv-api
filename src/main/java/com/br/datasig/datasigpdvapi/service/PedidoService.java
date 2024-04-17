@@ -345,7 +345,8 @@ public class PedidoService extends WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
-        return getConsultaPedidosFromXml(xml);
+        String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+        return getConsultaPedidosFromXml(xml, tnsOrc);
     }
 
     private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {
@@ -361,13 +362,13 @@ public class PedidoService extends WebServiceRequestsService {
         return params;
     }
 
-    private List<ConsultaPedido> getConsultaPedidosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+    private List<ConsultaPedido> getConsultaPedidosFromXml(String xml, String tnsOrc) throws ParserConfigurationException, IOException, SAXException {
         List<ConsultaPedido> pedidos = new ArrayList<>();
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "dadosGerais");
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                pedidos.add(ConsultaPedido.fromXml(nNode));
+                pedidos.add(ConsultaPedido.fromXml(nNode, tnsOrc));
             }
         }
         return pedidos;

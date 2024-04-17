@@ -23,9 +23,10 @@ public class ConsultaPedido {
     private String numPed;
     private String sitPed;
     private String vlrDar;
+    private String staPed;
     private List<ConsultaItemPedido> itens;
 
-    public static ConsultaPedido fromXml(Node node) {
+    public static ConsultaPedido fromXml(Node node, String tnsOrc) {
         Element element = (Element) node;
         String codCli = element.getElementsByTagName("codCli").item(0).getTextContent();
         String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
@@ -38,9 +39,10 @@ public class ConsultaPedido {
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
+        String staPed = codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, itens);
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, itens);
     }
 
     private static List<ConsultaItemPedido> getItensPedido(Element element) {
