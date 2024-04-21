@@ -23,12 +23,10 @@ import java.util.*;
 
 @Component
 public class PedidoService extends WebServiceRequestsService {
-    private final String numRegNFC;
     private final boolean usaTEF;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     public PedidoService(Environment env) {
-        numRegNFC = env.getProperty("numRegNFC");
         usaTEF = env.getProperty("usaTEF").equals("S");
     }
 
@@ -307,37 +305,6 @@ public class PedidoService extends WebServiceRequestsService {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
-    }
-
-    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
-        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
-        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        String paramsNFCe = prepareParamsForGeracaoNFCe(codEmp, codFil, numPed);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", paramsNFCe);
-        XmlUtils.validateXmlResponse(xml);
-        return getResponseNFCeFromXml(xml);
-    }
-
-    private String prepareParamsForGeracaoNFCe(String codEmp, String codFil, String numPed) {
-        StringBuilder paramsBuilder = new StringBuilder();
-
-        appendSIDParam(paramsBuilder, "acao", "sid.srv.regra");
-        appendSIDParam(paramsBuilder, "numreg", numRegNFC);
-        appendSIDParam(paramsBuilder, "aCodEmpPdv", codEmp);
-        appendSIDParam(paramsBuilder, "aCodFilPdv", codFil);
-        appendSIDParam(paramsBuilder, "aNumPedPdv", numPed);
-
-        return paramsBuilder.toString();
-    }
-
-    private String getResponseNFCeFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
-        NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
-        if (nList.getLength() == 1) {
-            Element element = (Element) nList.item(0);
-            return element.getElementsByTagName("resultado").item(0).getTextContent();
-        } else {
-            throw new WebServiceRuntimeException("Erro na geração da NFC-e");
-        }
     }
 
     public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca, String order) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {

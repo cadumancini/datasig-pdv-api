@@ -39,19 +39,6 @@ public class PedidoController extends DataSIGController {
     }
 
     @Operation(
-            summary = "Gerar NFC-e",
-            description = "Geração de NFC-e após pedido devidamente criado"
-    )
-    @PutMapping(value = "/nfce", produces = "text/plain;charset=UTF-8")
-    @ResponseStatus(code = HttpStatus.CREATED)
-    public String putNFCe(@RequestParam String token, @RequestParam String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
-        if(isTokenValid(token))
-            return pedidoService.createNFCe(token, numPed);
-        else
-            throw new InvalidTokenException();
-    }
-
-    @Operation(
             summary = "Buscar pedidos",
             description = "Busca de pedidos para consulta no PDV"
     )
