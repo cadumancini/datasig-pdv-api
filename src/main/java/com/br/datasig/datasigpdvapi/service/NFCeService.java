@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -84,6 +85,7 @@ public class NFCeService extends WebServiceRequestsService {
                 notas.add(ConsultaNotaFiscal.fromXml(nNode));
             }
         }
+        notas.sort(Comparator.comparing(ConsultaNotaFiscal::getNumNfvInt).reversed());
         return notas;
     }
 

@@ -21,6 +21,7 @@ public class ConsultaNotaFiscal {
     private String codFil;
     private String codSnf;
     private String numNfv;
+    private int numNfvInt;
     private String datEmi;
     private String horEmi;
     private String sitNfv;
@@ -44,7 +45,7 @@ public class ConsultaNotaFiscal {
         String desSitNfv = getDesSitNfv(sitNfv);
         String sitDoe = getSitDoe(element);
         String desSitDoe = getDesSitDoe(sitDoe);
-        return new ConsultaNotaFiscal(codCli, codRep, codEmp, codFil, codSnf, numNfv, datEmi, horEmi, sitNfv, desSitNfv, sitDoe, desSitDoe, isCancelavel(datEmi, horEmi, sitDoe), isInutilizavel(sitDoe));
+        return new ConsultaNotaFiscal(codCli, codRep, codEmp, codFil, codSnf, numNfv, Integer.parseInt(numNfv), datEmi, horEmi, sitNfv, desSitNfv, sitDoe, desSitDoe, isCancelavel(datEmi, horEmi, sitDoe), isInutilizavel(sitDoe));
     }
 
     private static String getDesSitNfv(String sitNfv) {
