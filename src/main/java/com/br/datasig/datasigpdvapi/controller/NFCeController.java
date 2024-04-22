@@ -13,6 +13,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -44,9 +45,33 @@ public class NFCeController extends DataSIGController {
                                              @RequestParam(required = false) String numNfv,
                                              @RequestParam(required = false) String sitNfv,
                                              @RequestParam(required = false) String datIni,
-                                             @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+                                             @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
         if(isTokenValid(token))
             return nfceService.getNFCes(token, numNfv, sitNfv, datIni, datFim);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Cancelar NFC-e",
+            description = "Cancelamento de NFC-e"
+    )
+    @PutMapping(value = "cancelar", produces = "text/plain;charset=UTF-8")
+    public String cancelarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return nfceService.cancelarNFCe(token, codSnf, numNfv, jusCan);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Inutilizar NFC-e",
+            description = "Inutilização de NFC-e"
+    )
+    @PutMapping(value = "inutilizar", produces = "text/plain;charset=UTF-8")
+    public String inutilizarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return nfceService.inutilizarNFCe(token, codSnf, numNfv, jusCan);
         else
             throw new InvalidTokenException();
     }

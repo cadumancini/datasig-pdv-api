@@ -5,7 +5,13 @@ webservicesUrl=
 springdoc.swagger-ui.use-root-path=true
 
 # Numero de regra para geração de NFC-e
-numRegNFC=
+numRegGeracaoNFC=
+
+# Numero de regra para cancelamento de NFC-e
+numRegCancelamentoNFC=
+
+# Numero de regra para inutilização de NFC-e
+numRegInutilizacaoNFC=
 
 #Indica se o estabelecimento usa pagamento por TEF
 usaTEF=
