@@ -26,11 +26,13 @@ public class NFCeService extends WebServiceRequestsService {
     private final String numRegGeracaoNFC;
     private final String numRegCancelamentoNFC;
     private final String numRegInutilizacaoNFC;
+    private final String numRegSituacaoEDocs;
 
     public NFCeService(Environment env) {
         numRegGeracaoNFC = env.getProperty("numRegGeracaoNFC");
         numRegCancelamentoNFC = env.getProperty("numRegCancelamentoNFC");
         numRegInutilizacaoNFC = env.getProperty("numRegInutilizacaoNFC");
+        numRegSituacaoEDocs = env.getProperty("numRegSituacaoEDocs");
     }
 
     public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
@@ -125,5 +127,18 @@ public class NFCeService extends WebServiceRequestsService {
         appendSIDParam(paramsBuilder, "aCodFilPdv", codFil);
 
         return paramsBuilder;
+    }
+
+    public String getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, numRegSituacaoEDocs);
+        return exeRegra(token, paramsNFCe);
+    }
+
+    private String prepareParamsForConsultaEDocs(String token, String codSnf, String numNfv, String numReg) {
+        StringBuilder paramsBuilder = getBaseParams(token, numReg);
+        appendSIDParam(paramsBuilder, "aCodSnfPDV", codSnf);
+        appendSIDParam(paramsBuilder, "aNumNfvPDV", numNfv);
+
+        return paramsBuilder.toString();
     }
 }

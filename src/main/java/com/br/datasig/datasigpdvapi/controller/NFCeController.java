@@ -75,4 +75,16 @@ public class NFCeController extends DataSIGController {
         else
             throw new InvalidTokenException();
     }
+
+    @Operation(
+            summary = "Consultar no e-DOCS",
+            description = "Consultar situação de NFC-e no e-DOCS"
+    )
+    @GetMapping(value = "edocs", produces = "text/plain;charset=UTF-8")
+    public String getSitEDocs(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
+        if(isTokenValid(token))
+            return nfceService.getSitEDocs(token, codSnf, numNfv);
+        else
+            throw new InvalidTokenException();
+    }
 }

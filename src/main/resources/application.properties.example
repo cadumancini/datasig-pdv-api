@@ -13,5 +13,8 @@ numRegCancelamentoNFC=
 # Numero de regra para inutilização de NFC-e
 numRegInutilizacaoNFC=
 
+# Numero de regra para consulta de situaçãp da NFC-e no e-DOCS
+numRegSituacaoEDocs=
+
 #Indica se o estabelecimento usa pagamento por TEF
 usaTEF=
