@@ -23,7 +23,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_cad_representante", "ConsultarCadastro", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("ConsultaRepresentante", "Consulta", token, "0", params, true);
 
         XmlUtils.validateXmlResponse(xml);
         return getRepresentantesFromXml(xml);
@@ -39,7 +39,7 @@ public class RepresentantesService extends WebServiceRequestsService {
                 representantes.add(Representante.fromXml(nNode));
             }
         }
-        return representantes.stream().filter(representante -> representante.getIndPdv().equals("S")).toList();
+        return representantes;
     }
 
     public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
