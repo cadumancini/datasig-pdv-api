@@ -104,11 +104,15 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.getVlrDar() > 0)
             params.put("vlrDar", getDesconto(pedido));
 
-        List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
-        params.put("produto", itens);
+        if(pedido.getItens().size() > 0) {
+            List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
+            params.put("produto", itens);
+        }
 
-        List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
-        params.put("parcelas", parcelas);
+        if(pedido.isIncluirParcelas()) {
+            List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
+            params.put("parcelas", parcelas);
+        }
 
         paramsPedido.put("pedido", params);
         return paramsPedido;

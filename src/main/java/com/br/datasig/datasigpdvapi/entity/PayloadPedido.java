@@ -25,4 +25,5 @@ public class PayloadPedido {
     private List<PayloadItemPedido> itens;
     private List<Parcela> parcelas;
     private boolean fechar;
+    private boolean incluirParcelas;
 }
