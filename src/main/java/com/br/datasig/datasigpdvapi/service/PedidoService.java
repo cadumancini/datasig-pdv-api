@@ -9,7 +9,6 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -101,10 +100,9 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("tnsPro", tnsPed);
         params.put("temPar", "S");
         params.put("acePar", "N");
-        if (pedido.getVlrDar() > 0)
-            params.put("vlrDar", getDesconto(pedido));
+        params.put("vlrDar", pedido.getVlrDar() > 0 ? getDesconto(pedido) : "0");
 
-        if(pedido.getItens().size() > 0) {
+        if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
             params.put("produto", itens);
         }
@@ -224,8 +222,7 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private String getTipInt(PayloadPedido pedido) {
-        return usaTEF && pedido.getDesFpg().equals("OUTROS") ? "1" : "2"; //TODO: trocar 'OUTROS' para quando definir TEF
-//        return usaTEF && List.of("6", "7", "8", "17", "18", "19", "20").contains(pedido.getTipFpg()) ? "1" : "2";
+        return usaTEF && List.of("6", "7", "8", "17", "18", "19", "20").contains(pedido.getTipFpg()) ? "1" : "2";
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
