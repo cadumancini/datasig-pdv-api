@@ -33,7 +33,7 @@ public class UserController extends DataSIGController {
             description = "Retorna os parâmetros do usuário baseados no token"
     )
     @GetMapping(value = "/params", produces = "application/json")
-    public TokenResponse performLogin(@RequestParam String token) {
+    public TokenResponse getParamsFromToken(@RequestParam String token) {
         return userService.getParamsFromToken(token);
     }
 }
