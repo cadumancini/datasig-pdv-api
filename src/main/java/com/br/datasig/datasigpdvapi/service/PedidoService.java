@@ -7,6 +7,7 @@ import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Node;
@@ -24,6 +25,11 @@ import java.util.*;
 public class PedidoService extends WebServiceRequestsService {
     private final boolean usaTEF;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+    @Autowired
+    private RepresentantesService representantesService;
+    @Autowired
+    private ClientesService clientesService;
 
     public PedidoService(Environment env) {
         usaTEF = env.getProperty("usaTEF").equals("S");
@@ -308,8 +314,8 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca, String order) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipoBusca);
+    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca, String order, String numPed, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipoBusca, numPed, datIni, datFim);
         String xml = soapClient.requestFromSeniorWS("ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
@@ -320,9 +326,10 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos;
     }
 
-    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca) {
+    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca, String numPed, String datIni, String datFim) {
         String tnsPed = switch (tipoBusca) {
             case ABERTOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+            case FECHADOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
             case TODOS -> "";
         };
 
@@ -330,6 +337,9 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
         params.put("codTns", tnsPed);
+        params.put("numPed", numPed == null ? "" : numPed);
+        params.put("datIni", datIni == null ? "" : "'" + datIni + "'");
+        params.put("datFim", datFim == null ? "" : "'" + datFim + "'");
         return params;
     }
 
@@ -343,6 +353,38 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return pedidos;
+    }
+
+    public ConsultaDetalhesPedido getPedido(String token, String numPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, TipoBuscaPedidos.TODOS, numPed, null, null);
+        String xml = soapClient.requestFromSeniorWS("ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
+        XmlUtils.validateXmlResponse(xml);
+
+        String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+        List<ConsultaPedido> pedidos = getConsultaPedidosFromXml(xml, tnsOrc);
+        if(!pedidos.isEmpty()) {
+            ConsultaDetalhesPedido detalhesPedido = new ConsultaDetalhesPedido();
+            ConsultaPedido consultaPedido = pedidos.get(0);
+            detalhesPedido.setNumPed(consultaPedido.getNumPed());
+            detalhesPedido.setDatEmi(consultaPedido.getDatEmi());
+            detalhesPedido.setDesRep(defineDesRep(token, consultaPedido.getCodRep()));
+            detalhesPedido.setDesCli(defineDesCli(token, consultaPedido.getCodCli()));
+
+            // TODO: carregar itens
+        }
+        return null;
+    }
+
+    private String defineDesRep(String token, String codRep) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        Representante representante = representantesService.getRepresentante(token, codRep);
+        if(representante != null) return representante.getNomRep();
+        return "";
+    }
+
+    private String defineDesCli(String token, String codCli) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        Cliente cliente = clientesService.getCliente(token, codCli);
+        if(cliente != null) return cliente.getNomCli();
+        return "";
     }
 
     @AllArgsConstructor

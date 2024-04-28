@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class RepresentantesService extends WebServiceRequestsService {
@@ -69,5 +70,11 @@ public class RepresentantesService extends WebServiceRequestsService {
 
     private void addParamsForTabelaPreco(HashMap<String, Object> params, String codRep) {
         params.put("CODREP", codRep);
+    }
+
+    public Representante getRepresentante(String token, String codRep) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        List<Representante> representantes = getRepresentantes(token);
+        Optional<Representante> representante = representantes.stream().filter(rep -> rep.getCodRep().equals(codRep)).findFirst();
+        return representante.orElse(null);
     }
 }

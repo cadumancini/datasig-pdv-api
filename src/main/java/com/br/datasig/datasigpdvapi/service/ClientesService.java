@@ -18,6 +18,7 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
@@ -155,5 +156,11 @@ public class ClientesService extends WebServiceRequestsService{
 
     private void addParamsForClientes(HashMap<String, Object> params) {
         params.put("sitCli", "A");
+    }
+
+    public Cliente getCliente(String token, String codCli) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        List<Cliente> clientes = getClientes(token);
+        Optional<Cliente> cliente = clientes.stream().filter(cli -> cli.getCodCli().equals(codCli)).findFirst();
+        return cliente.orElse(null);
     }
 }

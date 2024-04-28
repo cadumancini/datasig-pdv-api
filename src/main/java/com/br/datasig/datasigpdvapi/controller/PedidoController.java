@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.entity.ConsultaPedido;
-import com.br.datasig.datasigpdvapi.entity.PayloadPedido;
-import com.br.datasig.datasigpdvapi.entity.RetornoPedido;
-import com.br.datasig.datasigpdvapi.entity.TipoBuscaPedidos;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.PedidoService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -43,9 +40,27 @@ public class PedidoController extends DataSIGController {
             description = "Busca de pedidos para consulta no PDV"
     )
     @GetMapping(value = "", produces = "application/json")
-    public List<ConsultaPedido> getPedidos(@RequestParam String token, @RequestParam TipoBuscaPedidos statusPedido, @RequestParam String order) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<ConsultaPedido> getPedidos(@RequestParam String token,
+                                           @RequestParam TipoBuscaPedidos statusPedido,
+                                           @RequestParam String order,
+                                           @RequestParam(required = false) String numPed,
+                                           @RequestParam(required = false) String datIni,
+                                           @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
-            return pedidoService.getPedidos(token, statusPedido, order);
+            return pedidoService.getPedidos(token, statusPedido, order, numPed, datIni, datFim);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar detalhes do pedido",
+            description = "Busca de detalhes de pedido específico para consulta no PDV"
+    )
+    @GetMapping(value = "detalhes", produces = "application/json")
+    public ConsultaDetalhesPedido getPedido(@RequestParam String token,
+                                                  @RequestParam String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return pedidoService.getPedido(token, numPed);
         else
             throw new InvalidTokenException();
     }
