@@ -14,9 +14,9 @@ public class ParamsPDV {
     private String codSnf;
     private String codTpr;
     private String ideCsc;
-    private String logNfc;
+    private String logSis;
     private String numCsc;
-    private String senNfc;
+    private String senSis;
     private String sigInt;
     private String snfNfc;
     private String tnsNfv;
@@ -31,9 +31,9 @@ public class ParamsPDV {
         String codSnf = element.getElementsByTagName("codSnf").item(0).getTextContent();
         String codTpr = element.getElementsByTagName("codTpr").item(0).getTextContent();
         String ideCsc = element.getElementsByTagName("ideCsc").item(0).getTextContent();
-        String logNfc = element.getElementsByTagName("logNfc").item(0).getTextContent();
+        String logNfc = element.getElementsByTagName("logSis").item(0).getTextContent();
         String numCsc = element.getElementsByTagName("numCsc").item(0).getTextContent();
-        String senNfc = element.getElementsByTagName("senNfc").item(0).getTextContent();
+        String senNfc = element.getElementsByTagName("senSis").item(0).getTextContent();
         String sigInt = element.getElementsByTagName("sigInt").item(0).getTextContent();
         String snfNfc = element.getElementsByTagName("snfNfc").item(0).getTextContent();
         String tnsNfv = element.getElementsByTagName("tnsNfv").item(0).getTextContent();

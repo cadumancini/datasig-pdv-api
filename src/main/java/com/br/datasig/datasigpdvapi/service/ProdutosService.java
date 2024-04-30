@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ProdutosService extends WebServiceRequestsService{
@@ -27,7 +26,7 @@ public class ProdutosService extends WebServiceRequestsService{
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutosPorTabelaDePreco(params, codTpr);
 
-        String xml = soapClient.requestFromSeniorWS("ConsultaTabelaPreco", "Consultar", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("ConsultaTabelaPreco", "Consultar", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         List<ProdutoTabela> produtosPorTabela = getProdutosPorTabelaFromXml(xml, codTpr);
@@ -72,6 +71,6 @@ public class ProdutosService extends WebServiceRequestsService{
                 produtos.add(ProdutoTabela.fromXml(nNode));
             }
         }
-        return produtos.stream().filter(prod -> prod.getCodTpr().equals(codTpr)).collect(Collectors.toList());
+        return produtos.stream().filter(prod -> prod.getCodTpr().equals(codTpr)).toList();
     }
 }
