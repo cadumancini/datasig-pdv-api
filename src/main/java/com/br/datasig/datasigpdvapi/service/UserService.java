@@ -11,7 +11,6 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -25,11 +24,6 @@ import java.util.HashMap;
 @Component
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final boolean usaTEF;
-
-    public UserService(Environment env) {
-        this.usaTEF = env.getProperty("usaTEF").equals("S");
-    }
 
     public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         HashMap<String, Object> emptyParams = new HashMap<>();
@@ -47,7 +41,7 @@ public class UserService extends WebServiceRequestsService {
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
-            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsEmpFil.isUsaTEF(), paramsPDV);
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsPDV);
 
             return hash;
         }
@@ -66,7 +60,7 @@ public class UserService extends WebServiceRequestsService {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
 
         if (nList.getLength() == 1) {
-            return ParamsEmpresa.fromXml(nList.item(0), usaTEF);
+            return ParamsEmpresa.fromXml(nList.item(0));
         } else {
             throw new ResourceNotFoundException("Parâmetros não encontrados para o usuário");
         }
@@ -107,6 +101,6 @@ public class UserService extends WebServiceRequestsService {
     public TokenResponse getParamsFromToken(String tokenValue) {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
         ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
-        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), token.isUsaTEF(), paramsPDV);
+        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDV);
     }
 }

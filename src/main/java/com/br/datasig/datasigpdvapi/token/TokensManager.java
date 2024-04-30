@@ -24,8 +24,8 @@ public class TokensManager {
         return validTokens;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, boolean usaTEF, ParamsPDV paramsPDV) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, usaTEF, paramsPDV));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, paramsPDV));
     }
 
     public void removeInvalidTokens() {

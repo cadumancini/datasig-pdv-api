@@ -12,15 +12,14 @@ public class ParamsEmpresa {
     private String codFil;
     private String codUsu;
     private String sitUsu;
-    private boolean usaTEF;
 
-    public static ParamsEmpresa fromXml(Node nNode, boolean usaTEF) {
+    public static ParamsEmpresa fromXml(Node nNode) {
         Element element = (Element) nNode;
         String codEmp = element.getElementsByTagName("EMPATI").item(0).getTextContent();
         String codFil = element.getElementsByTagName("FILATI").item(0).getTextContent();
         String codUsu = element.getElementsByTagName("CODUSU").item(0).getTextContent();
         String sitUsu = element.getElementsByTagName("SITUSU").item(0).getTextContent();
 
-        return new ParamsEmpresa(codEmp, codFil, codUsu, sitUsu, usaTEF);
+        return new ParamsEmpresa(codEmp, codFil, codUsu, sitUsu);
     }
 }
