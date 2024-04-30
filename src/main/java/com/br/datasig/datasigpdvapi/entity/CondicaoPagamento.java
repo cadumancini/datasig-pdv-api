@@ -8,11 +8,10 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais dados. Se sim, colocar em funcao de retorno do WS
+public class CondicaoPagamento {
     private String codCpg;
     private String abrCpg;
     private String desCpg;
@@ -24,6 +23,7 @@ public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais 
         String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
         String abrCpg = element.getElementsByTagName("abrCpg").item(0).getTextContent();
         String desCpg = element.getElementsByTagName("desCpg").item(0).getTextContent();
+        int qtdParCpg = Integer.parseInt(element.getElementsByTagName("parCpg").item(0).getTextContent());
 
         List<Parcela> parcelasList = new ArrayList<>();
         NodeList parcelasNode = element.getElementsByTagName("parcelas");
@@ -38,8 +38,6 @@ public class CondicaoPagamento { //TODO: ver se o FrontEnd vai precisar de mais 
                 parcelasList.add(new Parcela(seqIcp, diaPar, qtdPar));
             }
         }
-
-        int qtdParCpg = parcelasList.stream().mapToInt(Parcela::getQtdPar).sum();
 
         return new CondicaoPagamento(codCpg, abrCpg, desCpg, qtdParCpg, parcelasList);
     }

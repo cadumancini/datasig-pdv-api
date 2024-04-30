@@ -1,6 +1,5 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.entity.CondicaoPagamento;
 import com.br.datasig.datasigpdvapi.entity.FormaPagamento;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.PagamentoService;
@@ -24,18 +23,6 @@ import java.util.List;
 public class PagamentoController extends DataSIGController {
     @Autowired
     private PagamentoService pagamentoService;
-
-    @Operation(
-            summary = "Buscar condições de pagamento",
-            description = "Busca as condições de pagamento cadastradas"
-    )
-    @GetMapping(value= "/condicoes", produces = "application/json")
-    public List<CondicaoPagamento> getCondicoes(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
-        if(isTokenValid(token))
-            return pagamentoService.getCondicoesPagamento(token);
-        else
-            throw new InvalidTokenException();
-    }
 
     @Operation(
             summary = "Buscar formas de pagamento",

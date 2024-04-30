@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/nfce")
-@Tag(name = "NFC-ee", description = "Operações de Notas Fiscais de Compra com o sistema PDV")
+@Tag(name = "NFC-e", description = "Operações de Notas Fiscais de Compra com o sistema PDV")
 public class NFCeController extends DataSIGController {
     @Autowired
     private NFCeService nfceService;
@@ -81,7 +81,7 @@ public class NFCeController extends DataSIGController {
             description = "Consultar situação de NFC-e no e-DOCS"
     )
     @GetMapping(value = "edocs", produces = "text/plain;charset=UTF-8")
-    public String getSitEDocs(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
+    public String getSitEDocs(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return nfceService.getSitEDocs(token, codSnf, numNfv);
         else
