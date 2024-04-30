@@ -19,6 +19,7 @@ public class PayloadPedido {
     private String catTef;
     private String numPed;
     private String nsuTef;
+    private String tipInt;
     private int qtdPar;
     private Double vlrTot;
     private Double vlrDar;

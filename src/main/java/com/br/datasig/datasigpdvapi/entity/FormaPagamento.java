@@ -17,6 +17,7 @@ public class FormaPagamento {
     private String desFpg;
     private String codOpe;
     private String tipFpg;
+    private String tipInt;
     private String perDsc;
     private List<CondicaoPagamento> condicoes;
 
@@ -27,6 +28,7 @@ public class FormaPagamento {
         String desFpg = element.getElementsByTagName("desFpg").item(0).getTextContent();
         String codOpe = element.getElementsByTagName("codOpe").item(0).getTextContent();
         String tipFpg = element.getElementsByTagName("tipFpg").item(0).getTextContent();
+        String tipInt = element.getElementsByTagName("tipInt").item(0).getTextContent();
         String perDsc = element.getElementsByTagName("perDsc").item(0).getTextContent();
 
         List<CondicaoPagamento> condicoes = new ArrayList<>();
@@ -38,6 +40,6 @@ public class FormaPagamento {
             }
         }
 
-        return new FormaPagamento(codFpg, abrFpg, desFpg, codOpe, tipFpg, perDsc, condicoes);
+        return new FormaPagamento(codFpg, abrFpg, desFpg, codOpe, tipFpg, tipInt, perDsc, condicoes);
     }
 }

@@ -108,7 +108,7 @@ public class PedidoService extends WebServiceRequestsService {
         }
 
         if(pedido.isIncluirParcelas()) {
-            List<HashMap<String, Object>> parcelas = definirParamsParcelas(token, pedido);
+            List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
             params.put("parcelas", parcelas);
         }
 
@@ -161,7 +161,7 @@ public class PedidoService extends WebServiceRequestsService {
         return TokensManager.getInstance().getParamsPDVFromToken(token).getCodDep();
     }
 
-    private List<HashMap<String, Object>> definirParamsParcelas(String token, PayloadPedido pedido) {
+    private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
         Date dataParcela = new Date();
         ParcelaParametro parcelaParametro = definirValorParcela(pedido);
         String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
@@ -178,7 +178,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                 paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
                 paramsParcela.put("perPar", parcelaParametro.perPar);
-                paramsParcela.put("tipInt", getTipInt(token, pedido));
+                paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
                 paramsParcela.put("nsuTef", pedido.getNsuTef());
@@ -219,14 +219,6 @@ public class PedidoService extends WebServiceRequestsService {
         c.setTime(date);
         c.add(Calendar.DATE, days);
         return c.getTime();
-    }
-
-    private String getTipInt(String token, PayloadPedido pedido) {
-        return usaTEF(token) && List.of("6", "7", "8", "17", "18", "19", "20").contains(pedido.getTipFpg()) ? "1" : "2";
-    }
-
-    private boolean usaTEF(String token) {
-        return TokensManager.getInstance().getParamsPDVFromToken(token).getTipInt().equals("1");
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
