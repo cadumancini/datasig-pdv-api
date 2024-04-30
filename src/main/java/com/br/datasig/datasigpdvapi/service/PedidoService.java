@@ -178,7 +178,9 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                 paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
                 paramsParcela.put("perPar", parcelaParametro.perPar);
-                paramsParcela.put("tipInt", pedido.getTipInt());
+                if (pedido.getTipInt().equals("1") || pedido.getTipInt().equals("2")) {
+                    paramsParcela.put("tipInt", pedido.getTipInt());
+                }
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
                 paramsParcela.put("nsuTef", pedido.getNsuTef());
