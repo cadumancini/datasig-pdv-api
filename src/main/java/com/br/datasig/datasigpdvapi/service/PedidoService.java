@@ -178,9 +178,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                 paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
                 paramsParcela.put("perPar", parcelaParametro.perPar);
-                if (pedido.getTipInt().equals("1") || pedido.getTipInt().equals("2")) {
-                    paramsParcela.put("tipInt", pedido.getTipInt());
-                }
+                paramsParcela.put("tipInt", defineTipInt(pedido.getTipInt()));
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
                 paramsParcela.put("nsuTef", pedido.getNsuTef());
@@ -189,6 +187,10 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return parcelas;
+    }
+
+    private String defineTipInt(String tipInt) {
+        return tipInt.equals("1") || tipInt.equals("2") ? tipInt : "";
     }
 
     private String getOpeExe(PayloadPedido pedido) {
