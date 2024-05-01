@@ -178,7 +178,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                 paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
                 paramsParcela.put("perPar", parcelaParametro.perPar);
-                paramsParcela.put("tipInt", defineTipInt(pedido.getTipInt()));
+                paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
                 paramsParcela.put("nsuTef", pedido.getNsuTef());
@@ -189,8 +189,28 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private String defineTipInt(String tipInt) {
-        return tipInt.equals("1") || tipInt.equals("2") ? tipInt : "";
+    private List<HashMap<String, Object>> definirParamsParcelasFecharPedido(PayloadPedido pedido) {
+        Date dataParcela = new Date();
+        String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
+        pedido.getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
+        int seqPar = 0;
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        for (Parcela parcela : pedido.getParcelas()) {
+            for (int i = 0; i < parcela.getQtdPar(); i++) {
+                seqPar++;
+                dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
+                HashMap<String, Object> paramsParcela = new HashMap<>();
+                paramsParcela.put("opeExe", getOpeExe(pedido));
+                paramsParcela.put("seqPar", String.valueOf(seqPar));
+                paramsParcela.put("tipInt", pedido.getTipInt());
+                paramsParcela.put("banOpe", pedido.getBanOpe());
+                paramsParcela.put("catTef", pedido.getCatTef());
+                paramsParcela.put("nsuTef", pedido.getNsuTef());
+                paramsParcela.put("cgcCre", cgcCre);
+                parcelas.add(paramsParcela);
+            }
+        }
+        return parcelas;
     }
 
     private String getOpeExe(PayloadPedido pedido) {
@@ -289,6 +309,9 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("opeExe", "A");
         params.put("numPed", pedido.getNumPed());
         params.put("fecPed", "S");
+
+        List<HashMap<String, Object>> parcelas = definirParamsParcelasFecharPedido(pedido);
+        params.put("parcelas", parcelas);
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
