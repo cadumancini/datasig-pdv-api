@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.TokenResponse;
+import com.br.datasig.datasigpdvapi.exceptions.NotAllowedUserException;
 import com.br.datasig.datasigpdvapi.service.UserService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +25,7 @@ public class UserController extends DataSIGController {
             description = "Cria um token baseado no usuário, senha e timestamp de login, que é retornado ao FrontEnd e utilizado nas outras requisições"
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
-    public String performLogin(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+    public String performLogin(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
         return userService.performLogin(user, pswd);
     }
 

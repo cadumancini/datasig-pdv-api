@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.ParamsEmpresa;
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
 import com.br.datasig.datasigpdvapi.entity.TokenResponse;
+import com.br.datasig.datasigpdvapi.exceptions.NotAllowedUserException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.Token;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -41,9 +42,16 @@ public class UserService extends WebServiceRequestsService {
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
+            compareLoginUserWithParams(user, paramsPDV);
             TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsPDV);
 
             return hash;
+        }
+    }
+
+    private void compareLoginUserWithParams(String user, ParamsPDV paramsPDV) throws NotAllowedUserException {
+        if(!paramsPDV.getLogSis().equals(user)) {
+            throw new NotAllowedUserException("O usuário usado no login não é o mesmo definido nos parâmetros da filial.");
         }
     }
 

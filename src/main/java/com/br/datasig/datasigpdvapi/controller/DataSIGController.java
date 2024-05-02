@@ -39,6 +39,12 @@ public class DataSIGController {
         return getJsonMessage(ex.getMessage());
     }
 
+    @ExceptionHandler({NotAllowedUserException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String notAllowedUserException(NotAllowedUserException ex) {
+        return getJsonMessage(ex.getMessage());
+    }
+
     private String getJsonMessage(String errorMessage) {
         return new JSONObject().put("message", errorMessage).toString();
     }
