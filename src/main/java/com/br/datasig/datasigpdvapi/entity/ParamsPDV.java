@@ -13,6 +13,7 @@ public class ParamsPDV {
     private String codInt;
     private String codSnf;
     private String codTpr;
+    private String dscTot;
     private String ideCsc;
     private String logSis;
     private String numCsc;
@@ -30,6 +31,7 @@ public class ParamsPDV {
         String codInt = element.getElementsByTagName("codInt").item(0).getTextContent();
         String codSnf = element.getElementsByTagName("codSnf").item(0).getTextContent();
         String codTpr = element.getElementsByTagName("codTpr").item(0).getTextContent();
+        String dscTot = element.getElementsByTagName("dscTot").item(0).getTextContent();
         String ideCsc = element.getElementsByTagName("ideCsc").item(0).getTextContent();
         String logNfc = element.getElementsByTagName("logSis").item(0).getTextContent();
         String numCsc = element.getElementsByTagName("numCsc").item(0).getTextContent();
@@ -40,7 +42,7 @@ public class ParamsPDV {
         String tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent();
         String tnsOrc = element.getElementsByTagName("tnsOrc").item(0).getTextContent();
 
-        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, ideCsc, logNfc, numCsc,
-                senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc);
+        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, logNfc,
+                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc);
     }
 }
