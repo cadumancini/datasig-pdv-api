@@ -114,7 +114,7 @@ public class ClientesService extends WebServiceRequestsService{
         List<HashMap<String, Object>> listaDefinicoes = new ArrayList<>();
         HashMap<String, Object> paramsDefinicoesCliente = new HashMap<>();
         paramsDefinicoesCliente.put("cifFob", "X");
-        paramsDefinicoesCliente.put("codCpg", "001");
+        paramsDefinicoesCliente.put("codCpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodCpg());
         paramsDefinicoesCliente.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         paramsDefinicoesCliente.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
         paramsDefinicoesCliente.put("codRep", cliente.getCodRep());
