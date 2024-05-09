@@ -107,7 +107,7 @@ public class PedidoService extends WebServiceRequestsService {
             params.put("produto", itens);
         }
 
-        if(pedido.isIncluirParcelas()) {
+        if(pedido.isIncluirParcelas() && !pedido.getNumPed().equals("0")) {
             List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
             params.put("parcelas", parcelas);
         }
@@ -176,7 +176,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("opeExe", getOpeExe(pedido));
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-                paramsParcela.put("vlrPar", parcelaParametro.vlrPar);
+//                paramsParcela.put("vlrPar", parcelaParametro.vlrPar); //TODO: verificar se necessario
                 paramsParcela.put("perPar", parcelaParametro.perPar);
                 paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
