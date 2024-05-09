@@ -98,18 +98,13 @@ public class PedidoService extends WebServiceRequestsService {
             params.put("opeExe", "A");
         }
         params.put("tnsPro", tnsPed);
-        params.put("temPar", "S");
+        params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", pedido.getVlrDar() > 0 ? getDesconto(pedido) : "0");
 
         if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
             params.put("produto", itens);
-        }
-
-        if(pedido.isIncluirParcelas() && !pedido.getNumPed().equals("0")) {
-            List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
-            params.put("parcelas", parcelas);
         }
 
         paramsPedido.put("pedido", params);
@@ -173,35 +168,11 @@ public class PedidoService extends WebServiceRequestsService {
                 seqPar++;
                 dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
                 HashMap<String, Object> paramsParcela = new HashMap<>();
-                paramsParcela.put("opeExe", getOpeExe(pedido));
+                paramsParcela.put("opeExe", "I");
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
 //                paramsParcela.put("vlrPar", parcelaParametro.vlrPar); //TODO: verificar se necessario
                 paramsParcela.put("perPar", parcelaParametro.perPar);
-                paramsParcela.put("tipInt", pedido.getTipInt());
-                paramsParcela.put("banOpe", pedido.getBanOpe());
-                paramsParcela.put("catTef", pedido.getCatTef());
-                paramsParcela.put("nsuTef", pedido.getNsuTef());
-                paramsParcela.put("cgcCre", cgcCre);
-                parcelas.add(paramsParcela);
-            }
-        }
-        return parcelas;
-    }
-
-    private List<HashMap<String, Object>> definirParamsParcelasFecharPedido(PayloadPedido pedido) {
-        Date dataParcela = new Date();
-        String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
-        pedido.getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
-        int seqPar = 0;
-        List<HashMap<String, Object>> parcelas = new ArrayList<>();
-        for (Parcela parcela : pedido.getParcelas()) {
-            for (int i = 0; i < parcela.getQtdPar(); i++) {
-                seqPar++;
-                dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
-                HashMap<String, Object> paramsParcela = new HashMap<>();
-                paramsParcela.put("opeExe", getOpeExe(pedido));
-                paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
@@ -306,11 +277,12 @@ public class PedidoService extends WebServiceRequestsService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", pedido.getCodEmp());
         params.put("codFil", pedido.getCodFil());
-        params.put("opeExe", "A");
         params.put("numPed", pedido.getNumPed());
+        params.put("opeExe", "A");
+        params.put("temPar", "S");
         params.put("fecPed", "S");
 
-        List<HashMap<String, Object>> parcelas = definirParamsParcelasFecharPedido(pedido);
+        List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
 
         paramsPedido.put("pedido", params);
