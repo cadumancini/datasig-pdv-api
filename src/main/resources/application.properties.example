@@ -1,3 +1,6 @@
+# Porta onde vai rodar o app
+server.port=
+
 # URL onde acessar os WebServices Senior
 webservicesUrl=
 
