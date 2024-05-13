@@ -1,0 +1,14 @@
+<service>
+  
+  <!-- ID of the service. It should be unique across the Windows system-->
+  <id>pdv-api</id>
+  <!-- Display name of the service -->
+  <name>PDV API</name>
+  <!-- Service description -->
+  <description>API para prover informacoes para Sistema PDV</description>
+  
+  <!-- Path to the executable, which should be started -->
+  <executable>C:\Program Files\Java\jdk-17\bin\java.exe</executable>
+  <arguments>-jar pdv-api.jar</arguments>
+
+</service>
