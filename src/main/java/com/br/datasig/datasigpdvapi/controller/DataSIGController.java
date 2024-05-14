@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.exceptions.*;
+import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -42,6 +43,12 @@ public class DataSIGController {
     @ExceptionHandler({NotAllowedUserException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public String notAllowedUserException(NotAllowedUserException ex) {
+        return getJsonMessage(ex.getMessage());
+    }
+
+    @ExceptionHandler({SOAPClientException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String soapClientException(SOAPClientException ex) {
         return getJsonMessage(ex.getMessage());
     }
 
