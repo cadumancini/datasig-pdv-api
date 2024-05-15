@@ -172,7 +172,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
 //                paramsParcela.put("vlrPar", parcelaParametro.vlrPar); //TODO: verificar se necessario
-                paramsParcela.put("perPar", parcelaParametro.perPar);
+                paramsParcela.put("perPar", getPerPar(parcelaParametro, pedido, seqPar));
                 paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
                 paramsParcela.put("catTef", pedido.getCatTef());
@@ -182,6 +182,15 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return parcelas;
+    }
+
+    private static String getPerPar(ParcelaParametro parcelaParametro, PayloadPedido pedido, int seqPar) {
+        if (pedido.getTipPar().equals("1")) {
+            if (seqPar == 1) return parcelaParametro.perMaior;
+        } else if (pedido.getTipPar().equals("2")) {
+            if (seqPar == pedido.getQtdPar()) return parcelaParametro.perMaior;
+        }
+        return parcelaParametro.perPar;
     }
 
     private String getOpeExe(PayloadPedido pedido) {
@@ -204,9 +213,19 @@ public class PedidoService extends WebServiceRequestsService {
         BigDecimal bdVlr = BigDecimal.valueOf(valorParcela);
         bdVlr = bdVlr.setScale(2, RoundingMode.HALF_UP);
 
+        BigDecimal bdPrc = BigDecimal.valueOf(percentualParcela);
+        bdPrc = bdPrc.setScale(4, RoundingMode.HALF_UP);
+
+        double perRestante = 100 - (bdPrc.doubleValue() * pedido.getQtdPar());
+        double perMaior = percentualParcela + perRestante;
+
+        BigDecimal bdPrcMaior = BigDecimal.valueOf(perMaior);
+        bdPrcMaior = bdPrcMaior.setScale(4, RoundingMode.HALF_UP);
+
         String vlrParStr = String.format("%.2f", bdVlr.doubleValue()).replace(".", ",");
-        String perParStr = String.format("%.4f", percentualParcela).replace(".", ",");
-        return new ParcelaParametro(vlrParStr, perParStr);
+        String perParStr = String.format("%.4f", bdPrc).replace(".", ",");
+        String perMaiorStr = String.format("%.4f", bdPrcMaior).replace(".", ",");
+        return new ParcelaParametro(vlrParStr, perParStr, perMaiorStr);
     }
 
     private Date definirDataParcela(Date date, int days) {
@@ -380,5 +399,6 @@ public class PedidoService extends WebServiceRequestsService {
     private static class ParcelaParametro {
         String vlrPar;
         String perPar;
+        String perMaior;
     }
 }

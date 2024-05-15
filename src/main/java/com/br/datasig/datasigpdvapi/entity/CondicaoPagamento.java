@@ -15,6 +15,7 @@ public class CondicaoPagamento {
     private String codCpg;
     private String abrCpg;
     private String desCpg;
+    private String tipPar;
     private int qtdParCpg;
     private List<Parcela> parcelas;
 
@@ -23,6 +24,7 @@ public class CondicaoPagamento {
         String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
         String abrCpg = element.getElementsByTagName("abrCpg").item(0).getTextContent();
         String desCpg = element.getElementsByTagName("desCpg").item(0).getTextContent();
+        String tipPar = element.getElementsByTagName("tipPar").item(0).getTextContent();
         int qtdParCpg = Integer.parseInt(element.getElementsByTagName("parCpg").item(0).getTextContent());
 
         List<Parcela> parcelasList = new ArrayList<>();
@@ -39,6 +41,6 @@ public class CondicaoPagamento {
             }
         }
 
-        return new CondicaoPagamento(codCpg, abrCpg, desCpg, qtdParCpg, parcelasList);
+        return new CondicaoPagamento(codCpg, abrCpg, desCpg, tipPar, qtdParCpg, parcelasList);
     }
 }
