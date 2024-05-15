@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class ClientePayload {
+    private String codCli;
     private String tipCli;
     private String cgcCpf;
     private String cepCli;

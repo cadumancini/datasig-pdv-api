@@ -88,6 +88,9 @@ public class ClientesService extends WebServiceRequestsService{
         cgcCpf = removeLeadingZeros(cgcCpf);
 
         HashMap<String, Object> paramsDadosGerais = new HashMap<>();
+        if (!cliente.getCodCli().equals("0")) {
+            paramsDadosGerais.put("codCli", cliente.getCodCli());
+        }
         paramsDadosGerais.put("tipCli", cliente.getTipCli());
         paramsDadosGerais.put("apeCli", nomCli);
         paramsDadosGerais.put("nomCli", nomCli);
