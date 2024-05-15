@@ -9,4 +9,5 @@ public class Parcela {
     private int seqIcp;
     private int diaPar;
     private int qtdPar;
+    private String perPar;
 }

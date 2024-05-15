@@ -190,7 +190,7 @@ public class PedidoService extends WebServiceRequestsService {
         } else if (pedido.getTipPar().equals("2")) {
             if (seqPar == pedido.getQtdPar()) return parcelaParametro.perMaior;
         }
-        return parcelaParametro.perPar;
+        return pedido.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().get().getPerPar();
     }
 
     private String getOpeExe(PayloadPedido pedido) {

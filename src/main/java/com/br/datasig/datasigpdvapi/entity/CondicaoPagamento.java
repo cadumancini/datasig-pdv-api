@@ -36,8 +36,9 @@ public class CondicaoPagamento {
                 int seqIcp = Integer.parseInt(elPar.getElementsByTagName("seqIcp").item(0).getTextContent());
                 int diaPar = Integer.parseInt(elPar.getElementsByTagName("diaPar").item(0).getTextContent());
                 int qtdPar = Integer.parseInt(elPar.getElementsByTagName("qtdPar").item(0).getTextContent());
+                String perPar = elPar.getElementsByTagName("perPar").item(0).getTextContent();
 
-                parcelasList.add(new Parcela(seqIcp, diaPar, qtdPar));
+                parcelasList.add(new Parcela(seqIcp, diaPar, qtdPar, perPar));
             }
         }
 
