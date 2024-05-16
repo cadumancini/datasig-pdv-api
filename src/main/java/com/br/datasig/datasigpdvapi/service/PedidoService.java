@@ -45,11 +45,15 @@ public class PedidoService extends WebServiceRequestsService {
 
     private RetornoPedido sendPedidoRequest(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         HashMap<String, Object> params = prepareParamsForPedido(pedido, token);
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, false);
+        String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoPedido);
         return retornoPedido;
+    }
+
+    private String makeRequest(String token, HashMap<String, Object> params) throws SOAPClientException {
+        return soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, false);
     }
 
     private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
@@ -171,7 +175,6 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsParcela.put("opeExe", "I");
                 paramsParcela.put("seqPar", String.valueOf(seqPar));
                 paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-//                paramsParcela.put("vlrPar", parcelaParametro.vlrPar); //TODO: verificar se necessario
                 paramsParcela.put("perPar", getPerPar(parcelaParametro, pedido, seqPar));
                 paramsParcela.put("tipInt", pedido.getTipInt());
                 paramsParcela.put("banOpe", pedido.getBanOpe());
@@ -192,11 +195,7 @@ public class PedidoService extends WebServiceRequestsService {
             if (seqPar == pedido.getQtdPar()) return parcelaParametro.perMaior;
             else return parcelaParametro.perPar;
         }
-        return pedido.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().get().getPerPar();
-    }
-
-    private String getOpeExe(PayloadPedido pedido) {
-        return pedido.getNumPed().equals("0") ? "I" : "A";
+        return pedido.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().orElseThrow().getPerPar();
     }
 
     private static String getDesconto(PayloadPedido pedido) {
@@ -271,8 +270,6 @@ public class PedidoService extends WebServiceRequestsService {
 
         if (hasErrors) {
             throw new OrderException(message.toString());
-        } else if (retornoPedido.getNumPed().equals("0")) {
-            throw new OrderException("Ocorreu um problema durante a criação do pedido. Contate o administrador do sistema");
         }
     }
 
@@ -280,12 +277,12 @@ public class PedidoService extends WebServiceRequestsService {
         HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token);
         HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido);
 
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", paramsAlterarTransacao, false);
+        String xml = makeRequest(token, paramsAlterarTransacao);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
 
-        xml = soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", paramsFecharPedido, false);
+        xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
@@ -379,8 +376,6 @@ public class PedidoService extends WebServiceRequestsService {
             detalhesPedido.setDatEmi(consultaPedido.getDatEmi());
             detalhesPedido.setDesRep(defineDesRep(token, consultaPedido.getCodRep()));
             detalhesPedido.setDesCli(defineDesCli(token, consultaPedido.getCodCli()));
-
-            // TODO: carregar itens
         }
         return null;
     }
