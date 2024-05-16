@@ -37,7 +37,7 @@ public class NFCeService extends WebServiceRequestsService {
 
     public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         String paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, numRegGeracaoNFC);
-        return exeRegra(token, paramsNFCe);
+        return extractNfceNumberFromResponse(exeRegra(token, paramsNFCe));
     }
 
     private String prepareParamsForGeracaoNFCe(String token, String numPed, String numReg) {
@@ -45,6 +45,11 @@ public class NFCeService extends WebServiceRequestsService {
         appendSIDParam(paramsBuilder, "aNumPedPdv", numPed);
 
         return paramsBuilder.toString();
+    }
+
+    private String extractNfceNumberFromResponse(String response) {
+        String[] terms = response.split(" ");
+        return terms[1];
     }
 
     private String getResponseNFCeFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
