@@ -40,7 +40,8 @@ public class Cliente {
         String nenCli = element.getElementsByTagName("nenCli").item(0).getTextContent();
         String sigUfs = element.getElementsByTagName("sigUfs").item(0).getTextContent();
 
-        return new Cliente(codCli, nomCli, apeCli, cgcCpf, tipCli, endCli, baiCli, cepCli,
-                cidCli, cplEnd, fonCli, intNet, nenCli, sigUfs);
+        return new Cliente(codCli.trim(), nomCli.trim(), apeCli.trim(), cgcCpf.trim(), tipCli.trim(),
+                endCli.trim(), baiCli.trim(), cepCli.trim(), cidCli.trim(), cplEnd.trim(), fonCli.trim(),
+                intNet.trim(), nenCli.trim(), sigUfs.trim());
     }
 }
