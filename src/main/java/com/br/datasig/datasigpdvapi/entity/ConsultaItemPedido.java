@@ -16,4 +16,5 @@ public class ConsultaItemPedido {
     private String qtdPed;
     private String seqIpd;
     private String sitIpd;
+    private String obsIpd;
 }

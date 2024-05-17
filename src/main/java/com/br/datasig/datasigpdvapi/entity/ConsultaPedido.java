@@ -63,8 +63,9 @@ public class ConsultaPedido {
                 String qtdPed = elItem.getElementsByTagName("qtdPed").item(0).getTextContent();
                 String seqIpd = elItem.getElementsByTagName("seqIpd").item(0).getTextContent();
                 String sitIpd = elItem.getElementsByTagName("sitIpd").item(0).getTextContent();
+                String obsIpd = elItem.getElementsByTagName("obsIpd").item(0).getTextContent();
 
-                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd));
+                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim()));
             }
         }
         return itens;
