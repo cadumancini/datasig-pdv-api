@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -134,9 +135,11 @@ public class NFCeService extends WebServiceRequestsService {
         return paramsBuilder;
     }
 
-    public String getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public SitEdocsResponse getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
         String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, numRegSituacaoEDocs);
-        return exeRegra(token, paramsNFCe);
+        String response = exeRegra(token, paramsNFCe);
+        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null).get(0);
+        return new SitEdocsResponse(response, notaFiscal);
     }
 
     private String prepareParamsForConsultaEDocs(String token, String codSnf, String numNfv, String numReg) {
