@@ -140,6 +140,8 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsItem.put("qtdPed", itemPedido.getQtdPed());
                 paramsItem.put("codTpr", itemPedido.getCodTpr());
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
+                paramsItem.put("vlrDsc", itemPedido.getVlrDsc());
+                paramsItem.put("perDsc", itemPedido.getPerDsc());
                 paramsItem.put("codDep", definirCodDep(token));
                 paramsItem.put("tnsPro", tnsPed);
                 paramsItem.put("resEst", "S");

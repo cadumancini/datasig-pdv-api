@@ -64,8 +64,11 @@ public class ConsultaPedido {
                 String seqIpd = elItem.getElementsByTagName("seqIpd").item(0).getTextContent();
                 String sitIpd = elItem.getElementsByTagName("sitIpd").item(0).getTextContent();
                 String obsIpd = elItem.getElementsByTagName("obsIpd").item(0).getTextContent();
+                String vlrDsc = elItem.getElementsByTagName("vlrDsc").item(0).getTextContent();
+                String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
+                String tipDsc = perDsc.equals("0,00") ? "valor" : "porcentagem";
 
-                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim()));
+                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
             }
         }
         return itens;

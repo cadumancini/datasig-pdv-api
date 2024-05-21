@@ -11,5 +11,7 @@ public class PayloadItemPedido {
     private String seqIpd;
     private String vlrTot;
     private String obsIpd;
+    private String vlrDsc;
+    private String perDsc;
     private boolean excluir;
 }
