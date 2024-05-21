@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,8 +41,8 @@ public class ConsultaNotaFiscal {
         String datEmi = element.getElementsByTagName("datEmi").item(0).getTextContent();
         String horEmi = element.getElementsByTagName("horEmi").item(0).getTextContent();
         String sitNfv = element.getElementsByTagName("sitNfv").item(0).getTextContent();
+        String sitDoe = element.getElementsByTagName("sitDoe").item(0).getTextContent();
         String desSitNfv = getDesSitNfv(sitNfv);
-        String sitDoe = getSitDoe(element);
         String desSitDoe = getDesSitDoe(sitDoe);
         return new ConsultaNotaFiscal(codCli, codRep, codEmp, codFil, codSnf, numNfv, Integer.parseInt(numNfv), datEmi, horEmi, sitNfv, desSitNfv, sitDoe, desSitDoe, isCancelavel(datEmi, horEmi, sitDoe), isInutilizavel(sitDoe));
     }
@@ -57,18 +56,6 @@ public class ConsultaNotaFiscal {
             case "5" -> "Aguardando Fechamento (pós-saída)";
             default -> "";
         };
-    }
-
-    private static String getSitDoe(Element element) {
-        NodeList infoEletronica = element.getElementsByTagName("informacaoEletronica");
-        for (int i = 0; i < infoEletronica.getLength(); i++) {
-            Node nNodeInfo = infoEletronica.item(i);
-            if (nNodeInfo.getNodeType() == Node.ELEMENT_NODE) {
-                Element elInfoEletronica = (Element) nNodeInfo;
-                return elInfoEletronica.getElementsByTagName("sitDoe").item(0).getTextContent();
-            }
-        }
-        return "";
     }
 
     private static String getDesSitDoe(String sitDoe) {

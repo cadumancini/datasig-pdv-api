@@ -67,25 +67,24 @@ public class NFCeService extends WebServiceRequestsService {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        addParamsForConsultaNFCes(params, token, numNfv, sitNfv, datIni, datFim);
+        addParamsForConsultaNFCes(params, numNfv, sitNfv, datIni, datFim);
 
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ven_notafiscalsaida", "ConsultarGeral_6", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("ConsultaNotaFiscal", "Consultar", token, "0", params, true);
         XmlUtils.validateXmlResponse(xml);
 
         return getNotasFromXml(xml);
     }
 
-    private void addParamsForConsultaNFCes(HashMap<String, Object> params, String token, String numNfv, String sitNfv, String datIni, String datFim) {
-        params.put("codSnf", "<codSnf>" + TokensManager.getInstance().getParamsPDVFromToken(token).getSnfNfc() + "</codSnf>");
-        params.put("numNfv", numNfv == null ? "" : "<numNfv>" + numNfv + "</numNfv>");
+    private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String datIni, String datFim) {
+        params.put("numNfv", numNfv == null ? "" : numNfv);
         params.put("sitNfv", sitNfv == null ? "" : sitNfv);
-        params.put("datGerIni", datIni == null ? "" : datIni);
-        params.put("datGerFim", datFim == null ? "" : datFim);
+        params.put("datIni", datIni == null ? "" : datIni);
+        params.put("datFim", datFim == null ? "" : datFim);
     }
 
     private List<ConsultaNotaFiscal> getNotasFromXml(String xml) throws ParserConfigurationException, IOException, SAXException, ParseException {
         List<ConsultaNotaFiscal> notas = new ArrayList<>();
-        NodeList nList = XmlUtils.getNodeListByElementName(xml, "notaFiscal");
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "dados");
 
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
