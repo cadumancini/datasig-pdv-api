@@ -66,11 +66,17 @@ public class ConsultaPedido {
                 String obsIpd = elItem.getElementsByTagName("obsIpd").item(0).getTextContent();
                 String vlrDsc = elItem.getElementsByTagName("vlrDsc").item(0).getTextContent();
                 String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
-                String tipDsc = perDsc.equals("0,00") ? "valor" : "porcentagem";
+                String tipDsc = getTipDsc(perDsc, vlrDsc);
 
                 itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
             }
         }
         return itens;
+    }
+
+    private static String getTipDsc(String perDsc, String vlrDsc) {
+        if (!perDsc.equals("0,00")) return "porcentagem";
+        else if (!vlrDsc.equals("0,00")) return "valor";
+        return "";
     }
 }
