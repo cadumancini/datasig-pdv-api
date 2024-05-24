@@ -78,12 +78,12 @@ public class ClientesService extends WebServiceRequestsService{
     }
 
     private HashMap<String, Object> prepareParams(String token, ClientePayload cliente) {
-        String nomCli = sanitizeString(cliente.getNomCli());
-        String endCli = sanitizeString(cliente.getEndCli());
-        String baiCli = sanitizeString(cliente.getBaiCli());
-        String cplEnd = sanitizeString(cliente.getCplEnd());
-        String cepCli = sanitizeString(cliente.getCepCli()).replace("-", "");
-        String cgcCpf = sanitizeString(cliente.getCgcCpf()).replace("-", "").replace(".", "").replace("/", "");
+        String nomCli = sanitizeString(cliente.getNomCli().trim());
+        String endCli = sanitizeString(cliente.getEndCli()).trim();
+        String baiCli = sanitizeString(cliente.getBaiCli().trim());
+        String cplEnd = sanitizeString(cliente.getCplEnd().trim());
+        String cepCli = sanitizeString(cliente.getCepCli().trim()).replace("-", "");
+        String cgcCpf = sanitizeString(cliente.getCgcCpf().trim()).replace("-", "").replace(".", "").replace("/", "");
 
         cgcCpf = removeLeadingZeros(cgcCpf);
 
@@ -97,15 +97,15 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDadosGerais.put("cgcCpf", cgcCpf);
         paramsDadosGerais.put("cepCli", cepCli);
         paramsDadosGerais.put("endCli", endCli);
-        paramsDadosGerais.put("nenCli", cliente.getNenCli());
+        paramsDadosGerais.put("nenCli", cliente.getNenCli().trim());
         paramsDadosGerais.put("cplEnd", cplEnd);
         paramsDadosGerais.put("baiCli", baiCli);
-        paramsDadosGerais.put("cidCli", cliente.getCidCli().toUpperCase());
-        paramsDadosGerais.put("sigUfs", cliente.getSigUfs());
-        paramsDadosGerais.put("fonCli", cliente.getFonCli());
-        paramsDadosGerais.put("fonCl2", cliente.getFonCli());
-        paramsDadosGerais.put("intNet", cliente.getEmaCli().toUpperCase());
-        paramsDadosGerais.put("emaNfe", cliente.getEmaCli().toUpperCase());
+        paramsDadosGerais.put("cidCli", cliente.getCidCli().trim().toUpperCase());
+        paramsDadosGerais.put("sigUfs", cliente.getSigUfs().trim());
+        paramsDadosGerais.put("fonCli", cliente.getFonCli().trim());
+        paramsDadosGerais.put("fonCl2", cliente.getFonCli().trim());
+        paramsDadosGerais.put("intNet", cliente.getEmaCli().trim().toUpperCase());
+        paramsDadosGerais.put("emaNfe", cliente.getEmaCli().trim().toUpperCase());
         paramsDadosGerais.put("tipMer", "I");
         paramsDadosGerais.put("cliCon", "N");
         paramsDadosGerais.put("sitCli", "A");
