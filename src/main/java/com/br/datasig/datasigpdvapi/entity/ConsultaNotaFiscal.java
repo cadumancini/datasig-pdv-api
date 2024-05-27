@@ -88,8 +88,8 @@ public class ConsultaNotaFiscal {
         Date dateDatEmi = formatter.parse(datEmi + " " + horEmi);
         Date now = new Date();
         long difference = now.getTime() - dateDatEmi.getTime();
-        long MAX_DURATION = MILLISECONDS.convert(30, MINUTES);
-        return (difference <= MAX_DURATION && Integer.parseInt(sitDoe) == 3);
+        long maxDuration = MILLISECONDS.convert(30, MINUTES);
+        return (difference <= maxDuration && Integer.parseInt(sitDoe) == 3);
     }
 
     private static boolean isInutilizavel(String sitDoe) {
