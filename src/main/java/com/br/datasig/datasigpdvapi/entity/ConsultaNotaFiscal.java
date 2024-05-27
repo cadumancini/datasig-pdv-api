@@ -48,37 +48,37 @@ public class ConsultaNotaFiscal {
     }
 
     private static String getDesSitNfv(String sitNfv) {
-        return switch (sitNfv) {
-            case "1" -> "Digitada";
-            case "2" -> "Fechada";
-            case "3" -> "Cancelada";
-            case "4" -> "Documento Fiscal Emitido (saída)";
-            case "5" -> "Aguardando Fechamento (pós-saída)";
+        return switch (Integer.parseInt(sitNfv)) {
+            case 1 -> "Digitada";
+            case 2 -> "Fechada";
+            case 3 -> "Cancelada";
+            case 4 -> "Documento Fiscal Emitido (saída)";
+            case 5 -> "Aguardando Fechamento (pós-saída)";
             default -> "";
         };
     }
 
     private static String getDesSitDoe(String sitDoe) {
-        return switch (sitDoe) {
-            case "1" -> "Não Enviada";
-            case "2" -> "Enviada";
-            case "3" -> "Autorizada";
-            case "4" -> "Rejeitada";
-            case "5" -> "Denegada";
-            case "6" -> "Solicitado Inutilização";
-            case "7" -> "Solicitado Cancelamento";
-            case "8" -> "Inutilizada";
-            case "9" -> "Cancelada";
-            case "10" -> "Erro Geração";
-            case "11" -> "Erro Solicitação Cancelamento";
-            case "12" -> "Erro Solicitação Inutilização";
-            case "13" -> "Pendente de Cancelamento";
-            case "14" -> "Solicitado Encerramento (MDF-e)";
-            case "15" -> "Encerrado (MDF-e)";
-            case "16" -> "Autorizado em Contingência (utilizado apenas para retorno WebService)";
-            case "17" -> "Evento registrado (evento pror. suspensão ICMS - utilizado apenas Web Service)";
-            case "18" -> "Deferido parcial (evento pror. suspensão ICMS - utilizado apenas no Web Service)";
-            case "19" -> "Indeferido (evento prorrogação suspensão ICMS - utilizado apenas no Web Service)";
+        return switch (Integer.parseInt(sitDoe)) {
+            case 1 -> "Não Enviada";
+            case 2 -> "Enviada";
+            case 3 -> "Autorizada";
+            case 4 -> "Rejeitada";
+            case 5 -> "Denegada";
+            case 6 -> "Solicitado Inutilização";
+            case 7 -> "Solicitado Cancelamento";
+            case 8 -> "Inutilizada";
+            case 9 -> "Cancelada";
+            case 10 -> "Erro Geração";
+            case 11 -> "Erro Solicitação Cancelamento";
+            case 12 -> "Erro Solicitação Inutilização";
+            case 13 -> "Pendente de Cancelamento";
+            case 14 -> "Solicitado Encerramento (MDF-e)";
+            case 15 -> "Encerrado (MDF-e)";
+            case 16 -> "Autorizado em Contingência (utilizado apenas para retorno WebService)";
+            case 17 -> "Evento registrado (evento pror. suspensão ICMS - utilizado apenas Web Service)";
+            case 18 -> "Deferido parcial (evento pror. suspensão ICMS - utilizado apenas no Web Service)";
+            case 19 -> "Indeferido (evento prorrogação suspensão ICMS - utilizado apenas no Web Service)";
             default -> "";
         };
     }
@@ -89,10 +89,10 @@ public class ConsultaNotaFiscal {
         Date now = new Date();
         long difference = now.getTime() - dateDatEmi.getTime();
         long MAX_DURATION = MILLISECONDS.convert(30, MINUTES);
-        return (difference <= MAX_DURATION && sitDoe.equals("3"));
+        return (difference <= MAX_DURATION && Integer.parseInt(sitDoe) == 3);
     }
 
     private static boolean isInutilizavel(String sitDoe) {
-        return (sitDoe.equals("4") || sitDoe.equals("10"));
+        return (Integer.parseInt(sitDoe) == 4 || Integer.parseInt(sitDoe) == 10);
     }
 }
