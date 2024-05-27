@@ -69,7 +69,7 @@ public class NFCeService extends WebServiceRequestsService {
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForConsultaNFCes(params, numNfv, sitNfv, datIni, datFim);
 
-        String xml = soapClient.requestFromSeniorWS("ConsultaNotaFiscal", "Consultar", token, "0", params, true);
+        String xml = soapClient.requestFromSeniorWS("ConsultaNotaFiscal", "Consultar", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
 
         return getNotasFromXml(xml);
