@@ -27,7 +27,7 @@ public class ProdutosService extends WebServiceRequestsService{
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForProdutosPorTabelaDePreco(params, codTpr);
 
-        String xml = soapClient.requestFromSeniorWS("ConsultaTabelaPreco", "Consultar", token, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaTabelaPreco", "Consultar", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         List<ProdutoTabela> produtosPorTabela = getProdutosPorTabelaFromXml(xml, codTpr);
