@@ -35,7 +35,7 @@ public class PedidoService extends WebServiceRequestsService {
             RetornoPedido retornoPedido = sendPedidoRequest(pedido, token);
             if (pedido.isFechar()) {
                 pedido.setNumPed(retornoPedido.getNumPed());
-                fecharPedido(pedido, token);
+                fecharPedido(pedido, token, false);
             }
             return retornoPedido;
         } else {
@@ -58,7 +58,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if (pedido.isFechar()) {
-            return fecharPedido(pedido, token);
+            return fecharPedido(pedido, token, true);
         } else {
             return sendPedidoRequest(pedido, token);
         }
@@ -270,7 +270,7 @@ public class PedidoService extends WebServiceRequestsService {
     private void validateRetornoPedido(RetornoPedido retornoPedido) {
         StringBuilder message = new StringBuilder();
         boolean hasErrors = false;
-        if (retornoPedido.getMsgRet().startsWith("ERRO") || retornoPedido.getNumPed().equals("0")) {
+        if (pedidoTemErro(retornoPedido)) {
             hasErrors = true;
             message.append(retornoPedido.getMsgRet()).append("\n");
         }
@@ -294,20 +294,34 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    private RetornoPedido fecharPedido(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
-        HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token);
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido);
+    private static boolean pedidoTemErro(RetornoPedido retornoPedido) {
+        return retornoPedido.getMsgRet().startsWith("ERRO") ||
+                retornoPedido.getMsgRet().startsWith("Regra") ||
+                retornoPedido.getNumPed().equals("0");
+    }
 
+    private RetornoPedido fecharPedido(PayloadPedido pedido, String token, boolean alterarTransacao) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+        if (alterarTransacao) {
+            alterarTransacao(pedido, token);
+        }
+        return fecharPedido(pedido, token);
+    }
+
+    private RetornoPedido fecharPedido(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido);
+        String xml = makeRequest(token, paramsFecharPedido);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoFecharPedido);
+        return retornoFecharPedido;
+    }
+
+    private void alterarTransacao(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token);
         String xml = makeRequest(token, paramsAlterarTransacao);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
-
-        xml = makeRequest(token, paramsFecharPedido);
-        XmlUtils.validateXmlResponse(xml);
-        retornoFecharPedido = getRetornoPedidoFromXml(xml);
-        validateRetornoPedido(retornoFecharPedido);
-        return retornoFecharPedido;
     }
 
     private HashMap<String, Object> prepareParamsForFecharPedido(PayloadPedido pedido) {
