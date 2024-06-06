@@ -91,7 +91,6 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codFil", pedido.getCodFil());
         params.put("codCli", definirCodCli(pedido.getCodCli(), token));
         params.put("codCpg", pedido.getCodCpg());
-        params.put("codFpg", pedido.getCodFpg());
         params.put("codRep", pedido.getCodRep());
         params.put("cifFob", "X");
         params.put("indPre", "1");
@@ -169,41 +168,47 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
-        Date dataParcela = new Date();
-        ParcelaParametro parcelaParametro = definirValorParcela(pedido);
-        String cgcCre = !pedido.getBanOpe().isEmpty() ? definirCgcCre(pedido.getCodOpe()) : "";
-        pedido.getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
-        int seqPar = 0;
         List<HashMap<String, Object>> parcelas = new ArrayList<>();
-        for (Parcela parcela : pedido.getParcelas()) {
-            for (int i = 0; i < parcela.getQtdPar(); i++) {
-                seqPar++;
-                dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
-                HashMap<String, Object> paramsParcela = new HashMap<>();
-                paramsParcela.put("opeExe", "I");
-                paramsParcela.put("seqPar", String.valueOf(seqPar));
-                paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-                paramsParcela.put("perPar", getPerPar(parcelaParametro, pedido, seqPar));
-                paramsParcela.put("tipInt", pedido.getTipInt());
-                paramsParcela.put("banOpe", pedido.getBanOpe());
-                paramsParcela.put("catTef", pedido.getCatTef());
-                paramsParcela.put("nsuTef", pedido.getNsuTef());
-                paramsParcela.put("cgcCre", cgcCre);
-                parcelas.add(paramsParcela);
+        int seqPar = 0;
+        int seqParCpg;
+        for(PagamentoPedido pagto : pedido.getPagamentos()) {
+            seqParCpg = 0;
+            Date dataParcela = new Date();
+            ParcelaParametro parcelaParametro = definirValorParcela(pedido, pagto);
+            String cgcCre = !pagto.getBanOpe().isEmpty() ? definirCgcCre(pagto.getForma().getCodOpe()) : "";
+            pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
+            for (Parcela parcela : pagto.getCondicao().getParcelas()) {
+                for (int i = 0; i < parcela.getQtdPar(); i++) {
+                    seqPar++;
+                    seqParCpg++;
+                    dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
+                    HashMap<String, Object> paramsParcela = new HashMap<>();
+                    paramsParcela.put("opeExe", "I");
+                    paramsParcela.put("seqPar", String.valueOf(seqPar));
+                    paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
+                    paramsParcela.put("vctPar", dateFormat.format(dataParcela));
+                    paramsParcela.put("perPar", getPerPar(parcelaParametro, pagto.getCondicao(), seqParCpg));
+                    paramsParcela.put("tipInt", pagto.getForma().getTipInt());
+                    paramsParcela.put("banOpe", pagto.getBanOpe());
+                    paramsParcela.put("catTef", pagto.getCatTef());
+                    paramsParcela.put("nsuTef", pagto.getNsuTef());
+                    paramsParcela.put("cgcCre", cgcCre);
+                    parcelas.add(paramsParcela);
+                }
             }
         }
         return parcelas;
     }
 
-    private static String getPerPar(ParcelaParametro parcelaParametro, PayloadPedido pedido, int seqPar) {
-        if (pedido.getTipPar().equals("1")) {
+    private static String getPerPar(ParcelaParametro parcelaParametro, CondicaoPagamento condicao, int seqPar) {
+        if (condicao.getTipPar().equals("1")) {
             if (seqPar == 1) return parcelaParametro.perMaior;
             else return parcelaParametro.perPar;
-        } else if (pedido.getTipPar().equals("2")) {
-            if (seqPar == pedido.getQtdPar()) return parcelaParametro.perMaior;
+        } else if (condicao.getTipPar().equals("2")) {
+            if (seqPar == condicao.getQtdParCpg()) return parcelaParametro.perMaior;
             else return parcelaParametro.perPar;
         }
-        return pedido.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().orElseThrow().getPerPar();
+        return condicao.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().orElseThrow().getPerPar();
     }
 
     private static String getDesconto(PayloadPedido pedido) {
@@ -215,26 +220,35 @@ public class PedidoService extends WebServiceRequestsService {
 //        https://documentacao.senior.com.br/gestaoempresarialerp/5.10.3/index.htm#webservices/com_senior_g5_co_int_varejo_operadorascartao.htm?Highlight=operadoras%20financeiras
     }
 
-    private ParcelaParametro definirValorParcela(PayloadPedido pedido) {
-        double valorParcela = pedido.getVlrTot() / pedido.getQtdPar();
+    private ParcelaParametro definirValorParcela(PayloadPedido pedido, PagamentoPedido pagto) {
+        double valorParcela = pagto.getValorTotalPago() / pagto.getCondicao().getQtdParCpg();
+        double percentualTotal = pagto.getValorTotalPago() / pedido.getVlrTot() * 100;
         double percentualParcela = valorParcela / pedido.getVlrTot() * 100;
 
-        BigDecimal bdVlr = BigDecimal.valueOf(valorParcela);
-        bdVlr = bdVlr.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal bdPrc = toRoundedBigDecimal(percentualParcela);
 
+        double perRestante = calcPercentualRestante(pagto, percentualTotal, bdPrc);
+        double perMaior = percentualParcela + Math.abs(perRestante);
+
+        BigDecimal bdPrcMaior = toRoundedBigDecimal(perMaior);
+
+        String perParStr = toFormattedString(bdPrc);
+        String perMaiorStr = toFormattedString(bdPrcMaior);
+        return new ParcelaParametro(perParStr, perMaiorStr);
+    }
+
+    private static double calcPercentualRestante(PagamentoPedido pagto, double percentualTotal, BigDecimal bdPrc) {
+        return pagto.getCondicao().getQtdParCpg() == 1 ? 0 : percentualTotal - (bdPrc.doubleValue() * pagto.getCondicao().getQtdParCpg());
+    }
+
+    private static String toFormattedString(BigDecimal bdPrc) {
+        return String.format("%.4f", bdPrc).replace(".", ",");
+    }
+
+    private static BigDecimal toRoundedBigDecimal(double percentualParcela) {
         BigDecimal bdPrc = BigDecimal.valueOf(percentualParcela);
         bdPrc = bdPrc.setScale(4, RoundingMode.HALF_UP);
-
-        double perRestante = 100 - (bdPrc.doubleValue() * pedido.getQtdPar());
-        double perMaior = percentualParcela + perRestante;
-
-        BigDecimal bdPrcMaior = BigDecimal.valueOf(perMaior);
-        bdPrcMaior = bdPrcMaior.setScale(4, RoundingMode.HALF_UP);
-
-        String vlrParStr = String.format("%.2f", bdVlr.doubleValue()).replace(".", ",");
-        String perParStr = String.format("%.4f", bdPrc).replace(".", ",");
-        String perMaiorStr = String.format("%.4f", bdPrcMaior).replace(".", ",");
-        return new ParcelaParametro(vlrParStr, perParStr, perMaiorStr);
+        return bdPrc;
     }
 
     private Date definirDataParcela(Date date, int days) {
@@ -402,7 +416,6 @@ public class PedidoService extends WebServiceRequestsService {
 
     @AllArgsConstructor
     private static class ParcelaParametro {
-        String vlrPar;
         String perPar;
         String perMaior;
     }
