@@ -58,7 +58,7 @@ public class UserService extends WebServiceRequestsService {
     private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
         logger.info("Buscando empresa e filial ativas para usuário {}", user);
         HashMap<String, Object> params = prepareParamsForEmpresaAtiva(user);
-        String xml = soapClient.requestFromSeniorWS("ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params);
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsEmpresaFromXml(xml);
@@ -83,7 +83,7 @@ public class UserService extends WebServiceRequestsService {
     private ParamsPDV defineParamsPDV(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         logger.info("Buscando parâmetros PDV para usuário {}", user);
         HashMap<String, Object> params = prepareParamsForParamsPDV(codEmp, codFil);
-        String xml = soapClient.requestFromSeniorWS("ConsultaParametrosIntegracao", "PDV", user, pswd, "0", params);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaParametrosIntegracao", "PDV", user, pswd, "0", params);
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsPDVFromXml(xml);

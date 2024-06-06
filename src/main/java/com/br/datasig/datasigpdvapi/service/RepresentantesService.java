@@ -24,7 +24,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        String xml = soapClient.requestFromSeniorWS("ConsultaRepresentante", "Consulta", token, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaRepresentante", "Consulta", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         return getRepresentantesFromXml(xml);
@@ -48,7 +48,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForTabelaPreco(params, codRep);
-        String xml = soapClient.requestFromSeniorWS("ConsultaTabeladePreco", "Representante", token, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaRepresentanteXTabelaPreco", "Representante", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         return getTabelasPrecoFromXml(xml);

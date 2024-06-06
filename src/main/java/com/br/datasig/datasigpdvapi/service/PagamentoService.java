@@ -21,7 +21,7 @@ public class PagamentoService extends WebServiceRequestsService {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        String xml = soapClient.requestFromSeniorWS("ConsultaPagamento", "Consultar", token, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPagamento", "Consultar", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         return getFormasPagamentoFromXml(xml);

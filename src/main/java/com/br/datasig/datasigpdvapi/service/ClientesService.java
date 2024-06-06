@@ -28,7 +28,7 @@ public class ClientesService extends WebServiceRequestsService{
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
         addParamsForClientes(params);
-        String xml = soapClient.requestFromSeniorWS("ConsultaCliente", "Cliente", token, "0", params, false);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaCliente", "Cliente", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         return getClientesFromXml(xml);
