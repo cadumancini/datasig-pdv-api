@@ -222,14 +222,11 @@ public class PedidoService extends WebServiceRequestsService {
 
     private ParcelaParametro definirValorParcela(PayloadPedido pedido, PagamentoPedido pagto) {
         double valorParcela = pagto.getValorTotalPago() / pagto.getCondicao().getQtdParCpg();
-        double percentualTotal = pagto.getValorTotalPago() / pedido.getVlrTot() * 100;
-        double percentualParcela = valorParcela / pedido.getVlrTot() * 100;
 
+        double percentualParcela = valorParcela / pedido.getVlrTot() * 100;
         BigDecimal bdPrc = toRoundedBigDecimal(percentualParcela);
 
-        double perRestante = calcPercentualRestante(pagto, percentualTotal, bdPrc);
-        double perMaior = percentualParcela + Math.abs(perRestante);
-
+        double perMaior = calrPercentualMaior(pagto, bdPrc, percentualParcela, pedido.getVlrTot());
         BigDecimal bdPrcMaior = toRoundedBigDecimal(perMaior);
 
         String perParStr = toFormattedString(bdPrc);
@@ -237,8 +234,10 @@ public class PedidoService extends WebServiceRequestsService {
         return new ParcelaParametro(perParStr, perMaiorStr);
     }
 
-    private static double calcPercentualRestante(PagamentoPedido pagto, double percentualTotal, BigDecimal bdPrc) {
-        return pagto.getCondicao().getQtdParCpg() == 1 ? 0 : percentualTotal - (bdPrc.doubleValue() * pagto.getCondicao().getQtdParCpg());
+    private static double calrPercentualMaior(PagamentoPedido pagto, BigDecimal bdPrc, double percentualParcela, double vlrTotalPedido) {
+        double percentualTotal = pagto.getValorTotalPago() / vlrTotalPedido * 100;
+        double perRestante = pagto.getCondicao().getQtdParCpg() == 1 ? 0 : percentualTotal - (bdPrc.doubleValue() * pagto.getCondicao().getQtdParCpg());
+        return percentualParcela + Math.abs(perRestante);
     }
 
     private static String toFormattedString(BigDecimal bdPrc) {
