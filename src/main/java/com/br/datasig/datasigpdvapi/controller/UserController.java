@@ -25,8 +25,17 @@ public class UserController extends DataSIGController {
             description = "Cria um token baseado no usuário, senha e timestamp de login, que é retornado ao FrontEnd e utilizado nas outras requisições"
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
-    public String performLogin(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
-        return userService.performLogin(user, pswd);
+    public String login(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
+        return userService.login(user, pswd);
+    }
+
+    @Operation(
+            summary = "Realizar logout no sistema PDV",
+            description = "Remove o token da lista"
+    )
+    @PostMapping(value = "/logout", produces = "text/plain;charset=UTF-8")
+    public String logout(@RequestParam String token) {
+        return userService.logout(token);
     }
 
     @Operation(

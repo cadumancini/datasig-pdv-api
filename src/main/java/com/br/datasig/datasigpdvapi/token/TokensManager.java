@@ -32,6 +32,10 @@ public class TokensManager {
         validTokens.removeIf(token -> !token.isValid());
     }
 
+    public void removeToken(String tokenValue) {
+        validTokens.removeIf(token -> token.getValue().equals(tokenValue));
+    }
+
     public boolean isTokenValid(String token) {
         return validTokens.stream().anyMatch(o -> o.getValue().equals(token));
     }

@@ -26,7 +26,7 @@ import java.util.HashMap;
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public String performLogin(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
+    public String login(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -110,5 +110,10 @@ public class UserService extends WebServiceRequestsService {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
         ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDV);
+    }
+
+    public String logout(String token) {
+        TokensManager.getInstance().removeToken(token);
+        return "OK";
     }
 }
