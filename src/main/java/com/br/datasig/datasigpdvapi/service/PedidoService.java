@@ -295,8 +295,7 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private static boolean pedidoTemErro(RetornoPedido retornoPedido) {
-        return retornoPedido.getMsgRet().startsWith("ERRO") ||
-                retornoPedido.getMsgRet().startsWith("Regra") ||
+        return !retornoPedido.getMsgRet().equals("OK") ||
                 retornoPedido.getNumPed().equals("0");
     }
 
