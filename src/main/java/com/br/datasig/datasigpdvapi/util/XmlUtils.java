@@ -34,9 +34,13 @@ public class XmlUtils {
                 throw new WebServiceRuntimeException(executionError);
             }
         } else if (xml.contains("ERRO:")) {
-            String executionError = getMessageFromXml(xml, "result", "resultado");
-            logger.error(executionError);
-            throw new WebServiceRuntimeException(executionError);
+            try {
+                String executionError = getMessageFromXml(xml, "result", "resultado");
+                logger.error(executionError);
+                throw new WebServiceRuntimeException(executionError);
+            } catch (Exception e) {
+                // do nothing
+            }
         }
     }
 

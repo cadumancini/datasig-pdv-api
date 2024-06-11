@@ -103,7 +103,8 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("tnsPro", tnsPed);
         params.put("temPar", "N");
         params.put("acePar", "N");
-        params.put("vlrDar", pedido.getVlrDar() > 0 ? getDesconto(pedido) : "0");
+        params.put("vlrDar", pedido.getVlrDar() > 0 ? ("-" + doubleToString(pedido.getVlrDar())) : "0");
+        params.put("usuario", getVlrTro(pedido));
 
         if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
@@ -112,6 +113,15 @@ public class PedidoService extends WebServiceRequestsService {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private String getVlrTro(PayloadPedido pedido) {
+        String vlrTroElement = "<cmpUsu>USU_VLRTRO</cmpUsu>";
+        vlrTroElement += "<vlrUsu>";
+        vlrTroElement += pedido.getVlrTro() > 0 ? doubleToString(pedido.getVlrTro()) : "0";
+        vlrTroElement += "</vlrUsu>";
+
+        return vlrTroElement;
     }
 
     private String definirTnsPro(PayloadPedido pedido, String token) {
@@ -211,8 +221,8 @@ public class PedidoService extends WebServiceRequestsService {
         return condicao.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().orElseThrow().getPerPar();
     }
 
-    private static String getDesconto(PayloadPedido pedido) {
-        return "-" + String.format("%.2f", pedido.getVlrDar()).replace(".", ",");
+    private static String doubleToString(Double value) {
+        return String.format("%.2f", value).replace(".", ",");
     }
 
     private String definirCgcCre(String codOpe) { //TODO: implementar
