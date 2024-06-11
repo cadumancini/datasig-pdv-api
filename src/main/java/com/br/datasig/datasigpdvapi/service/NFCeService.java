@@ -2,11 +2,14 @@ package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
+import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
@@ -24,6 +27,7 @@ import java.util.List;
 
 @Component
 public class NFCeService extends WebServiceRequestsService {
+    private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
     private final String numRegGeracaoNFC;
     private final String numRegCancelamentoNFC;
     private final String numRegInutilizacaoNFC;
@@ -36,9 +40,18 @@ public class NFCeService extends WebServiceRequestsService {
         numRegSituacaoEDocs = env.getProperty("numRegSituacaoEDocs");
     }
 
-    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException {
         String paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, numRegGeracaoNFC);
-        return extractNfceNumberFromResponse(exeRegra(token, paramsNFCe));
+        String nfceResponse = exeRegra(token, paramsNFCe);
+        validateNfceResponse(nfceResponse);
+        return extractNfceNumberFromResponse(nfceResponse);
+    }
+
+    private void validateNfceResponse(String nfceResponse) {
+        if (!nfceResponse.startsWith("OK")) {
+            logger.error(nfceResponse);
+            throw new NfceException(nfceResponse);
+        }
     }
 
     private String prepareParamsForGeracaoNFCe(String token, String numPed, String numReg) {

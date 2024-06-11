@@ -52,6 +52,12 @@ public class DataSIGController {
         return getJsonMessage(ex.getMessage());
     }
 
+    @ExceptionHandler({NfceException.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String nfceExption(NfceException ex) {
+        return getJsonMessage(ex.getMessage());
+    }
+
     private String getJsonMessage(String errorMessage) {
         return new JSONObject().put("message", errorMessage).toString();
     }

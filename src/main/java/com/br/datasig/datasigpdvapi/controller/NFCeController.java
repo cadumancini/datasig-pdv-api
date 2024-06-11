@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.controller;
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
+import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.service.NFCeService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,8 @@ public class NFCeController extends DataSIGController {
     )
     @PutMapping(value = "", produces = "text/plain;charset=UTF-8")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public String putNFCe(@RequestParam String token, @RequestParam String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public String putNFCe(@RequestParam String token, @RequestParam String numPed)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException {
         if(isTokenValid(token))
             return nfceService.createNFCe(token, numPed);
         else
@@ -46,7 +48,8 @@ public class NFCeController extends DataSIGController {
                                              @RequestParam(required = false) String numNfv,
                                              @RequestParam(required = false) String sitNfv,
                                              @RequestParam(required = false) String datIni,
-                                             @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
+                                             @RequestParam(required = false) String datFim)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
         if(isTokenValid(token))
             return nfceService.getNFCes(token, numNfv, sitNfv, datIni, datFim);
         else
@@ -58,7 +61,8 @@ public class NFCeController extends DataSIGController {
             description = "Cancelamento de NFC-e"
     )
     @PutMapping(value = "cancelar", produces = "text/plain;charset=UTF-8")
-    public String cancelarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public String cancelarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return nfceService.cancelarNFCe(token, codSnf, numNfv, jusCan);
         else
@@ -70,7 +74,8 @@ public class NFCeController extends DataSIGController {
             description = "Inutilização de NFC-e"
     )
     @PutMapping(value = "inutilizar", produces = "text/plain;charset=UTF-8")
-    public String inutilizarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public String inutilizarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
         if(isTokenValid(token))
             return nfceService.inutilizarNFCe(token, codSnf, numNfv, jusCan);
         else
@@ -82,7 +87,8 @@ public class NFCeController extends DataSIGController {
             description = "Consultar situação de NFC-e no e-DOCS"
     )
     @GetMapping(value = "edocs", produces = "application/json")
-    public SitEdocsResponse getSitEDocs(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
+    public SitEdocsResponse getSitEDocs(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException {
         if(isTokenValid(token))
             return nfceService.getSitEDocs(token, codSnf, numNfv);
         else
