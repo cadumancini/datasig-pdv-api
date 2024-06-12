@@ -251,12 +251,12 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private static String toFormattedString(BigDecimal bdPrc) {
-        return String.format("%.4f", bdPrc).replace(".", ",");
+        return String.format("%.2f", bdPrc).replace(".", ",");
     }
 
     private static BigDecimal toRoundedBigDecimal(double percentualParcela) {
         BigDecimal bdPrc = BigDecimal.valueOf(percentualParcela);
-        bdPrc = bdPrc.setScale(4, RoundingMode.HALF_UP);
+        bdPrc = bdPrc.setScale(2, RoundingMode.HALF_DOWN);
         return bdPrc;
     }
 
