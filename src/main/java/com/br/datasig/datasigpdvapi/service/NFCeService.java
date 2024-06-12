@@ -48,7 +48,7 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     private void validateNfceResponse(String nfceResponse) {
-        if (!nfceResponse.startsWith("OK")) {
+        if (!nfceResponse.startsWith("NFC")) {
             logger.error(nfceResponse);
             throw new NfceException(nfceResponse);
         }
