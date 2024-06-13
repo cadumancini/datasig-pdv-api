@@ -184,7 +184,7 @@ public class PedidoService extends WebServiceRequestsService {
         for(PagamentoPedido pagto : pedido.getPagamentos()) {
             seqParCpg = 0;
             Date dataParcela = new Date();
-            ParcelaParametro parcelaParametro = definirValorParcela(pedido, pagto);
+            ParcelaParametro parcelaParametro = definirValorParcela(pagto);
             pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
             for (Parcela parcela : pagto.getCondicao().getParcelas()) {
                 for (int i = 0; i < parcela.getQtdPar(); i++) {
@@ -196,7 +196,7 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("seqPar", String.valueOf(seqPar));
                     paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
                     paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-                    paramsParcela.put("perPar", getPerPar(parcelaParametro, pagto.getCondicao(), seqParCpg));
+                    paramsParcela.put("vlrPar", getVlrPar(parcelaParametro, pagto.getCondicao(), seqParCpg));
                     paramsParcela.put("tipInt", pagto.getForma().getTipInt());
                     paramsParcela.put("banOpe", pagto.getBanOpe());
                     paramsParcela.put("catTef", pagto.getCatTef());
@@ -209,39 +209,37 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private static String getPerPar(ParcelaParametro parcelaParametro, CondicaoPagamento condicao, int seqPar) {
+    private static String getVlrPar(ParcelaParametro parcelaParametro, CondicaoPagamento condicao, int seqPar) {
         if (condicao.getTipPar().equals("1")) {
-            if (seqPar == 1) return parcelaParametro.perMaior;
-            else return parcelaParametro.perPar;
+            if (seqPar == 1) return parcelaParametro.vlrMaior;
+            else return parcelaParametro.vlrPar;
         } else if (condicao.getTipPar().equals("2")) {
-            if (seqPar == condicao.getQtdParCpg()) return parcelaParametro.perMaior;
-            else return parcelaParametro.perPar;
+            if (seqPar == condicao.getQtdParCpg()) return parcelaParametro.vlrMaior;
+            else return parcelaParametro.vlrPar;
         }
-        return condicao.getParcelas().stream().filter(parcela -> parcela.getSeqIcp() == seqPar).findFirst().orElseThrow().getPerPar();
+        return parcelaParametro.vlrPar;
     }
 
     private static String doubleToString(Double value) {
         return String.format("%.2f", value).replace(".", ",");
     }
 
-    private ParcelaParametro definirValorParcela(PayloadPedido pedido, PagamentoPedido pagto) {
-        double valorParcela = pagto.getValorTotalPago() / pagto.getCondicao().getQtdParCpg();
+    private ParcelaParametro definirValorParcela(PagamentoPedido pagto) {
+        double valorParcela = pagto.getValorPago() / pagto.getCondicao().getQtdParCpg();
 
-        double percentualParcela = valorParcela / pedido.getVlrTot() * 100;
-        BigDecimal bdPrc = toRoundedBigDecimal(percentualParcela);
+        BigDecimal bdVlr = toRoundedBigDecimal(valorParcela);
 
-        double perMaior = calrPercentualMaior(pagto, bdPrc, percentualParcela, pedido.getVlrTot());
-        BigDecimal bdPrcMaior = toRoundedBigDecimal(perMaior);
+        double vlrMaior = calcValorMaior(pagto, bdVlr, valorParcela);
+        BigDecimal bdVlrMaior = toRoundedBigDecimal(vlrMaior);
 
-        String perParStr = toFormattedString(bdPrc);
-        String perMaiorStr = toFormattedString(bdPrcMaior);
-        return new ParcelaParametro(perParStr, perMaiorStr);
+        String vlrParStr = toFormattedString(bdVlr);
+        String vlrMaiorStr = toFormattedString(bdVlrMaior);
+        return new ParcelaParametro(vlrParStr, vlrMaiorStr);
     }
 
-    private static double calrPercentualMaior(PagamentoPedido pagto, BigDecimal bdPrc, double percentualParcela, double vlrTotalPedido) {
-        double percentualTotal = pagto.getValorTotalPago() / vlrTotalPedido * 100;
-        double perRestante = pagto.getCondicao().getQtdParCpg() == 1 ? 0 : percentualTotal - (bdPrc.doubleValue() * pagto.getCondicao().getQtdParCpg());
-        return percentualParcela + Math.abs(perRestante);
+    private static double calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr, double valorParcela) {
+        double vlrRestante = pagto.getCondicao().getQtdParCpg() == 1 ? 0 : pagto.getValorPago() - (bdVlr.doubleValue() * pagto.getCondicao().getQtdParCpg());
+        return valorParcela + Math.abs(vlrRestante);
     }
 
     private static String toFormattedString(BigDecimal bdPrc) {
@@ -432,7 +430,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     @AllArgsConstructor
     private static class ParcelaParametro {
-        String perPar;
-        String perMaior;
+        String vlrPar;
+        String vlrMaior;
     }
 }
