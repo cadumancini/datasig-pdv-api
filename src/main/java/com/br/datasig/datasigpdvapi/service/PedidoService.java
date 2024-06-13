@@ -185,7 +185,6 @@ public class PedidoService extends WebServiceRequestsService {
             seqParCpg = 0;
             Date dataParcela = new Date();
             ParcelaParametro parcelaParametro = definirValorParcela(pedido, pagto);
-            String cgcCre = !pagto.getBanOpe().isEmpty() ? definirCgcCre(pagto.getForma().getCodOpe()) : "";
             pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
             for (Parcela parcela : pagto.getCondicao().getParcelas()) {
                 for (int i = 0; i < parcela.getQtdPar(); i++) {
@@ -202,7 +201,7 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("banOpe", pagto.getBanOpe());
                     paramsParcela.put("catTef", pagto.getCatTef());
                     paramsParcela.put("nsuTef", pagto.getNsuTef());
-                    paramsParcela.put("cgcCre", cgcCre);
+                    paramsParcela.put("cgcCre", pagto.getCgcCre());
                     parcelas.add(paramsParcela);
                 }
             }
@@ -223,11 +222,6 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static String doubleToString(Double value) {
         return String.format("%.2f", value).replace(".", ",");
-    }
-
-    private String definirCgcCre(String codOpe) { //TODO: implementar
-        return ""; // WS possível: sapiens_Synccom_senior_g5_co_int_varejo_operadorascartao (Exportar, Exportar_2, Exportar_3)
-//        https://documentacao.senior.com.br/gestaoempresarialerp/5.10.3/index.htm#webservices/com_senior_g5_co_int_varejo_operadorascartao.htm?Highlight=operadoras%20financeiras
     }
 
     private ParcelaParametro definirValorParcela(PayloadPedido pedido, PagamentoPedido pagto) {

@@ -10,6 +10,7 @@ public class PagamentoPedido {
     private Double valorDesconto;
     private Double valorTotalPago;
     private String banOpe;
+    private String cgcCre;
     private String catTef;
     private String nsuTef;
 }

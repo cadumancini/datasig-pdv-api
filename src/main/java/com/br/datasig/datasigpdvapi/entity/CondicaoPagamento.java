@@ -18,6 +18,7 @@ public class CondicaoPagamento {
     private String tipPar;
     private int qtdParCpg;
     private List<Parcela> parcelas;
+    private List<Operadora> operadoras;
 
     public static CondicaoPagamento fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -27,21 +28,41 @@ public class CondicaoPagamento {
         String tipPar = element.getElementsByTagName("tipPar").item(0).getTextContent();
         int qtdParCpg = Integer.parseInt(element.getElementsByTagName("parCpg").item(0).getTextContent());
 
-        List<Parcela> parcelasList = new ArrayList<>();
+        return new CondicaoPagamento(codCpg, abrCpg, desCpg, tipPar, qtdParCpg, getParcelas(element), getOperadoras(element));
+    }
+
+    private static List<Parcela> getParcelas(Element element) {
+        List<Parcela> parcelas = new ArrayList<>();
         NodeList parcelasNode = element.getElementsByTagName("parcelas");
         for (int i = 0; i < parcelasNode.getLength(); i++) {
-            Node nNodePar = parcelasNode.item(i);
-            if (nNodePar.getNodeType() == Node.ELEMENT_NODE) {
-                Element elPar = (Element) nNodePar;
+            Node nNode = parcelasNode.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element elPar = (Element) nNode;
                 int seqIcp = Integer.parseInt(elPar.getElementsByTagName("seqIcp").item(0).getTextContent());
                 int diaPar = Integer.parseInt(elPar.getElementsByTagName("diaPar").item(0).getTextContent());
                 int qtdPar = Integer.parseInt(elPar.getElementsByTagName("qtdPar").item(0).getTextContent());
                 String perPar = elPar.getElementsByTagName("perPar").item(0).getTextContent();
 
-                parcelasList.add(new Parcela(seqIcp, diaPar, qtdPar, perPar));
+                parcelas.add(new Parcela(seqIcp, diaPar, qtdPar, perPar));
             }
         }
+        return parcelas;
+    }
 
-        return new CondicaoPagamento(codCpg, abrCpg, desCpg, tipPar, qtdParCpg, parcelasList);
+    private static List<Operadora> getOperadoras(Element element) {
+        List<Operadora> operadoras = new ArrayList<>();
+        NodeList operadorasNode = element.getElementsByTagName("operadora");
+        for (int i = 0; i < operadorasNode.getLength(); i++) {
+            Node nNode = operadorasNode.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNode;
+                String cgcCpf = el.getElementsByTagName("cgcCpf").item(0).getTextContent();
+                String codOpe = el.getElementsByTagName("codOpe").item(0).getTextContent();
+                String desOpe = el.getElementsByTagName("desOpe").item(0).getTextContent();
+
+                operadoras.add(new Operadora(cgcCpf, codOpe, desOpe));
+            }
+        }
+        return operadoras;
     }
 }
