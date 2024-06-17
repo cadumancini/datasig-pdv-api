@@ -40,53 +40,32 @@ public class TokensManager {
         return validTokens.stream().anyMatch(o -> o.getValue().equals(token));
     }
 
-    //TODO: refatorar getters
-
     public String getUserNameFromToken(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token.getUserName();
-        }
-        return "";
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getUserName() : "";
     }
 
     public String getPasswordFromToken(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token.getPassword();
-        }
-        return "";
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getPassword() : "";
     }
 
     public String getCodEmpFromToken(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token.getCodEmp();
-        }
-        return "";
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getCodEmp() : "";
     }
 
     public String getCodFilFromToken(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token.getCodFil();
-        }
-        return "";
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getCodFil() : "";
     }
 
     public ParamsPDV getParamsPDVFromToken(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token.getParamsPDV();
-        }
-        return null;
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getParamsPDV() : null;
     }
 
     public Token getTokenByValue(String tokenValue) {
-        for (Token token : validTokens) {
-            if(token.getValue().equals(tokenValue) && token.isValid())
-                return token;
-        }
-        return null;
+        return validTokens.stream().filter(token -> token.getValue().equals(tokenValue)).findFirst().orElse(null);
     }
 }

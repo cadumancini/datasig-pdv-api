@@ -106,9 +106,7 @@ public class SOAPClient {
                                 if(value2 instanceof  ArrayList) {
                                     ((ArrayList) value2).forEach(campo -> {
                                         xmlBuilder.append("<" + key2 + ">");
-                                        ((HashMap<?, ?>) campo).forEach((key3, value3) -> {
-                                            xmlBuilder.append("<" + key3 + ">" + value3 + "</" + key3 + ">");
-                                        });
+                                        ((HashMap<?, ?>) campo).forEach((key3, value3) -> xmlBuilder.append("<" + key3 + ">" + value3 + "</" + key3 + ">"));
                                         xmlBuilder.append("</" + key2 + ">");
                                     });
                                 } else {

@@ -51,17 +51,4 @@ public class PedidoController extends DataSIGController {
         else
             throw new InvalidTokenException();
     }
-
-    @Operation(
-            summary = "Buscar detalhes do pedido",
-            description = "Busca de detalhes de pedido específico para consulta no PDV"
-    )
-    @GetMapping(value = "detalhes", produces = "application/json")
-    public ConsultaDetalhesPedido getPedido(@RequestParam String token,
-                                                  @RequestParam String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
-        if(isTokenValid(token))
-            return pedidoService.getPedido(token, numPed);
-        else
-            throw new InvalidTokenException();
-    }
 }

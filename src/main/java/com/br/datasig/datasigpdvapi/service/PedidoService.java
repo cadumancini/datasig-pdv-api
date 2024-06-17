@@ -398,36 +398,6 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos;
     }
 
-    public ConsultaDetalhesPedido getPedido(String token, String numPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, TipoBuscaPedidos.TODOS, numPed, null, null);
-        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
-        XmlUtils.validateXmlResponse(xml);
-
-        String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
-        List<ConsultaPedido> pedidos = getConsultaPedidosFromXml(xml, tnsOrc);
-        if(!pedidos.isEmpty()) {
-            ConsultaDetalhesPedido detalhesPedido = new ConsultaDetalhesPedido();
-            ConsultaPedido consultaPedido = pedidos.get(0);
-            detalhesPedido.setNumPed(consultaPedido.getNumPed());
-            detalhesPedido.setDatEmi(consultaPedido.getDatEmi());
-            detalhesPedido.setDesRep(defineDesRep(token, consultaPedido.getCodRep()));
-            detalhesPedido.setDesCli(defineDesCli(token, consultaPedido.getCodCli()));
-        }
-        return null;
-    }
-
-    private String defineDesRep(String token, String codRep) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        Representante representante = representantesService.getRepresentante(token, codRep);
-        if(representante != null) return representante.getNomRep();
-        return "";
-    }
-
-    private String defineDesCli(String token, String codCli) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        Cliente cliente = clientesService.getCliente(token, codCli);
-        if(cliente != null) return cliente.getNomCli();
-        return "";
-    }
-
     @AllArgsConstructor
     private static class ParcelaParametro {
         String vlrPar;
