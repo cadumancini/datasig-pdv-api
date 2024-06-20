@@ -51,4 +51,16 @@ public class PedidoController extends DataSIGController {
         else
             throw new InvalidTokenException();
     }
+
+    @Operation(
+            summary = "Cancelar pedido",
+            description = "Cancelamento de pedido"
+    )
+    @PostMapping(value = "cancelar", produces = "application/json")
+    public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+        if(isTokenValid(token))
+            return pedidoService.cancelarPedido(token, numPed);
+        else
+            throw new InvalidTokenException();
+    }
 }

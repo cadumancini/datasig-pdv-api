@@ -9,6 +9,7 @@ public class ConsultaItemPedido {
     private String codDer;
     private String codPro;
     private String codTpr;
+    private String cplIpd;
     private String preUni;
     private String qtdAbe;
     private String qtdCan;

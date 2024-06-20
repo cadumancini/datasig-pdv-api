@@ -40,7 +40,7 @@ public class ConsultaPedido {
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
-        String staPed = codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
+        String staPed = sitPed.equals("5") ? "CANCELADO" : codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
         return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, Integer.parseInt(numPed), itens);
@@ -56,6 +56,7 @@ public class ConsultaPedido {
                 String codDer = elItem.getElementsByTagName("codDer").item(0).getTextContent();
                 String codPro = elItem.getElementsByTagName("codPro").item(0).getTextContent();
                 String codTpr = elItem.getElementsByTagName("codTpr").item(0).getTextContent();
+                String cplIpd = elItem.getElementsByTagName("cplIpd").item(0).getTextContent();
                 String preUni = elItem.getElementsByTagName("preUni").item(0).getTextContent();
                 String qtdAbe = elItem.getElementsByTagName("qtdAbe").item(0).getTextContent();
                 String qtdCan = elItem.getElementsByTagName("qtdCan").item(0).getTextContent();
@@ -68,7 +69,7 @@ public class ConsultaPedido {
                 String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
                 String tipDsc = getTipDsc(perDsc, vlrDsc);
 
-                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
+                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, cplIpd, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
             }
         }
         return itens;

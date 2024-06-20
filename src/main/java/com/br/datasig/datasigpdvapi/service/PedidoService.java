@@ -7,7 +7,6 @@ import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -23,11 +22,6 @@ import java.util.*;
 @Component
 public class PedidoService extends WebServiceRequestsService {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-
-    @Autowired
-    private RepresentantesService representantesService;
-    @Autowired
-    private ClientesService clientesService;
 
     public RetornoPedido createPedido(String token, PayloadPedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
         setEmpFilToPedido(pedido, token);
@@ -396,6 +390,29 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return pedidos;
+    }
+
+    public RetornoPedido cancelarPedido(String token, String numPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForCancelarPedido(token, numPed);
+        String xml = makeRequest(token, paramsFecharPedido);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoFecharPedido);
+        return retornoFecharPedido;
+    }
+
+    private HashMap<String, Object> prepareParamsForCancelarPedido(String token, String numPed) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
+        params.put("numPed", numPed);
+        params.put("opeExe", "A");
+        params.put("sitPed", "5");
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
     }
 
     @AllArgsConstructor
