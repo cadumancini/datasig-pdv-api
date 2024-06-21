@@ -220,20 +220,22 @@ public class PedidoService extends WebServiceRequestsService {
 
     private ParcelaParametro definirValorParcela(PagamentoPedido pagto) {
         double valorParcela = pagto.getValorPago() / pagto.getCondicao().getQtdParCpg();
-
         BigDecimal bdVlr = toRoundedBigDecimal(valorParcela);
 
-        double vlrMaior = calcValorMaior(pagto, bdVlr, valorParcela);
-        BigDecimal bdVlrMaior = toRoundedBigDecimal(vlrMaior);
+        BigDecimal bdVlrMaior = calcValorMaior(pagto, bdVlr, valorParcela);
 
         String vlrParStr = toFormattedString(bdVlr);
         String vlrMaiorStr = toFormattedString(bdVlrMaior);
         return new ParcelaParametro(vlrParStr, vlrMaiorStr);
     }
 
-    private static double calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr, double valorParcela) {
-        double vlrRestante = pagto.getCondicao().getQtdParCpg() == 1 ? 0 : pagto.getValorPago() - (bdVlr.doubleValue() * pagto.getCondicao().getQtdParCpg());
-        return valorParcela + Math.abs(vlrRestante);
+    private static BigDecimal calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr, double valorParcela) {
+        BigDecimal vlrRestante = pagto.getCondicao().getQtdParCpg() == 1 ?
+                                    BigDecimal.valueOf(0) :
+                                    BigDecimal.valueOf(pagto.getValorPago())
+                                        .subtract(BigDecimal.valueOf(bdVlr.doubleValue() * pagto.getCondicao().getQtdParCpg()));
+        BigDecimal vlrMaior = BigDecimal.valueOf(valorParcela + Math.abs(vlrRestante.doubleValue()));
+        return vlrMaior.setScale(2, RoundingMode.HALF_DOWN);
     }
 
     private static String toFormattedString(BigDecimal bdPrc) {
@@ -296,9 +298,9 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private RetornoPedido fecharPedido(PayloadPedido pedido, String token, boolean alterarTransacao) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
-        if (alterarTransacao) {
-            alterarTransacao(pedido, token);
-        }
+//        if (alterarTransacao) {
+//            alterarTransacao(pedido, token);
+//        }
         return fecharPedido(pedido, token);
     }
 
