@@ -294,9 +294,9 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private RetornoPedido fecharPedido(PayloadPedido pedido, String token, boolean alterarTransacao) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
-//        if (alterarTransacao) {
-//            alterarTransacao(pedido, token);
-//        }
+        if (alterarTransacao) {
+            alterarTransacao(pedido, token);
+        }
         return fecharPedido(pedido, token);
     }
 
