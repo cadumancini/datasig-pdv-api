@@ -55,6 +55,7 @@ public class ConsultaPedido {
                 Element elItem = (Element) nNodeItem;
                 String codDer = elItem.getElementsByTagName("codDer").item(0).getTextContent();
                 String codPro = elItem.getElementsByTagName("codPro").item(0).getTextContent();
+                String codDep = elItem.getElementsByTagName("codDep").item(0).getTextContent();
                 String codTpr = elItem.getElementsByTagName("codTpr").item(0).getTextContent();
                 String cplIpd = elItem.getElementsByTagName("cplIpd").item(0).getTextContent();
                 String preUni = elItem.getElementsByTagName("preUni").item(0).getTextContent();
@@ -69,7 +70,8 @@ public class ConsultaPedido {
                 String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
                 String tipDsc = getTipDsc(perDsc, vlrDsc);
 
-                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, cplIpd, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
+                itens.add(new ConsultaItemPedido(codDer, codPro, codDep, codTpr, cplIpd, preUni, qtdAbe, qtdCan,
+                        qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
             }
         }
         return itens;
