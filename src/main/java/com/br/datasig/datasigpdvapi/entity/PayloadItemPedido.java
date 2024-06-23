@@ -13,5 +13,6 @@ public class PayloadItemPedido {
     private String obsIpd;
     private String vlrDsc;
     private String perDsc;
+    private String codDep;
     private boolean excluir;
 }

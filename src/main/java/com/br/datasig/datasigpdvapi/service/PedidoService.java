@@ -145,7 +145,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
                 paramsItem.put("vlrDsc", getDsc(itemPedido.getVlrDsc()));
                 paramsItem.put("perDsc", getDsc(itemPedido.getPerDsc()));
-                paramsItem.put("codDep", definirCodDep(token));
+                paramsItem.put("codDep", itemPedido.getCodDep());
                 paramsItem.put("tnsPro", tnsPed);
                 paramsItem.put("resEst", "S");
                 paramsItem.put("pedPrv", "N");
@@ -165,10 +165,6 @@ public class PedidoService extends WebServiceRequestsService {
     private static String getDsc(String vlr) {
         if (vlr == null) return "0,00";
         return vlr.trim().isEmpty() ? "0,0" : vlr;
-    }
-
-    private Object definirCodDep(String token) {
-        return TokensManager.getInstance().getParamsPDVFromToken(token).getCodDep();
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
