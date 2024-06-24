@@ -10,7 +10,6 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,20 +27,10 @@ import java.util.List;
 @Component
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
-    private final String numRegGeracaoNFC;
-    private final String numRegCancelamentoNFC;
-    private final String numRegInutilizacaoNFC;
-    private final String numRegSituacaoEDocs;
-
-    public NFCeService(Environment env) {
-        numRegGeracaoNFC = env.getProperty("numRegGeracaoNFC");
-        numRegCancelamentoNFC = env.getProperty("numRegCancelamentoNFC");
-        numRegInutilizacaoNFC = env.getProperty("numRegInutilizacaoNFC");
-        numRegSituacaoEDocs = env.getProperty("numRegSituacaoEDocs");
-    }
 
     public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException {
-        String paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, numRegGeracaoNFC);
+        String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
+        String paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
         String nfceResponse = exeRegra(token, paramsNFCe);
         validateNfceResponse(nfceResponse);
         return extractNfceNumberFromResponse(nfceResponse);
@@ -110,7 +99,8 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public String cancelarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        String paramsCancelamento = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, numRegCancelamentoNFC);
+        String regCan = TokensManager.getInstance().getParamsPDVFromToken(token).getRegCan();
+        String paramsCancelamento = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regCan);
         return exeRegra(token, paramsCancelamento);
     }
 
@@ -124,7 +114,8 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public String inutilizarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        String paramsInutilizacao = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, numRegInutilizacaoNFC);
+        String regInu = TokensManager.getInstance().getParamsPDVFromToken(token).getRegInu();
+        String paramsInutilizacao = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regInu);
         return exeRegra(token, paramsInutilizacao);
     }
 
@@ -148,7 +139,8 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public SitEdocsResponse getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
-        String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, numRegSituacaoEDocs);
+        String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
+        String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
         ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
