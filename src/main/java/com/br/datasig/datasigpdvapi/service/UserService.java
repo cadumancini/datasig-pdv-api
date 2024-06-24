@@ -2,6 +2,7 @@ package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ParamsEmpresa;
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
+import com.br.datasig.datasigpdvapi.entity.ParamsPDVResponse;
 import com.br.datasig.datasigpdvapi.entity.TokenResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NotAllowedUserException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
@@ -109,7 +110,8 @@ public class UserService extends WebServiceRequestsService {
     public TokenResponse getParamsFromToken(String tokenValue) {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
         ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
-        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDV);
+        ParamsPDVResponse paramsPDVResponse = new ParamsPDVResponse(paramsPDV.getCodTpr(), paramsPDV.getDscTot(), paramsPDV.getDepositos());
+        return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 
     public String logout(String token) {

@@ -9,5 +9,5 @@ public class TokenResponse {
     private final String nomUsu;
     private final String codEmp;
     private final String codFil;
-    private final ParamsPDV parametrosPDV;
+    private final ParamsPDVResponse parametrosPDV;
 }
