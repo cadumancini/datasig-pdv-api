@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class PedidoService extends WebServiceRequestsService {
@@ -349,8 +350,8 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    public List<ConsultaPedido> getPedidos(String token, TipoBuscaPedidos tipoBusca, String order, String numPed, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipoBusca, numPed, datIni, datFim);
+    public List<ConsultaPedido> getPedidos(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao, String order, String numPed, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipo, situacao, numPed, datIni, datFim);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
@@ -358,24 +359,36 @@ public class PedidoService extends WebServiceRequestsService {
         List<ConsultaPedido> pedidos = getConsultaPedidosFromXml(xml, tnsOrc);
 
         if(order.equals("DESC")) pedidos.sort(Comparator.comparing(ConsultaPedido::getNumPedInt).reversed());
-        return pedidos;
+        return pedidos.stream().filter(ped -> !ped.getSitPed().equals("4")).collect(Collectors.toList());
     }
 
-    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, TipoBuscaPedidos tipoBusca, String numPed, String datIni, String datFim) {
-        String tnsPed = switch (tipoBusca) {
-            case ABERTOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
-            case FECHADOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
-            case TODOS -> "";
-        };
-
+    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao, String numPed, String datIni, String datFim) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
-        params.put("codTns", tnsPed);
+        params.put("codTns", getTnsPed(token, tipo));
+        params.put("sitPed", getSitPed(situacao));
         params.put("numPed", numPed == null ? "" : numPed);
         params.put("datIni", datIni == null ? "" : "'" + datIni + "'");
         params.put("datFim", datFim == null ? "" : "'" + datFim + "'");
         return params;
+    }
+
+    private static String getSitPed(BuscaPedidosSituacao situacao) {
+        return switch (situacao) {
+            case FECHADOS -> "1";
+            case CANCELADOS -> "5";
+            case ABERTOS -> "9";
+            case TODOS -> "";
+        };
+    }
+
+    private static String getTnsPed(String token, BuscaPedidosTipo tipo) {
+        return switch (tipo) {
+            case ORÇAMENTO -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+            case NORMAL -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
+            case TODOS -> "";
+        };
     }
 
     private List<ConsultaPedido> getConsultaPedidosFromXml(String xml, String tnsOrc) throws ParserConfigurationException, IOException, SAXException {
@@ -390,8 +403,17 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos;
     }
 
-    public RetornoPedido cancelarPedido(String token, String numPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForCancelarPedido(token, numPed);
+    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        String sitPedAberto = "9";
+        String sitPedCancelado = "5";
+        if (sitPed.equals("1")) {
+            altSituacaoPedido(token, numPed, sitPedAberto);
+        }
+        return altSituacaoPedido(token, numPed, sitPedCancelado);
+    }
+
+    private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForAltSituacaoPedido(token, numPed, sitPedDest);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
@@ -399,7 +421,7 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForCancelarPedido(String token, String numPed) {
+    private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -407,7 +429,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
         params.put("numPed", numPed);
         params.put("opeExe", "A");
-        params.put("sitPed", "5");
+        params.put("sitPed", sitPedDest);
 
         paramsPedido.put("pedido", params);
         return paramsPedido;

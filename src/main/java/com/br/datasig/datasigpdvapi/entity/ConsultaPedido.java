@@ -24,6 +24,7 @@ public class ConsultaPedido {
     private String sitPed;
     private String vlrDar;
     private String staPed;
+    private String tipPed;
     private int numPedInt;
     private List<ConsultaItemPedido> itens;
 
@@ -40,10 +41,24 @@ public class ConsultaPedido {
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
-        String staPed = sitPed.equals("5") ? "CANCELADO" : codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
+        String staPed = defineStaPed(sitPed);
+        String tipPed = defineTipPed(codTns, tnsOrc);
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, Integer.parseInt(numPed), itens);
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, tipPed, Integer.parseInt(numPed), itens);
+    }
+
+    private static String defineTipPed(String codTns, String tnsOrc) {
+        return codTns.equals(tnsOrc) ? "ORÇAMENTO" : "NORMAL";
+    }
+
+    private static String defineStaPed(String sitPed) {
+        return switch (sitPed) {
+            case "1" -> "FECHADO";
+            case "5" -> "CANCELADO";
+            case "9" -> "ABERTO";
+            default -> "";
+        };
     }
 
     private static List<ConsultaItemPedido> getItensPedido(Element element) {

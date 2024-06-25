@@ -1,7 +1,8 @@
 package com.br.datasig.datasigpdvapi.entity;
 
-public enum TipoBuscaPedidos {
+public enum BuscaPedidosSituacao {
     TODOS,
     ABERTOS,
-    FECHADOS
+    FECHADOS,
+    CANCELADOS
 }
