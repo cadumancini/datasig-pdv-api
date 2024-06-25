@@ -102,7 +102,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("usuario", getVlrTro(pedido));
 
         if(!pedido.getItens().isEmpty()) {
-            List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed, token);
+            List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed);
             params.put("produto", itens);
         }
 
@@ -131,7 +131,7 @@ public class PedidoService extends WebServiceRequestsService {
         return codCli;
     }
 
-    List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido, String tnsPed, String token) {
+    List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido, String tnsPed) {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
             HashMap<String, Object> paramsItem = new HashMap<>();
