@@ -219,20 +219,20 @@ public class PedidoService extends WebServiceRequestsService {
         double valorParcela = pagto.getValorPago() / pagto.getCondicao().getQtdParCpg();
         BigDecimal bdVlr = toRoundedBigDecimal(valorParcela);
 
-        BigDecimal bdVlrMaior = calcValorMaior(pagto, bdVlr, valorParcela);
+        BigDecimal bdVlrMaior = calcValorMaior(pagto, bdVlr);
 
         String vlrParStr = toFormattedString(bdVlr);
         String vlrMaiorStr = toFormattedString(bdVlrMaior);
         return new ParcelaParametro(vlrParStr, vlrMaiorStr);
     }
 
-    private static BigDecimal calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr, double valorParcela) {
+    private static BigDecimal calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr) {
+        BigDecimal valueToSubtract = bdVlr.multiply(BigDecimal.valueOf(pagto.getCondicao().getQtdParCpg()));
         BigDecimal vlrRestante = pagto.getCondicao().getQtdParCpg() == 1 ?
                                     BigDecimal.valueOf(0) :
                                     BigDecimal.valueOf(pagto.getValorPago())
-                                        .subtract(BigDecimal.valueOf(bdVlr.doubleValue() * pagto.getCondicao().getQtdParCpg()));
-        BigDecimal vlrMaior = BigDecimal.valueOf(valorParcela + Math.abs(vlrRestante.doubleValue()));
-        return vlrMaior.setScale(2, RoundingMode.HALF_DOWN);
+                                        .subtract(valueToSubtract);
+        return bdVlr.add(vlrRestante);
     }
 
     private static String toFormattedString(BigDecimal bdPrc) {
@@ -241,7 +241,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static BigDecimal toRoundedBigDecimal(double percentualParcela) {
         BigDecimal bdPrc = BigDecimal.valueOf(percentualParcela);
-        bdPrc = bdPrc.setScale(2, RoundingMode.HALF_DOWN);
+        bdPrc = bdPrc.setScale(2, RoundingMode.FLOOR);
         return bdPrc;
     }
 
