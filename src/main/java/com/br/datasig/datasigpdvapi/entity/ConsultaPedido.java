@@ -24,6 +24,7 @@ public class ConsultaPedido {
     private String sitPed;
     private String vlrDar;
     private String staPed;
+    private String tipPed;
     private int numPedInt;
     private List<ConsultaItemPedido> itens;
 
@@ -40,10 +41,24 @@ public class ConsultaPedido {
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
-        String staPed = sitPed.equals("5") ? "CANCELADO" : codTns.equals(tnsOrc) ? "ABERTO" : "FECHADO";
+        String staPed = defineStaPed(sitPed);
+        String tipPed = defineTipPed(codTns, tnsOrc);
         List<ConsultaItemPedido> itens = getItensPedido(element);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, Integer.parseInt(numPed), itens);
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, tipPed, Integer.parseInt(numPed), itens);
+    }
+
+    private static String defineTipPed(String codTns, String tnsOrc) {
+        return codTns.equals(tnsOrc) ? "ORÇAMENTO" : "NORMAL";
+    }
+
+    private static String defineStaPed(String sitPed) {
+        return switch (sitPed) {
+            case "1" -> "FECHADO";
+            case "5" -> "CANCELADO";
+            case "9" -> "ABERTO";
+            default -> "";
+        };
     }
 
     private static List<ConsultaItemPedido> getItensPedido(Element element) {
@@ -55,6 +70,7 @@ public class ConsultaPedido {
                 Element elItem = (Element) nNodeItem;
                 String codDer = elItem.getElementsByTagName("codDer").item(0).getTextContent();
                 String codPro = elItem.getElementsByTagName("codPro").item(0).getTextContent();
+                String codDep = elItem.getElementsByTagName("codDep").item(0).getTextContent();
                 String codTpr = elItem.getElementsByTagName("codTpr").item(0).getTextContent();
                 String cplIpd = elItem.getElementsByTagName("cplIpd").item(0).getTextContent();
                 String preUni = elItem.getElementsByTagName("preUni").item(0).getTextContent();
@@ -69,7 +85,8 @@ public class ConsultaPedido {
                 String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
                 String tipDsc = getTipDsc(perDsc, vlrDsc);
 
-                itens.add(new ConsultaItemPedido(codDer, codPro, codTpr, cplIpd, preUni, qtdAbe, qtdCan, qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
+                itens.add(new ConsultaItemPedido(codDer, codPro, codDep, codTpr, cplIpd, preUni, qtdAbe, qtdCan,
+                        qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
             }
         }
         return itens;

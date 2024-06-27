@@ -8,6 +8,7 @@ import lombok.Data;
 public class ConsultaItemPedido {
     private String codDer;
     private String codPro;
+    private String codDep;
     private String codTpr;
     private String cplIpd;
     private String preUni;

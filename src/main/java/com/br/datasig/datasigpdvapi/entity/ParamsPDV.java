@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,6 +28,11 @@ public class ParamsPDV {
     private String tnsPed;
     private String tnsOrc;
     private String codCpg;
+    private String regCan;
+    private String regFat;
+    private String regInu;
+    private String regRet;
+    private List<Deposito> depositos;
 
     public static ParamsPDV fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -43,8 +52,28 @@ public class ParamsPDV {
         String tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent();
         String tnsOrc = element.getElementsByTagName("tnsOrc").item(0).getTextContent();
         String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
+        String regCan = element.getElementsByTagName("regCan").item(0).getTextContent();
+        String regFat = element.getElementsByTagName("regFat").item(0).getTextContent();
+        String regInu = element.getElementsByTagName("regInu").item(0).getTextContent();
+        String regRet = element.getElementsByTagName("regRet").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, logNfc,
-                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg);
+                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat, regInu, regRet,
+                getDepositos(element));
+    }
+
+    private static List<Deposito> getDepositos(Element element) {
+        List<Deposito> depositos = new ArrayList<>();
+        NodeList depositosList = element.getElementsByTagName("deposito");
+        for (int i = 0; i < depositosList.getLength(); i++) {
+            Node nNodeDep = depositosList.item(i);
+            if (nNodeDep.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNodeDep;
+                String codDep = el.getElementsByTagName("codDep").item(0).getTextContent();
+                String desDep = el.getElementsByTagName("desDep").item(0).getTextContent();
+                depositos.add(new Deposito(codDep, desDep));
+            }
+        }
+        return depositos;
     }
 }

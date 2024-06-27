@@ -1,20 +1,8 @@
 # Porta onde vai rodar o app
-server.port=
+#server.port=
 
 # URL onde acessar os WebServices Senior
-webservicesUrl=
+#webservicesUrl=
 
 # Se true, ao rodar o projeto e acessar a home (ex: http://localhost:8080) via browser, irá abrir o Swagger com todos os Endpoints disponíveis
 springdoc.swagger-ui.use-root-path=true
-
-# Numero de regra para geração de NFC-e
-numRegGeracaoNFC=
-
-# Numero de regra para cancelamento de NFC-e
-numRegCancelamentoNFC=
-
-# Numero de regra para inutilização de NFC-e
-numRegInutilizacaoNFC=
-
-# Numero de regra para consulta de situaçãp da NFC-e no e-DOCS
-numRegSituacaoEDocs=
