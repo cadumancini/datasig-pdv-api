@@ -404,12 +404,24 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     public RetornoPedido cancelarPedido(String token, String numPed, String sitPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        String sitPedAberto = "9";
         String sitPedCancelado = "5";
-        if (sitPed.equals("1")) {
-            altSituacaoPedido(token, numPed, sitPedAberto);
+        if (sitPed.equals("9")) {
+            PayloadPedido pedido = new PayloadPedido();
+            pedido.setNumPed(numPed);
+            pedido.setCodEmp(TokensManager.getInstance().getCodEmpFromToken(token));
+            pedido.setCodFil(TokensManager.getInstance().getCodFilFromToken(token));
+            alterarTransacao(pedido, token);
+            fecharOrcamentoComObs(token, numPed);
         }
         return altSituacaoPedido(token, numPed, sitPedCancelado);
+    }
+
+    private void fecharOrcamentoComObs(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(token, numPed);
+        String xml = makeRequest(token, paramsFecharPedido);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoFecharPedido);
     }
 
     private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
@@ -419,6 +431,21 @@ public class PedidoService extends WebServiceRequestsService {
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
         return retornoFecharPedido;
+    }
+
+    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(String token, String numPed) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
+        params.put("numPed", numPed);
+        params.put("opeExe", "A");
+        params.put("fecPed", "S");
+        params.put("obsPed", "Pedido de Orçamento Cancelado");
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
     }
 
     private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest) {
