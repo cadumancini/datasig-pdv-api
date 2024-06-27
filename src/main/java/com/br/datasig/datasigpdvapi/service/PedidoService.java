@@ -410,14 +410,15 @@ public class PedidoService extends WebServiceRequestsService {
             pedido.setNumPed(numPed);
             pedido.setCodEmp(TokensManager.getInstance().getCodEmpFromToken(token));
             pedido.setCodFil(TokensManager.getInstance().getCodFilFromToken(token));
+            pedido.setFechar(true);
             alterarTransacao(pedido, token);
-            fecharOrcamentoComObs(token, numPed);
+            fecharOrcamentoComObs(pedido, token);
         }
         return altSituacaoPedido(token, numPed, sitPedCancelado);
     }
 
-    private void fecharOrcamentoComObs(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(token, numPed);
+    private void fecharOrcamentoComObs(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(pedido);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
@@ -433,13 +434,13 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(String token, String numPed) {
+    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(PayloadPedido pedido) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
-        params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
-        params.put("numPed", numPed);
+        params.put("codEmp", pedido.getCodEmp());
+        params.put("codFil", pedido.getCodFil());
+        params.put("numPed", pedido.getNumPed());
         params.put("opeExe", "A");
         params.put("fecPed", "S");
         params.put("obsPed", "Pedido de Orçamento Cancelado");
