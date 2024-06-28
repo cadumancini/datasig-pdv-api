@@ -187,7 +187,7 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("seqPar", String.valueOf(seqPar));
                     paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
                     paramsParcela.put("vctPar", dateFormat.format(dataParcela));
-                    paramsParcela.put("vlrPar", getVlrPar(parcelaParametro, pagto.getCondicao(), seqParCpg));
+                    paramsParcela.put("vlrPar", getVlrPar(parcelaParametro, seqParCpg, pagto, parcela));
                     paramsParcela.put("tipInt", pagto.getForma().getTipInt());
                     paramsParcela.put("banOpe", pagto.getBanOpe());
                     paramsParcela.put("catTef", pagto.getCatTef());
@@ -200,15 +200,23 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private static String getVlrPar(ParcelaParametro parcelaParametro, CondicaoPagamento condicao, int seqPar) {
-        if (condicao.getTipPar().equals("1")) {
+    private static String getVlrPar(ParcelaParametro parcelaParametro, int seqPar, PagamentoPedido pagto, Parcela parcela) {
+        if (pagto.getCondicao().getTipPar().equals("1")) {
             if (seqPar == 1) return parcelaParametro.vlrMaior;
             else return parcelaParametro.vlrPar;
-        } else if (condicao.getTipPar().equals("2")) {
-            if (seqPar == condicao.getQtdParCpg()) return parcelaParametro.vlrMaior;
+        } else if (pagto.getCondicao().getTipPar().equals("2")) {
+            if (seqPar == pagto.getCondicao().getQtdParCpg()) return parcelaParametro.vlrMaior;
             else return parcelaParametro.vlrPar;
         }
-        return parcelaParametro.vlrPar;
+        return calcVlrPerc(pagto, parcela);
+    }
+
+    private static String calcVlrPerc(PagamentoPedido pagto, Parcela parcela) {
+        double perParDouble = Double.parseDouble(parcela.getPerPar().replace(",", "."));
+        BigDecimal perPar = BigDecimal.valueOf(perParDouble);
+        BigDecimal vlrPago = BigDecimal.valueOf(pagto.getValorPago());
+        BigDecimal vlrPar = perPar.multiply(vlrPago).divide(BigDecimal.valueOf(100));
+        return toFormattedString(vlrPar);
     }
 
     private static String doubleToString(Double value) {
