@@ -5,6 +5,7 @@ plugins {
 }
 
 group = 'com.br.datasig'
+sourceCompatibility = '17'
 
 java {
 	sourceCompatibility = '17'
