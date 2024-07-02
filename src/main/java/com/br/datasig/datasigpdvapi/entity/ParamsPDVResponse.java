@@ -11,4 +11,5 @@ public class ParamsPDVResponse {
     private String codTpr;
     private String dscTot;
     private List<Deposito> depositos;
+    private String codDep;
 }

@@ -110,7 +110,7 @@ public class UserService extends WebServiceRequestsService {
     public TokenResponse getParamsFromToken(String tokenValue) {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
         ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
-        ParamsPDVResponse paramsPDVResponse = new ParamsPDVResponse(paramsPDV.getCodTpr(), paramsPDV.getDscTot(), paramsPDV.getDepositos());
+        ParamsPDVResponse paramsPDVResponse = new ParamsPDVResponse(paramsPDV.getCodTpr(), paramsPDV.getDscTot(), paramsPDV.getDepositos(), paramsPDV.getCodDep());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 
