@@ -14,5 +14,7 @@ public class ParamsPDVResponse {
     private String codDep;
     private String codEmp;
     private String codFil;
+    private String nomEmp;
+    private String nomFil;
     private String nomUsu;
 }

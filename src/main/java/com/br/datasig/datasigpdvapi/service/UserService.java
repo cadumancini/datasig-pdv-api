@@ -117,6 +117,8 @@ public class UserService extends WebServiceRequestsService {
                 paramsPDV.getCodDep(),
                 token.getCodEmp(),
                 token.getCodFil(),
+                paramsPDV.getNomEmp(),
+                paramsPDV.getNomFil(),
                 token.getUserName());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }

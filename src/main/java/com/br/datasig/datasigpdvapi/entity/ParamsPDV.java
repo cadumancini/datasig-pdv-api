@@ -32,6 +32,8 @@ public class ParamsPDV {
     private String regFat;
     private String regInu;
     private String regRet;
+    private String nomEmp;
+    private String nomFil;
     private List<Deposito> depositos;
 
     public static ParamsPDV fromXml(Node nNode) {
@@ -56,10 +58,12 @@ public class ParamsPDV {
         String regFat = element.getElementsByTagName("regFat").item(0).getTextContent();
         String regInu = element.getElementsByTagName("regInu").item(0).getTextContent();
         String regRet = element.getElementsByTagName("regRet").item(0).getTextContent();
+        String nomEmp = element.getElementsByTagName("nomEmp").item(0).getTextContent();
+        String nomFil = element.getElementsByTagName("nomFil").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, logNfc,
-                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat, regInu, regRet,
-                getDepositos(element));
+                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
+                regInu, regRet, nomEmp, nomFil, getDepositos(element));
     }
 
     private static List<Deposito> getDepositos(Element element) {
