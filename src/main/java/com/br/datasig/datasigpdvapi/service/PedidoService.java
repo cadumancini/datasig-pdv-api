@@ -149,8 +149,9 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsItem.put("qtdPed", itemPedido.getQtdPed());
                 paramsItem.put("codTpr", itemPedido.getCodTpr());
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
-                paramsItem.put("vlrDsc", getDsc(itemPedido.getVlrDsc()));
-                paramsItem.put("perDsc", getDsc(itemPedido.getPerDsc()));
+                paramsItem.put("vlrDsc", formatValue(itemPedido.getVlrDsc()));
+                paramsItem.put("perDsc", formatValue(itemPedido.getPerDsc()));
+                paramsItem.put("perAcr", formatValue(itemPedido.getPerAcr()));
                 paramsItem.put("codDep", itemPedido.getCodDep());
                 paramsItem.put("tnsPro", tnsPed);
                 paramsItem.put("resEst", "S");
@@ -168,7 +169,7 @@ public class PedidoService extends WebServiceRequestsService {
         return listaItens;
     }
 
-    private static String getDsc(String vlr) {
+    private static String formatValue(String vlr) {
         if (vlr == null) return "0,00";
         return vlr.trim().isEmpty() ? "0,0" : vlr;
     }
