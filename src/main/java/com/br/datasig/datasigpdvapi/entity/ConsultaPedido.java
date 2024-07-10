@@ -40,7 +40,7 @@ public class ConsultaPedido {
         String datEmi = element.getElementsByTagName("datEmi").item(0).getTextContent();
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
-        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
+        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent();
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
         List<ConsultaItemPedido> itens = getItensPedido(element);

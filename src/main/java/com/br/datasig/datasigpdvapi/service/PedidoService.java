@@ -98,7 +98,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("tnsPro", tnsPed);
         params.put("temPar", "N");
         params.put("acePar", "N");
-        params.put("vlrDar", pedido.getVlrDar() > 0 ? ("-" + doubleToString(pedido.getVlrDar())) : "0");
+        params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
         params.put("usuario", getVlrTro(pedido));
 
         if(!pedido.getItens().isEmpty()) {
@@ -108,6 +108,11 @@ public class PedidoService extends WebServiceRequestsService {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private static String getVlrDarFormatted(Double vlrDar) {
+        if (vlrDar == 0) return "0";
+        return doubleToString(vlrDar);
     }
 
     private String getVlrTro(PayloadPedido pedido) {
