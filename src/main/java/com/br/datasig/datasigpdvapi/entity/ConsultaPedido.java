@@ -40,7 +40,7 @@ public class ConsultaPedido {
         String datEmi = element.getElementsByTagName("datEmi").item(0).getTextContent();
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
-        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent().replace("-", "");
+        String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent();
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
         List<ConsultaItemPedido> itens = getItensPedido(element);
@@ -83,17 +83,18 @@ public class ConsultaPedido {
                 String obsIpd = elItem.getElementsByTagName("obsIpd").item(0).getTextContent();
                 String vlrDsc = elItem.getElementsByTagName("vlrDsc").item(0).getTextContent();
                 String perDsc = elItem.getElementsByTagName("perDsc").item(0).getTextContent();
-                String tipDsc = getTipDsc(perDsc, vlrDsc);
+                String perAcr = elItem.getElementsByTagName("perAcr").item(0).getTextContent();
+                String tipDsc = getTipDsc(perDsc, vlrDsc, perAcr);
 
                 itens.add(new ConsultaItemPedido(codDer, codPro, codDep, codTpr, cplIpd, preUni, qtdAbe, qtdCan,
-                        qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc));
+                        qtdFat, qtdPed, seqIpd, sitIpd, obsIpd.trim(), tipDsc, vlrDsc, perDsc, perAcr));
             }
         }
         return itens;
     }
 
-    private static String getTipDsc(String perDsc, String vlrDsc) {
-        if (!perDsc.equals("0,00")) return "porcentagem";
+    private static String getTipDsc(String perDsc, String vlrDsc, String perAcr) {
+        if (!perDsc.equals("0,00") || !perAcr.equals("0,00")) return "porcentagem";
         else if (!vlrDsc.equals("0,00")) return "valor";
         return "";
     }

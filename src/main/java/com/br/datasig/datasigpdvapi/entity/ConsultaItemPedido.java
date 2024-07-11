@@ -22,4 +22,5 @@ public class ConsultaItemPedido {
     private String tipDsc;
     private String vlrDsc;
     private String perDsc;
+    private String perAcr;
 }
