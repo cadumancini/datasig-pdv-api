@@ -3,10 +3,15 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.Cliente;
 import com.br.datasig.datasigpdvapi.entity.ClientePayload;
 import com.br.datasig.datasigpdvapi.entity.ClienteResponse;
+import com.br.datasig.datasigpdvapi.entity.ConsultaCEP;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
+import com.br.datasig.datasigpdvapi.http.ConsultaCEPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -18,11 +23,12 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
 public class ClientesService extends WebServiceRequestsService{
+    private ConsultaCEPClient consultaCEPClient = new ConsultaCEPClient();
+
     public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
@@ -161,9 +167,19 @@ public class ClientesService extends WebServiceRequestsService{
         params.put("sitCli", "A");
     }
 
-    public Cliente getCliente(String token, String codCli) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        List<Cliente> clientes = getClientes(token);
-        Optional<Cliente> cliente = clientes.stream().filter(cli -> cli.getCodCli().equals(codCli)).findFirst();
-        return cliente.orElse(null);
+    public ConsultaCEP getInformacoesCEP(String numCep) throws IOException, ParserConfigurationException, SAXException {
+        HttpResponse response = consultaCEPClient.getRequest(numCep + "/xml/");
+        String xmlResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
+        XmlUtils.validateXmlResponse(xmlResponse);
+        NodeList nList = XmlUtils.getNodeListByElementName(xmlResponse, "xmlcep");
+
+        if (nList.getLength() > 0) {
+            Node nNode = nList.item(0);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                return ConsultaCEP.fromXml(nNode);
+            }
+        }
+
+        throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
     }
 }

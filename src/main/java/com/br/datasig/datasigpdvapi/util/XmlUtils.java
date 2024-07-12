@@ -33,6 +33,8 @@ public class XmlUtils {
             } else {
                 throw new WebServiceRuntimeException(executionError);
             }
+        } else if (xml.contains("<erro>true</erro>")) {
+            throw new WebServiceRuntimeException("Ocorreu um erro ao validar o retorno.");
         } else if (xml.contains("ERRO:")) {
             try {
                 String executionError = getMessageFromXml(xml, "result", "resultado");
