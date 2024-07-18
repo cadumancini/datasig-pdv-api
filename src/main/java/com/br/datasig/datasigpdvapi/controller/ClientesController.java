@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.controller;
 import com.br.datasig.datasigpdvapi.entity.Cliente;
 import com.br.datasig.datasigpdvapi.entity.ClientePayload;
 import com.br.datasig.datasigpdvapi.entity.ClienteResponse;
+import com.br.datasig.datasigpdvapi.entity.ConsultaCEP;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.ClientesService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -43,6 +44,18 @@ public class ClientesController extends DataSIGController {
     public ClienteResponse putCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if(isTokenValid(token))
             return clientesService.putCliente(token, cliente);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar CEP",
+            description = "Busca informações do CEP para auxiliar no cadastro do cliente"
+    )
+    @GetMapping(value= "consultaCEP", produces = "application/json")
+    public ConsultaCEP getInformacoesCEP(@RequestParam String token, @RequestParam String numCep) throws ParserConfigurationException, IOException, SAXException {
+        if(isTokenValid(token))
+            return clientesService.getInformacoesCEP(numCep);
         else
             throw new InvalidTokenException();
     }
