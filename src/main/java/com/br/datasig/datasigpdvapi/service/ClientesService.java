@@ -12,6 +12,8 @@ import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -27,7 +29,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class ClientesService extends WebServiceRequestsService{
-    private ConsultaCEPClient consultaCEPClient = new ConsultaCEPClient();
+    private static final Logger logger = LoggerFactory.getLogger(ClientesService.class);
+    private final ConsultaCEPClient consultaCEPClient = new ConsultaCEPClient();
 
     public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
@@ -168,6 +171,7 @@ public class ClientesService extends WebServiceRequestsService{
     }
 
     public ConsultaCEP getInformacoesCEP(String numCep) throws IOException, ParserConfigurationException, SAXException {
+        logger.info("Buscando informações para o CEP {}", numCep);
         HttpResponse response = consultaCEPClient.getRequest(numCep + "/xml/");
         String xmlResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
         XmlUtils.validateXmlResponse(xmlResponse);
@@ -180,6 +184,7 @@ public class ClientesService extends WebServiceRequestsService{
             }
         }
 
+        logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
         throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
     }
 }
