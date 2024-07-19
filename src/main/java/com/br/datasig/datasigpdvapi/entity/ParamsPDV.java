@@ -19,9 +19,7 @@ public class ParamsPDV {
     private String codTpr;
     private String dscTot;
     private String ideCsc;
-    private String logSis;
     private String numCsc;
-    private String senSis;
     private String sigInt;
     private String snfNfc;
     private String tnsNfv;
@@ -35,49 +33,69 @@ public class ParamsPDV {
     private String nomEmp;
     private String nomFil;
     private List<Deposito> depositos;
+    private List<Caixa> caixas;
 
     public static ParamsPDV fromXml(Node nNode) {
         Element element = (Element) nNode;
-        String codCli = element.getElementsByTagName("codCli").item(0).getTextContent();
-        String codDep = element.getElementsByTagName("codDep").item(0).getTextContent();
-        String codInt = element.getElementsByTagName("codInt").item(0).getTextContent();
-        String codSnf = element.getElementsByTagName("codSnf").item(0).getTextContent();
-        String codTpr = element.getElementsByTagName("codTpr").item(0).getTextContent();
-        String dscTot = element.getElementsByTagName("dscTot").item(0).getTextContent();
-        String ideCsc = element.getElementsByTagName("ideCsc").item(0).getTextContent();
-        String logNfc = element.getElementsByTagName("logSis").item(0).getTextContent();
-        String numCsc = element.getElementsByTagName("numCsc").item(0).getTextContent();
-        String senNfc = element.getElementsByTagName("senSis").item(0).getTextContent();
-        String sigInt = element.getElementsByTagName("sigInt").item(0).getTextContent();
-        String snfNfc = element.getElementsByTagName("snfNfc").item(0).getTextContent();
-        String tnsNfv = element.getElementsByTagName("tnsNfv").item(0).getTextContent();
-        String tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent();
-        String tnsOrc = element.getElementsByTagName("tnsOrc").item(0).getTextContent();
-        String codCpg = element.getElementsByTagName("codCpg").item(0).getTextContent();
-        String regCan = element.getElementsByTagName("regCan").item(0).getTextContent();
-        String regFat = element.getElementsByTagName("regFat").item(0).getTextContent();
-        String regInu = element.getElementsByTagName("regInu").item(0).getTextContent();
-        String regRet = element.getElementsByTagName("regRet").item(0).getTextContent();
-        String nomEmp = element.getElementsByTagName("nomEmp").item(0).getTextContent();
-        String nomFil = element.getElementsByTagName("nomFil").item(0).getTextContent();
 
-        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, logNfc,
-                numCsc, senNfc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
-                regInu, regRet, nomEmp, nomFil, getDepositos(element));
+        NodeList paramList = element.getElementsByTagName("parametros");
+        Node nNodeParams = paramList.item(0);
+
+        Element el = (Element) nNodeParams;
+        String codCli = el.getElementsByTagName("codCli").item(0).getTextContent();
+        String codCpg = el.getElementsByTagName("codCpg").item(0).getTextContent();
+        String codDep = el.getElementsByTagName("codDep").item(0).getTextContent();
+        String codInt = el.getElementsByTagName("codInt").item(0).getTextContent();
+        String codSnf = el.getElementsByTagName("codSnf").item(0).getTextContent();
+        String codTpr = el.getElementsByTagName("codTpr").item(0).getTextContent();
+        String dscTot = el.getElementsByTagName("dscTot").item(0).getTextContent();
+        String ideCsc = el.getElementsByTagName("ideCsc").item(0).getTextContent();
+        String nomEmp = el.getElementsByTagName("nomEmp").item(0).getTextContent();
+        String nomFil = el.getElementsByTagName("nomFil").item(0).getTextContent();
+        String numCsc = el.getElementsByTagName("numCsc").item(0).getTextContent();
+        String regCan = el.getElementsByTagName("regCan").item(0).getTextContent();
+        String regFat = el.getElementsByTagName("regFat").item(0).getTextContent();
+        String regInu = el.getElementsByTagName("regInu").item(0).getTextContent();
+        String regRet = el.getElementsByTagName("regRet").item(0).getTextContent();
+        String sigInt = el.getElementsByTagName("sigInt").item(0).getTextContent();
+        String snfNfc = el.getElementsByTagName("snfNfc").item(0).getTextContent();
+        String tnsNfv = el.getElementsByTagName("tnsNfv").item(0).getTextContent();
+        String tnsOrc = el.getElementsByTagName("tnsOrc").item(0).getTextContent();
+        String tnsPed = el.getElementsByTagName("tnsPed").item(0).getTextContent();
+
+        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
+                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
+                regInu, regRet, nomEmp, nomFil, getDepositos(element), getCaixas(element));
     }
 
     private static List<Deposito> getDepositos(Element element) {
         List<Deposito> depositos = new ArrayList<>();
         NodeList depositosList = element.getElementsByTagName("deposito");
         for (int i = 0; i < depositosList.getLength(); i++) {
-            Node nNodeDep = depositosList.item(i);
-            if (nNodeDep.getNodeType() == Node.ELEMENT_NODE) {
-                Element el = (Element) nNodeDep;
+            Node nNode = depositosList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNode;
                 String codDep = el.getElementsByTagName("codDep").item(0).getTextContent();
                 String desDep = el.getElementsByTagName("desDep").item(0).getTextContent();
                 depositos.add(new Deposito(codDep, desDep));
             }
         }
         return depositos;
+    }
+
+    private static List<Caixa> getCaixas(Element element) {
+        List<Caixa> caixas = new ArrayList<>();
+        NodeList caixasList = element.getElementsByTagName("caixa");
+        for (int i = 0; i < caixasList.getLength(); i++) {
+            Node nNode = caixasList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNode;
+                String logSis = el.getElementsByTagName("logSis").item(0).getTextContent();
+                String numCco = el.getElementsByTagName("numCco").item(0).getTextContent();
+                String numCxa = el.getElementsByTagName("numCxa").item(0).getTextContent();
+                caixas.add(new Caixa(logSis, numCco, numCxa));
+            }
+        }
+        return caixas;
     }
 }
