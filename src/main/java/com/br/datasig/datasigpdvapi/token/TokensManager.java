@@ -1,10 +1,14 @@
 package com.br.datasig.datasigpdvapi.token;
 
+import com.br.datasig.datasigpdvapi.entity.Caixa;
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+@Getter
 public class TokensManager {
     private static TokensManager instance = null;
     private final List<Token> validTokens;
@@ -18,10 +22,6 @@ public class TokensManager {
             instance = new TokensManager();
 
         return instance;
-    }
-
-    public List<Token> getValidTokens() {
-        return validTokens;
     }
 
     public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV) {
@@ -67,5 +67,12 @@ public class TokensManager {
 
     public Token getTokenByValue(String tokenValue) {
         return validTokens.stream().filter(token -> token.getValue().equals(tokenValue)).findFirst().orElse(null);
+    }
+
+    public Caixa getCaixaByToken(String tokenValue) {
+        String logSis = getUserNameFromToken(tokenValue);
+        Token token = getTokenByValue(tokenValue);
+        Optional<Caixa> caixa = token.getParamsPDV().getCaixas().stream().filter(conta -> conta.getLogSis().equals(logSis)).findFirst();
+        return caixa.orElse(null);
     }
 }
