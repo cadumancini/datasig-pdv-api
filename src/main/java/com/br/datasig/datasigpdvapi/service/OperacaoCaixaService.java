@@ -21,10 +21,9 @@ import java.util.*;
 public class OperacaoCaixaService extends WebServiceRequestsService {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public OperacaoCaixaResultado realizarOperacaoCaixa(String token, TipoOperacaoCaixa tipoOperacao, String valorOperacao) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public OperacaoCaixaResultado realizarOperacaoCaixa(String token, TipoOperacaoCaixa tipoOperacao, String valorOperacao, String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String numCxa = getNumCxaFromToken(token);
         String numCco = getNumCcoFromToken(token);
-        String hisMov = tipoOperacao.name() + " DE CAIXA - " + numCxa;
         return switch (tipoOperacao) {
             case ABERTURA -> {
                 movimentar(numCxa, "90675", valorOperacao, hisMov, token);

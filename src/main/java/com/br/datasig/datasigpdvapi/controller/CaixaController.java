@@ -26,9 +26,9 @@ public class CaixaController extends DataSIGController {
             description = "Realizar operação no caixa (operações disponíveis: abertura, sangria e fechamento)"
     )
     @PostMapping(value = "", produces = "application/json")
-    public OperacaoCaixaResultado realizarOperacaoCaixa(@RequestParam String token, @RequestParam TipoOperacaoCaixa tipoOperacao, @RequestParam String valorOperacao) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public OperacaoCaixaResultado realizarOperacaoCaixa(@RequestParam String token, @RequestParam TipoOperacaoCaixa tipoOperacao, @RequestParam String valorOperacao, @RequestParam String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if(isTokenValid(token))
-            return caixaService.realizarOperacaoCaixa(token, tipoOperacao, valorOperacao);
+            return caixaService.realizarOperacaoCaixa(token, tipoOperacao, valorOperacao, hisMov);
         else
             throw new InvalidTokenException();
     }
