@@ -51,8 +51,8 @@ public class UserService extends WebServiceRequestsService {
     }
 
     private void compareLoginUserWithParams(String user, ParamsPDV paramsPDV) throws NotAllowedUserException {
-        if(!paramsPDV.getLogSis().equals(user)) {
-            throw new NotAllowedUserException("O usuário usado no login não é o mesmo definido nos parâmetros da filial.");
+        if(paramsPDV.getCaixas().stream().noneMatch(caixa -> caixa.getLogSis().equals(user))) {
+            throw new NotAllowedUserException("O usuário usado no login não está presente na lista de usuários definidos nos parâmetros da filial para utilização nos caixas.");
         }
     }
 
