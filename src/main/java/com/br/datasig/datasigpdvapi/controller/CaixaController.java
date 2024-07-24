@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.controller;
 
+import com.br.datasig.datasigpdvapi.entity.ConsultaMovimentoCaixa;
 import com.br.datasig.datasigpdvapi.entity.OperacaoCaixaResultado;
 import com.br.datasig.datasigpdvapi.entity.TipoOperacaoCaixa;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
@@ -13,6 +14,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/caixa")
@@ -29,6 +31,18 @@ public class CaixaController extends DataSIGController {
     public OperacaoCaixaResultado realizarOperacaoCaixa(@RequestParam String token, @RequestParam TipoOperacaoCaixa tipoOperacao, @RequestParam String valorOperacao, @RequestParam String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         if(isTokenValid(token))
             return caixaService.realizarOperacaoCaixa(token, tipoOperacao, valorOperacao, hisMov);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Consulta movimentos",
+            description = "Consulta movimentos de caixa (abertura, sangria e fechamento)"
+    )
+    @GetMapping(value = "/movimentos", produces = "application/json")
+    public List<ConsultaMovimentoCaixa> getMovimentosCaixa(@RequestParam String token, @RequestParam(required = false) String datIni, @RequestParam(required = false) String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+        if(isTokenValid(token))
+            return caixaService.getMovimentosCaixa(token, datIni, datFim);
         else
             throw new InvalidTokenException();
     }
