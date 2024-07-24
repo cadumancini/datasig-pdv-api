@@ -24,8 +24,12 @@ public class ConsultaMovimentoCaixa {
         String hisMov = element.getElementsByTagName("hisMov").item(0).getTextContent();
         String numCxa = element.getElementsByTagName("numCxa").item(0).getTextContent();
         String seqMov = element.getElementsByTagName("seqMov").item(0).getTextContent();
-        Double vlrMov = Double.parseDouble(element.getElementsByTagName("vlrMov").item(0).getTextContent()
-                .replace(".", "").replace(",", "."));
+
+        String vlrMovStr = element.getElementsByTagName("vlrMov").item(0).getTextContent();
+        Double vlrMov = Double.valueOf("0");
+        if (!vlrMovStr.isEmpty()) {
+            vlrMov = Double.parseDouble(vlrMovStr.replace(".", "").replace(",", "."));
+        }
 
         return new ConsultaMovimentoCaixa(codTns, datMov, debCre, hisMov, numCxa, seqMov, vlrMov);
     }

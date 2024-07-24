@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class OperacaoCaixaService extends WebServiceRequestsService {
@@ -115,6 +116,6 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
                 movtos.add(ConsultaMovimentoCaixa.fromXml(nNode));
             }
         }
-        return movtos;
+        return movtos.stream().filter(movto -> !movto.getSeqMov().equals("0")).collect(Collectors.toList());
     }
 }
