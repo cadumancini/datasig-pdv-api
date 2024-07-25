@@ -26,18 +26,26 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
     public OperacaoCaixaResultado realizarOperacaoCaixa(String token, TipoOperacaoCaixa tipoOperacao, String valorOperacao, String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         String numCxa = getNumCxaFromToken(token);
         String numCco = getNumCcoFromToken(token);
+
+        String cofAbr = TokensManager.getInstance().getParamsPDVFromToken(token).getCofAbr();
+        String cofFec = TokensManager.getInstance().getParamsPDVFromToken(token).getCofFec();
+        String cofSan = TokensManager.getInstance().getParamsPDVFromToken(token).getCofSan();
+        String cxaAbr = TokensManager.getInstance().getParamsPDVFromToken(token).getCxaAbr();
+        String cxaFec = TokensManager.getInstance().getParamsPDVFromToken(token).getCxaFec();
+        String cxaSan = TokensManager.getInstance().getParamsPDVFromToken(token).getCxaSan();
+
         return switch (tipoOperacao) {
             case ABERTURA -> {
-                movimentar(numCxa, "90675", valorOperacao, hisMov, token);
-                yield movimentar(numCco, "90677", valorOperacao, hisMov, token);
+                movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
             case SANGRIA -> {
-                movimentar(numCxa, "90676", valorOperacao, hisMov, token);
-                yield movimentar(numCco, "90679", valorOperacao, hisMov, token);
+                movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
             case FECHAMENTO -> {
-                movimentar(numCxa, "90674", valorOperacao, hisMov, token);
-                yield movimentar(numCco, "90678", valorOperacao, hisMov, token);
+                movimentar(numCxa, cxaFec, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofFec, valorOperacao, hisMov, token);
             }
         };
     }

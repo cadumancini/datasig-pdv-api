@@ -32,6 +32,12 @@ public class ParamsPDV {
     private String regRet;
     private String nomEmp;
     private String nomFil;
+    private String cofAbr;
+    private String cofFec;
+    private String cofSan;
+    private String cxaAbr;
+    private String cxaFec;
+    private String cxaSan;
     private List<Deposito> depositos;
     private List<Caixa> caixas;
 
@@ -62,10 +68,17 @@ public class ParamsPDV {
         String tnsNfv = el.getElementsByTagName("tnsNfv").item(0).getTextContent();
         String tnsOrc = el.getElementsByTagName("tnsOrc").item(0).getTextContent();
         String tnsPed = el.getElementsByTagName("tnsPed").item(0).getTextContent();
+        String cofAbr = el.getElementsByTagName("cofAbr").item(0).getTextContent();
+        String cofFec = el.getElementsByTagName("cofFec").item(0).getTextContent();
+        String cofSan = el.getElementsByTagName("cofSan").item(0).getTextContent();
+        String cxaAbr = el.getElementsByTagName("cxaAbr").item(0).getTextContent();
+        String cxaFec = el.getElementsByTagName("cxaFec").item(0).getTextContent();
+        String cxaSan = el.getElementsByTagName("cxaSan").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
                 numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
-                regInu, regRet, nomEmp, nomFil, getDepositos(element), getCaixas(element));
+                regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
+                getDepositos(element), getCaixas(element));
     }
 
     private static List<Deposito> getDepositos(Element element) {
