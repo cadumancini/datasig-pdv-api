@@ -75,9 +75,15 @@ public class NFCeService extends WebServiceRequestsService {
 
         List<ConsultaNotaFiscal> notas = getNotasFromXml(xml);
         if (codRep != null && !codRep.trim().isEmpty()) {
-            notas = notas.stream().filter(nota -> nota.getCodRep().equals(codRep)).collect(Collectors.toList());
+            notas = filtrarNotasPorCodRep(notas, codRep);
         }
         return notas;
+    }
+
+    private List<ConsultaNotaFiscal> filtrarNotasPorCodRep(List<ConsultaNotaFiscal> notas, String codRep) {
+        List<String> reps = new ArrayList<>(Arrays.asList(codRep.split(",")));
+        List<String> repsToFilter = reps.stream().map(String::trim).collect(Collectors.toList());
+        return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
     }
 
     private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String datIni, String datFim) {
