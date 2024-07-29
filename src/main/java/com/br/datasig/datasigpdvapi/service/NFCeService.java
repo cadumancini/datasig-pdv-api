@@ -19,10 +19,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class NFCeService extends WebServiceRequestsService {
@@ -65,7 +63,8 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
+    public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String datIni, String datFim, String codRep)
+            throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
@@ -74,7 +73,17 @@ public class NFCeService extends WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaNotaFiscal", "Consultar", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
 
-        return getNotasFromXml(xml);
+        List<ConsultaNotaFiscal> notas = getNotasFromXml(xml);
+        if (codRep != null && !codRep.trim().isEmpty()) {
+            notas = filtrarNotasPorCodRep(notas, codRep);
+        }
+        return notas;
+    }
+
+    private List<ConsultaNotaFiscal> filtrarNotasPorCodRep(List<ConsultaNotaFiscal> notas, String codRep) {
+        List<String> reps = new ArrayList<>(Arrays.asList(codRep.split(",")));
+        List<String> repsToFilter = reps.stream().map(String::trim).collect(Collectors.toList());
+        return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
     }
 
     private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String datIni, String datFim) {
@@ -142,7 +151,7 @@ public class NFCeService extends WebServiceRequestsService {
         String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
         String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
-        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null).get(0);
+        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
     }
 
