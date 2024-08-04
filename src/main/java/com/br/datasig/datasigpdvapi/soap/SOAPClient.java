@@ -73,7 +73,7 @@ public class SOAPClient {
         }
     }
 
-    private String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) {
+    String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) {
         StringBuilder xmlBuilder = new StringBuilder("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">");
         xmlBuilder.append("<soapenv:Body>");
         xmlBuilder.append("<ser:").append(service).append(">");
@@ -127,7 +127,7 @@ public class SOAPClient {
         });
     }
 
-    private static String prepareXmlBody(String service, String usr, String pswd, String encryption, String params) {
+    private String prepareXmlBody(String service, String usr, String pswd, String encryption, String params) {
         return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">" + "<soapenv:Body>" +
                 "<ser:" + service + ">" +
                 "<user>" + usr + "</user>" +
