@@ -477,6 +477,12 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
+    public String calcularDesconto(double vlrPro, double vlrDsc) {
+        double valor = vlrPro * vlrDsc;
+        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_DOWN);
+        return String.format("%.2f", bdPrc);
+    }
+
     @AllArgsConstructor
     private static class ParcelaParametro {
         String vlrPar;
