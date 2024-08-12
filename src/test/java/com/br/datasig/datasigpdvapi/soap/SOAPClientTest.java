@@ -30,7 +30,6 @@ class SOAPClientTest {
         String identificador = "<identificadorSistema>IDENTIFICADOR</identificadorSistema>";
 
         String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
-
         assertThat(xmlBody, isSimilarTo(expectedParams).ignoreWhitespace());
     }
 
@@ -46,10 +45,23 @@ class SOAPClientTest {
         String identificador = "";
 
         String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
-
         assertThat(xmlBody, isSimilarTo(expectedEmptyParams).ignoreWhitespace());
     }
 
+    @Test
+    void prepareXmlBody_fecharPedido() throws IOException {
+        String expectedEmptyParams = getDocumentContent("fecharPedido.xml");
+
+        String service = "SERVICE";
+        String user = "USER";
+        String pswd = "PSWD";
+        String encryption = "ENCRYPTION";
+        Map<String, Object> params = prepareParamsFecharPedido();
+        String identificador = "";
+
+        String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
+        assertThat(xmlBody, isSimilarTo(expectedEmptyParams).ignoreWhitespace());
+    }
     private Map<String, Object> prepareParamsCriarPedido() {
         Map<String, Object> params = new HashMap<>();
         params.put("converterQtdUnidadeVenda", "N");
@@ -112,6 +124,50 @@ class SOAPClientTest {
 
         params.put("pedido", paramsPedido);
         return params;
+    }
+
+    private Map<String, Object> prepareParamsFecharPedido() {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", "1");
+        params.put("codFil", "1");
+        params.put("numPed", "123456");
+        params.put("opeExe", "A");
+        params.put("temPar", "S");
+        params.put("fecPed", "S");
+
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        params.put("parcelas", parcelas);
+        HashMap<String, Object> parc1 = new HashMap<>();
+        parc1.put("banOpe", "01");
+        parc1.put("seqPar", "1");
+        parc1.put("catTef", "123123123");
+        parc1.put("nsuTef", "");
+        parc1.put("vlrPar", "92,45");
+        parc1.put("tipInt", "2");
+        parc1.put("opeExe", "I");
+        parc1.put("vctPar", "11/09/2024");
+        parc1.put("cgcCre", "999999999999");
+        parc1.put("codFpg", "8");
+        HashMap<String, Object> parc2 = new HashMap<>();
+        parc2.put("banOpe", "01");
+        parc2.put("seqPar", "2");
+        parc2.put("catTef", "123123123");
+        parc2.put("nsuTef", "");
+        parc2.put("vlrPar", "92,45");
+        parc2.put("tipInt", "2");
+        parc2.put("opeExe", "I");
+        parc2.put("vctPar", "11/10/2024");
+        parc2.put("cgcCre", "999999999999");
+        parc2.put("codFpg", "8");
+
+        parcelas.add(parc1);
+        parcelas.add(parc2);
+        params.put("parcelas", parcelas);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
     }
 
     private String getDocumentContent(String path) throws IOException {
