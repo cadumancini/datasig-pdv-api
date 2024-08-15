@@ -65,7 +65,7 @@ public class SOAPClient {
     public String requestFromSeniorWSSID(String wsPath, String service, String token, String encryption, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
-        String xmlBody = prepareXmlBodySID(service, user, pswd, encryption, params); //TODO: testar regra (NFC)
+        String xmlBody = prepareXmlBodySID(service, user, pswd, encryption, params);
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
@@ -159,20 +159,6 @@ public class SOAPClient {
 
         return writer.toString();
     }
-
-//    private String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) {
-//        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">" + "<soapenv:Body>" +
-//                "<ser:" + service + ">" +
-//                "<user>" + usr + "</user>" +
-//                "<password>" + pswd + "</password>" +
-//                "<encryption>" + encryption + "</encryption>" +
-//                "<parameters>" +
-//                params +
-//                "</parameters>" +
-//                "</ser:" + service + ">" +
-//                "</soapenv:Body>" +
-//                "</soapenv:Envelope>";
-//    }
 
     String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
