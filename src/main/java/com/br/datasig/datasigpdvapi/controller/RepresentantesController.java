@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class RepresentantesController extends DataSIGController {
             description = "Busca os representantes cadastrados"
     )
     @GetMapping(value= "", produces = "application/json")
-    public List<Representante> getRepresentantes(@RequestParam String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException {
+    public List<Representante> getRepresentantes(@RequestParam String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         if(isTokenValid(token))
             return representantesService.getRepresentantes(token);
         else
@@ -39,7 +40,7 @@ public class RepresentantesController extends DataSIGController {
             description = "Busca as tabelas de preço ligadas ao Representante"
     )
     @GetMapping(value= "/tabelasPreco", produces = "application/json")
-    public List<TabelaPreco> getTabelasPrecoPorRepresentantes(@RequestParam String token, @RequestParam String codRep) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<TabelaPreco> getTabelasPrecoPorRepresentantes(@RequestParam String token, @RequestParam String codRep) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
             return representantesService.getTabelasPrecoPorRepresentantes(token, codRep);
         else

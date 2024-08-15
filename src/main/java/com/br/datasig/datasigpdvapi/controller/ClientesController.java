@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ClientesController extends DataSIGController {
             description = "Busca os clientes cadastrados"
     )
     @GetMapping(value= "", produces = "application/json")
-    public List<Cliente> getClientes(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<Cliente> getClientes(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
             return clientesService.getClientes(token);
         else
@@ -41,7 +42,7 @@ public class ClientesController extends DataSIGController {
             description = "Cadastrar novo cliente na base"
     )
     @PutMapping(value= "", produces = "application/json")
-    public ClienteResponse putCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public ClienteResponse putCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
             return clientesService.putCliente(token, cliente);
         else

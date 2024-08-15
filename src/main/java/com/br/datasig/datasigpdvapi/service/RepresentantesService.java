@@ -12,6 +12,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +21,7 @@ import java.util.Optional;
 
 @Component
 public class RepresentantesService extends WebServiceRequestsService {
-    public List<Representante> getRepresentantes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<Representante> getRepresentantes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
@@ -43,7 +44,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         return representantes;
     }
 
-    public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+    public List<TabelaPreco> getTabelasPrecoPorRepresentantes(String token, String codRep) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
@@ -72,7 +73,7 @@ public class RepresentantesService extends WebServiceRequestsService {
         params.put("CODREP", codRep);
     }
 
-    public Representante getRepresentante(String token, String codRep) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public Representante getRepresentante(String token, String codRep) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         List<Representante> representantes = getRepresentantes(token);
         Optional<Representante> representante = representantes.stream().filter(rep -> rep.getCodRep().equals(codRep)).findFirst();
         return representante.orElse(null);

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,49 +21,52 @@ class SOAPClientTest {
     private SOAPClient uut;
 
     @Test
-    void prepareXmlBody_emptyParams() throws IOException {
-        String expectedParams = getDocumentContent("emptyParams.xml");
+    void prepareXmlBody_emptyParams() throws IOException, ParserConfigurationException, TransformerException {
+        Map<String, Object> params = new HashMap<>();
+        String identificador = "IDENTIFICADOR";
+        createParamsAndAssert("emptyParams.xml", params, identificador);
+    }
 
+    @Test
+    void prepareXmlBody_criarPedido() throws IOException, ParserConfigurationException, TransformerException {
+        Map<String, Object> params = prepareParamsCriarPedido();
+        String identificador = "";
+        createParamsAndAssert("criarPedido.xml", params, identificador);
+    }
+
+    @Test
+    void prepareXmlBody_fecharPedido() throws IOException, ParserConfigurationException, TransformerException {
+        Map<String, Object> params = prepareParamsFecharPedido();
+        String identificador = "";
+        createParamsAndAssert("fecharPedido.xml", params, identificador);
+    }
+
+    @Test
+    void prepareXmlBodySID_executarRegra() throws IOException, ParserConfigurationException, TransformerException {
+        Map<String, Object> params = prepareParamsExecutarRegra();
+        createParamsAndAssert("exeRegra.xml", params);
+    }
+
+    void createParamsAndAssert(String path, Map<String, Object> params, String identificador) throws IOException, ParserConfigurationException, TransformerException {
+        String expectedParams = getDocumentContent(path);
         String service = "SERVICE";
         String user = "USER";
         String pswd = "PSWD";
         String encryption = "ENCRYPTION";
-        Map<String, Object> params = new HashMap<>();
-        String identificador = "<identificadorSistema>IDENTIFICADOR</identificadorSistema>";
-
         String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
         assertThat(xmlBody, isSimilarTo(expectedParams).ignoreWhitespace());
     }
 
-    @Test
-    void prepareXmlBody_criarPedido() throws IOException {
-        String expectedEmptyParams = getDocumentContent("criarPedido.xml");
-
+    void createParamsAndAssert(String path, Map<String, Object> params) throws IOException, ParserConfigurationException, TransformerException {
+        String expectedParams = getDocumentContent(path);
         String service = "SERVICE";
         String user = "USER";
         String pswd = "PSWD";
         String encryption = "ENCRYPTION";
-        Map<String, Object> params = prepareParamsCriarPedido();
-        String identificador = "";
-
-        String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
-        assertThat(xmlBody, isSimilarTo(expectedEmptyParams).ignoreWhitespace());
+        String xmlBody = uut.prepareXmlBodySID(service, user, pswd, encryption, params);
+        assertThat(xmlBody, isSimilarTo(expectedParams).ignoreWhitespace());
     }
 
-    @Test
-    void prepareXmlBody_fecharPedido() throws IOException {
-        String expectedEmptyParams = getDocumentContent("fecharPedido.xml");
-
-        String service = "SERVICE";
-        String user = "USER";
-        String pswd = "PSWD";
-        String encryption = "ENCRYPTION";
-        Map<String, Object> params = prepareParamsFecharPedido();
-        String identificador = "";
-
-        String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
-        assertThat(xmlBody, isSimilarTo(expectedEmptyParams).ignoreWhitespace());
-    }
     private Map<String, Object> prepareParamsCriarPedido() {
         Map<String, Object> params = new HashMap<>();
         params.put("converterQtdUnidadeVenda", "N");
@@ -82,7 +87,14 @@ class SOAPClientTest {
         paramsPedido.put("codCli","1");
         paramsPedido.put("acePar","N");
         paramsPedido.put("codCpg","001D");
-        paramsPedido.put("usuario","<cmpUsu>USU_VLRTRO</cmpUsu><vlrUsu>0</vlrUsu>");
+
+        HashMap<String, Object> paramsTroco = new HashMap<>();
+        paramsTroco.put("cmpUsu","USU_VLRTRO");
+        paramsTroco.put("vlrUsu","0");
+        List<HashMap<String, Object>> list = new ArrayList<>();
+        list.add(paramsTroco);
+        paramsPedido.put("usuario",list);
+
         paramsPedido.put("vlrDar","0");
         paramsPedido.put("codRep","35");
         paramsPedido.put("cifFob","X");
@@ -168,6 +180,15 @@ class SOAPClientTest {
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private Map<String, Object> prepareParamsExecutarRegra() {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("aCodEmpPdv", "1");
+        params.put("aCodFilPdv", "1");
+        params.put("acao", "sid.srv.regra");
+        params.put("numreg", "999");
+        return params;
     }
 
     private String getDocumentContent(String path) throws IOException {
