@@ -13,8 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,13 +40,13 @@ public class SOAPClient {
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", env.getProperty("webservicesUrl"));
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params) throws SOAPClientException {
+    public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, "");
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
     }
-    public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException {
+    public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador, token));
@@ -46,17 +56,17 @@ public class SOAPClient {
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {
-        return includeIdentificador ? "<identificadorSistema>" + getIdentificadorSistema(token) + "</identificadorSistema>" : "";
+        return includeIdentificador ? getIdentificadorSistema(token) : "";
     }
 
     private String getIdentificadorSistema(String token) {
         return TokensManager.getInstance().getParamsPDVFromToken(token).getSigInt();
     }
 
-    public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, String params) throws SOAPClientException {
+    public String requestFromSeniorWSSID(String wsPath, String service, String token, String encryption, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
-        String xmlBody = prepareXmlBody(service, user, pswd, encryption, params);
+        String xmlBody = prepareXmlBodySID(service, user, pswd, encryption, params);
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
@@ -73,72 +83,104 @@ public class SOAPClient {
         }
     }
 
-    private String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) {
-        StringBuilder xmlBuilder = new StringBuilder("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">");
-        xmlBuilder.append("<soapenv:Body>");
-        xmlBuilder.append("<ser:").append(service).append(">");
-        xmlBuilder.append("<user>").append(usr).append("</user>");
-        xmlBuilder.append("<password>").append(pswd).append("</password>");
-        xmlBuilder.append("<encryption>").append(encryption).append("</encryption>");
-
-        xmlBuilder.append("<parameters>");
-        buildXmlParameters(xmlBuilder, params);
-        xmlBuilder.append(identificador);
-        xmlBuilder.append("</parameters>");
-
-        xmlBuilder.append("</ser:").append(service).append(">");
-        xmlBuilder.append("</soapenv:Body>");
-        xmlBuilder.append("</soapenv:Envelope>");
-
-        return xmlBuilder.toString();
+    String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) throws ParserConfigurationException, TransformerException {
+        return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
     }
 
-    @SuppressWarnings("unchecked")
-    private void buildXmlParameters(StringBuilder xmlBuilder, Map<String, Object> params) {
-        params.forEach((key, value) -> {
-            if(value instanceof HashMap) {
-                xmlBuilder.append("<" + key + ">");
-                ((HashMap<?, ?>) value).forEach((key1, value1) -> {
-                    if(value1 instanceof ArrayList) {
-                        ((ArrayList) value1).forEach(listItem -> {
-                            xmlBuilder.append("<" + key1 + ">");
-                            ((HashMap<?, ?>) listItem).forEach((key2, value2) -> {
-                                if(value2 instanceof  ArrayList) {
-                                    ((ArrayList) value2).forEach(campo -> {
-                                        xmlBuilder.append("<" + key2 + ">");
-                                        ((HashMap<?, ?>) campo).forEach((key3, value3) -> xmlBuilder.append("<" + key3 + ">" + value3 + "</" + key3 + ">"));
-                                        xmlBuilder.append("</" + key2 + ">");
-                                    });
-                                } else {
-                                    xmlBuilder.append("<" + key2 + ">" + value2 + "</" + key2 + ">");
-                                }
-                            });
-                            xmlBuilder.append("</" + key1 + ">");
-                        });
-                    } else {
-                        xmlBuilder.append("<" + key1 + ">" + value1 + "</" + key1+ ">");
-                    }
-                });
-                xmlBuilder.append("</" + key + ">");
+    String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
+        return prepareXmlBodyCommon(service, usr, pswd, encryption, params, null, true);
+    }
+
+    private String prepareXmlBodyCommon(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador, boolean isSID) throws ParserConfigurationException, TransformerException {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+        // root elements
+        Document doc = docBuilder.newDocument();
+        Element envelope = doc.createElement("soapenv:Envelope");
+        envelope.setAttribute("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/");
+        envelope.setAttribute("xmlns:ser", "http://services.senior.com.br");
+        doc.appendChild(envelope);
+
+        Element body = doc.createElement("soapenv:Body");
+        envelope.appendChild(body);
+
+        Element serviceElement = doc.createElement("ser:" + service);
+        body.appendChild(serviceElement);
+
+        // add user, password, and encryption
+        appendElementWithText(doc, serviceElement, "user", usr);
+        appendElementWithText(doc, serviceElement, "password", pswd);
+        appendElementWithText(doc, serviceElement, "encryption", encryption);
+
+        Element parameters = doc.createElement("parameters");
+        serviceElement.appendChild(parameters);
+
+        if (isSID) {
+            params.forEach((key, value) -> {
+                Element sidElement = doc.createElement("SID");
+                appendElementWithText(doc, sidElement, "param", key + "=" + value);
+                parameters.appendChild(sidElement);
+            });
+        } else {
+            buildXmlParameters(doc, parameters, params);
+            if (!identificador.isEmpty()) {
+                appendElementWithText(doc, parameters, "identificadorSistema", identificador);
             }
-            else {
-                xmlBuilder.append("<" + key + ">" + value + "</" + key + ">");
+        }
+
+        // transform to String
+        return transformDocumentToString(doc);
+    }
+
+    private void buildXmlParameters(Document doc, Element parent, Map<String, Object> params) {
+        params.forEach((key, value) -> {
+            if (value instanceof HashMap) {
+                Element child = doc.createElement(key);
+                buildXmlParameters(doc, child, (HashMap<String, Object>) value);
+                parent.appendChild(child);
+            } else if (value instanceof ArrayList) {
+                ((ArrayList<?>) value).forEach(item -> {
+                    Element child = doc.createElement(key);
+                    if (item instanceof HashMap) {
+                        buildXmlParameters(doc, child, (HashMap<String, Object>) item);
+                    } else {
+                        child.appendChild(doc.createTextNode(item.toString()));
+                    }
+                    parent.appendChild(child);
+                });
+            } else {
+                appendElementWithText(doc, parent, key, value.toString());
             }
         });
     }
 
-    private static String prepareXmlBody(String service, String usr, String pswd, String encryption, String params) {
-        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ser=\"http://services.senior.com.br\">" + "<soapenv:Body>" +
-                "<ser:" + service + ">" +
-                "<user>" + usr + "</user>" +
-                "<password>" + pswd + "</password>" +
-                "<encryption>" + encryption + "</encryption>" +
-                "<parameters>" +
-                params +
-                "</parameters>" +
-                "</ser:" + service + ">" +
-                "</soapenv:Body>" +
-                "</soapenv:Envelope>";
+    private void appendElementWithText(Document doc, Element parent, String tagName, String textContent) {
+        Element element = doc.createElement(tagName);
+        element.appendChild(doc.createTextNode(textContent));
+        parent.appendChild(element);
+    }
+
+    private String transformDocumentToString(Document doc) throws TransformerException {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        // Disable external entity processing to prevent XXE
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        // Optional: Disable other features for further security (depends on implementation)
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+        StringWriter writer = new StringWriter();
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(writer);
+
+        transformer.transform(source, result);
+
+        return writer.toString();
     }
 
     private static String postRequest(String url, String xmlBody, String header) throws IOException {

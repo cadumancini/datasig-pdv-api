@@ -1,0 +1,23 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://services.senior.com.br">
+    <soapenv:Body>
+        <ser:SERVICE>
+            <user>USER</user>
+            <password>PSWD</password>
+            <encryption>ENCRYPTION</encryption>
+            <parameters>
+                <SID>
+                    <param>aCodEmpPdv=1</param>
+                </SID>
+                <SID>
+                    <param>numreg=999</param>
+                </SID>
+                <SID>
+                    <param>aCodFilPdv=1</param>
+                </SID>
+                <SID>
+                    <param>acao=sid.srv.regra</param>
+                </SID>
+            </parameters>
+        </ser:SERVICE>
+    </soapenv:Body>
+</soapenv:Envelope>

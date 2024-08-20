@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class PagamentoController extends DataSIGController {
             description = "Busca as formas de pagamento cadastradas"
     )
     @GetMapping(value= "/formas", produces = "application/json")
-    public List<FormaPagamento> getFormas(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<FormaPagamento> getFormas(@RequestParam String token) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
             return pagamentoService.getFormasPagamento(token);
         else

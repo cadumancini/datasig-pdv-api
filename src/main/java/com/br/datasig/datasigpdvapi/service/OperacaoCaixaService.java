@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class OperacaoCaixaService extends WebServiceRequestsService {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public OperacaoCaixaResultado realizarOperacaoCaixa(String token, TipoOperacaoCaixa tipoOperacao, String valorOperacao, String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public OperacaoCaixaResultado realizarOperacaoCaixa(String token, TipoOperacaoCaixa tipoOperacao, String valorOperacao, String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String numCxa = getNumCxaFromToken(token);
         String numCco = getNumCcoFromToken(token);
 
@@ -58,7 +59,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         return TokensManager.getInstance().getCaixaByToken(token).getNumCco();
     }
 
-    private OperacaoCaixaResultado movimentar(String numCco, String codTns, String vlrMov, String hisMov, String token, String prefix) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    private OperacaoCaixaResultado movimentar(String numCco, String codTns, String vlrMov, String hisMov, String token, String prefix) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         HashMap<String, Object> params = new HashMap<>();
         HashMap<String, Object> lancamento = new HashMap<>();
         lancamento.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
@@ -95,7 +96,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         throw new WebServiceRuntimeException("Erro ao converter retorno da operação de caixa");
     }
 
-    public List<ConsultaMovimentoCaixa> getMovimentosCaixa(String token, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<ConsultaMovimentoCaixa> getMovimentosCaixa(String token, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         String numCxa = TokensManager.getInstance().getCaixaByToken(token).getNumCxa();
