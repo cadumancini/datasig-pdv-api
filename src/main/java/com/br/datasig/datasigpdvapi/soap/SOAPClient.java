@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -83,6 +84,14 @@ public class SOAPClient {
     }
 
     String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) throws ParserConfigurationException, TransformerException {
+        return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
+    }
+
+    String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
+        return prepareXmlBodyCommon(service, usr, pswd, encryption, params, null, true);
+    }
+
+    private String prepareXmlBodyCommon(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador, boolean isSID) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -107,11 +116,18 @@ public class SOAPClient {
         Element parameters = doc.createElement("parameters");
         serviceElement.appendChild(parameters);
 
-        // recursively build parameters
-        buildXmlParameters(doc, parameters, params);
-
-        // append identificador
-        if(!identificador.isEmpty()) appendElementWithText(doc, parameters, "identificadorSistema", identificador);
+        if (isSID) {
+            params.forEach((key, value) -> {
+                Element sidElement = doc.createElement("SID");
+                appendElementWithText(doc, sidElement, "param", key + "=" + value);
+                parameters.appendChild(sidElement);
+            });
+        } else {
+            buildXmlParameters(doc, parameters, params);
+            if (!identificador.isEmpty()) {
+                appendElementWithText(doc, parameters, "identificadorSistema", identificador);
+            }
+        }
 
         // transform to String
         return transformDocumentToString(doc);
@@ -147,6 +163,13 @@ public class SOAPClient {
 
     private String transformDocumentToString(Document doc) throws TransformerException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        // Disable external entity processing to prevent XXE
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        // Optional: Disable other features for further security (depends on implementation)
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
         Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -158,41 +181,6 @@ public class SOAPClient {
         transformer.transform(source, result);
 
         return writer.toString();
-    }
-
-    String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-        // Create root elements
-        Document doc = docBuilder.newDocument();
-        Element envelope = doc.createElement("soapenv:Envelope");
-        envelope.setAttribute("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/");
-        envelope.setAttribute("xmlns:ser", "http://services.senior.com.br");
-        doc.appendChild(envelope);
-
-        Element body = doc.createElement("soapenv:Body");
-        envelope.appendChild(body);
-
-        Element serviceElement = doc.createElement("ser:" + service);
-        body.appendChild(serviceElement);
-
-        // Add user, password, and encryption
-        appendElementWithText(doc, serviceElement, "user", usr);
-        appendElementWithText(doc, serviceElement, "password", pswd);
-        appendElementWithText(doc, serviceElement, "encryption", encryption);
-
-        Element parameters = doc.createElement("parameters");
-        params.forEach((key, value) -> {
-            Element sidElement = doc.createElement("SID");
-            appendElementWithText(doc, sidElement, "param", key + "=" + value);
-            parameters.appendChild(sidElement);
-        });
-
-        serviceElement.appendChild(parameters);
-
-        // Transform to String
-        return transformDocumentToString(doc);
     }
 
     private static String postRequest(String url, String xmlBody, String header) throws IOException {
