@@ -8,7 +8,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.io.IOException;
 
 public class HttpRequesClient {
-    private String url;
+    private final String url;
 
     public HttpRequesClient(String url) {
         this.url = url;

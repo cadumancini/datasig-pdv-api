@@ -1,17 +1,24 @@
 package com.br.datasig.datasigpdvapi.token;
 
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
+import lombok.Getter;
 
 import java.util.Calendar;
 
 public class Token {
+    @Getter
     private final String value;
     private final String nomUsu;
     private final String senUsu;
+    @Getter
     private final String codEmp;
+    @Getter
     private final String codFil;
+    @Getter
     private final ParamsPDV paramsPDV;
+    @Getter
     private final long createdAt;
+    @Getter
     private boolean valid;
 
     public Token (String value, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV) {
@@ -25,10 +32,6 @@ public class Token {
         this.valid = true;
     }
 
-    public String getValue() {
-        return value;
-    }
-
     public String getUserName() {
         return nomUsu;
     }
@@ -37,27 +40,8 @@ public class Token {
         return senUsu;
     }
 
-    public String getCodEmp() {
-        return codEmp;
-    }
-
-    public String getCodFil() {
-        return codFil;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
     public void invalidateToken() {
         this.valid = false;
     }
 
-    public boolean isValid() {
-        return this.valid;
-    }
-
-    public ParamsPDV getParamsPDV() {
-        return this.paramsPDV;
-    }
 }
