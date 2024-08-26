@@ -36,16 +36,16 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
 
         return switch (tipoOperacao) {
             case ABERTURA -> {
-                movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token, "ABERTURA: ");
-                yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token, "ABERTURA: ");
+                movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
             case SANGRIA -> {
-                movimentar(numCxa, cxaSan, valorOperacao, hisMov, token, "SANGRIA: ");
-                yield movimentar(numCco, cofSan, valorOperacao, hisMov, token, "SANGRIA: ");
+                movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
             case FECHAMENTO -> {
-                movimentar(numCxa, cxaFec, valorOperacao, hisMov, token, "FECHAMENTO: ");
-                yield movimentar(numCco, cofFec, valorOperacao, hisMov, token, "FECHAMENTO: ");
+                movimentar(numCxa, cxaFec, valorOperacao, hisMov, token);
+                yield movimentar(numCco, cofFec, valorOperacao, hisMov, token);
             }
         };
     }
@@ -58,7 +58,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         return TokensManager.getInstance().getCaixaByToken(token).getNumCco();
     }
 
-    private OperacaoCaixaResultado movimentar(String numCco, String codTns, String vlrMov, String hisMov, String token, String prefix) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    private OperacaoCaixaResultado movimentar(String numCco, String codTns, String vlrMov, String hisMov, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
         HashMap<String, Object> params = new HashMap<>();
         HashMap<String, Object> lancamento = new HashMap<>();
         lancamento.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
@@ -68,7 +68,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         lancamento.put("codTns", codTns);
         lancamento.put("vlrMov", vlrMov);
         lancamento.put("sitMcc", "A");
-        lancamento.put("hisMov", (prefix + hisMov));
+        lancamento.put("hisMov", hisMov);
         params.put("lancamentos", lancamento);
         params.put("indTec", "N");
         params.put("sigInt", TokensManager.getInstance().getParamsPDVFromToken(token).getSigInt());
