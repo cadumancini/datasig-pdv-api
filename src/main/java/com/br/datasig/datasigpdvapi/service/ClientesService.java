@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class ClientesService extends WebServiceRequestsService{
     private static final Logger logger = LoggerFactory.getLogger(ClientesService.class);
     private final ConsultaCEPClient consultaCEPClient = new ConsultaCEPClient();
 
-    public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
@@ -70,7 +71,7 @@ public class ClientesService extends WebServiceRequestsService{
         }
     }
 
-    public ClienteResponse putCliente(String token, ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, WebServiceRuntimeException {
+    public ClienteResponse putCliente(String token, ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, WebServiceRuntimeException, TransformerException {
         HashMap<String, Object> params = prepareParams(token, cliente);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_cad_clientes", "GravarClientes_5", token, "0", params, true);
 

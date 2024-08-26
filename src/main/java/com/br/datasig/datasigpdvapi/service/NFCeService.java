@@ -17,6 +17,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
@@ -26,9 +27,9 @@ import java.util.stream.Collectors;
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
 
-    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException {
+    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
         String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
-        String paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
+        Map<String, Object> paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
         String nfceResponse = exeRegra(token, paramsNFCe);
         validateNfceResponse(nfceResponse);
         return extractNfceNumberFromResponse(nfceResponse);
@@ -41,11 +42,11 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    private String prepareParamsForGeracaoNFCe(String token, String numPed, String numReg) {
-        StringBuilder paramsBuilder = getBaseParams(token, numReg);
-        appendSIDParam(paramsBuilder, "aNumPedPdv", numPed);
+    private Map<String, Object> prepareParamsForGeracaoNFCe(String token, String numPed, String numReg) {
+        Map<String, Object> params = getBaseParams(token, numReg);
 
-        return paramsBuilder.toString();
+        params.put("aNumPedPdv", numPed);
+        return params;
     }
 
     private String extractNfceNumberFromResponse(String response) {
@@ -64,7 +65,7 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String datIni, String datFim, String codRep)
-            throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
+            throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
@@ -107,59 +108,57 @@ public class NFCeService extends WebServiceRequestsService {
         return notas;
     }
 
-    public String cancelarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public String cancelarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String regCan = TokensManager.getInstance().getParamsPDVFromToken(token).getRegCan();
-        String paramsCancelamento = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regCan);
+        Map<String, Object> paramsCancelamento = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regCan);
         return exeRegra(token, paramsCancelamento);
     }
 
-    private String preparaParamsForCancelarNFCe(String token, String codSnf, String numNfv, String jusCan, String numReg) {
-        StringBuilder paramsBuilder = getBaseParams(token, numReg);
-        appendSIDParam(paramsBuilder, "aCodSnfPDV", codSnf);
-        appendSIDParam(paramsBuilder, "aNumNfvPDV", numNfv);
-        appendSIDParam(paramsBuilder, "aJusCanPDV", jusCan);
-
-        return paramsBuilder.toString();
+    private Map<String, Object> preparaParamsForCancelarNFCe(String token, String codSnf, String numNfv, String jusCan, String numReg) {
+        Map<String, Object> params = getBaseParams(token, numReg);
+        params.put("aCodSnfPDV", codSnf);
+        params.put("aNumNfvPDV", numNfv);
+        params.put("aJusCanPDV", jusCan);
+        return params;
     }
 
-    public String inutilizarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public String inutilizarNFCe(String token, String codSnf, String numNfv, String jusCan) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String regInu = TokensManager.getInstance().getParamsPDVFromToken(token).getRegInu();
-        String paramsInutilizacao = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regInu);
+        Map<String, Object> paramsInutilizacao = preparaParamsForCancelarNFCe(token, codSnf, numNfv, jusCan, regInu);
         return exeRegra(token, paramsInutilizacao);
     }
 
-    private String exeRegra(String token, String params) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
-        String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
+    private String exeRegra(String token, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        String xml = soapClient.requestFromSeniorWSSID("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
         XmlUtils.validateXmlResponse(xml);
         return getResponseNFCeFromXml(xml);
     }
 
-    private StringBuilder getBaseParams(String token, String numReg) {
+    private Map<String, Object> getBaseParams(String token, String numReg) {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
 
-        StringBuilder paramsBuilder = new StringBuilder();
-        appendSIDParam(paramsBuilder, "acao", "sid.srv.regra");
-        appendSIDParam(paramsBuilder, "numreg", numReg);
-        appendSIDParam(paramsBuilder, "aCodEmpPdv", codEmp);
-        appendSIDParam(paramsBuilder, "aCodFilPdv", codFil);
-
-        return paramsBuilder;
+        Map<String, Object> params = new HashMap<>();
+        params.put("acao", "sid.srv.regra");
+        params.put("numreg", numReg);
+        params.put("aCodEmpPdv", codEmp);
+        params.put("aCodFilPdv", codFil);
+        return params;
     }
 
-    public SitEdocsResponse getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException {
+    public SitEdocsResponse getSitEDocs(String token, String codSnf, String numNfv) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
-        String paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
+        Map<String, Object> paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
         ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
     }
 
-    private String prepareParamsForConsultaEDocs(String token, String codSnf, String numNfv, String numReg) {
-        StringBuilder paramsBuilder = getBaseParams(token, numReg);
-        appendSIDParam(paramsBuilder, "aCodSnfPDV", codSnf);
-        appendSIDParam(paramsBuilder, "aNumNfvPDV", numNfv);
+    private Map<String, Object> prepareParamsForConsultaEDocs(String token, String codSnf, String numNfv, String numReg) {
+        Map<String, Object> params = getBaseParams(token, numReg);
+        params.put("aCodSnfPDV", codSnf);
+        params.put("aNumNfvPDV", numNfv);
 
-        return paramsBuilder.toString();
+        return params;
     }
 }

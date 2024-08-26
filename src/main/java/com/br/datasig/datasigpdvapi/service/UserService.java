@@ -18,6 +18,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,7 +28,7 @@ import java.util.HashMap;
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    public String login(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException {
+    public String login(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -56,7 +57,7 @@ public class UserService extends WebServiceRequestsService {
         }
     }
 
-    private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException {
+    private ParamsEmpresa defineCodEmpCodFil(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, TransformerException {
         logger.info("Buscando empresa e filial ativas para usuário {}", user);
         HashMap<String, Object> params = prepareParamsForEmpresaAtiva(user);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaEmpresaAtiva", "Usuario", user, pswd, "0", params);
@@ -81,7 +82,7 @@ public class UserService extends WebServiceRequestsService {
         return params;
     }
 
-    private ParamsPDV defineParamsPDV(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    private ParamsPDV defineParamsPDV(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         logger.info("Buscando parâmetros PDV para usuário {}", user);
         HashMap<String, Object> params = prepareParamsForParamsPDV(codEmp, codFil);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaParametrosIntegracao", "PDV", user, pswd, "0", params);

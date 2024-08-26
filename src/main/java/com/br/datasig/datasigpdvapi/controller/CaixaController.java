@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class CaixaController extends DataSIGController {
             description = "Realizar operação no caixa (operações disponíveis: abertura, sangria e fechamento)"
     )
     @PostMapping(value = "", produces = "application/json")
-    public OperacaoCaixaResultado realizarOperacaoCaixa(@RequestParam String token, @RequestParam TipoOperacaoCaixa tipoOperacao, @RequestParam String valorOperacao, @RequestParam String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public OperacaoCaixaResultado realizarOperacaoCaixa(@RequestParam String token, @RequestParam TipoOperacaoCaixa tipoOperacao, @RequestParam String valorOperacao, @RequestParam String hisMov) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
             return caixaService.realizarOperacaoCaixa(token, tipoOperacao, valorOperacao, hisMov);
         else
@@ -40,7 +41,7 @@ public class CaixaController extends DataSIGController {
             description = "Consulta movimentos de caixa (abertura, sangria e fechamento)"
     )
     @GetMapping(value = "/movimentos", produces = "application/json")
-    public List<ConsultaMovimentoCaixa> getMovimentosCaixa(@RequestParam String token, @RequestParam(required = false) String datIni, @RequestParam(required = false) String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<ConsultaMovimentoCaixa> getMovimentosCaixa(@RequestParam String token, @RequestParam(required = false) String datIni, @RequestParam(required = false) String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
             return caixaService.getMovimentosCaixa(token, datIni, datFim);
         else
