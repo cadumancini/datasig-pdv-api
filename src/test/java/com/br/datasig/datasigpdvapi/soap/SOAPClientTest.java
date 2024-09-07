@@ -54,7 +54,6 @@ class SOAPClientTest {
         String pswd = "PSWD";
         String encryption = "ENCRYPTION";
         String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
-        System.out.println(xmlBody);
         assertThat(xmlBody, isSimilarTo(expectedParams).ignoreWhitespace());
     }
 
