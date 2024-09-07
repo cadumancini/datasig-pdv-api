@@ -38,6 +38,7 @@
                     <codEmp>1</codEmp>
                     <codFil>1</codFil>
                     <opeExe>A</opeExe>
+                    <codFpg>8</codFpg>
                 </pedido>
             </parameters>
         </ser:SERVICE>

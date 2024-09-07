@@ -344,12 +344,17 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("opeExe", "A");
         params.put("temPar", "S");
         params.put("fecPed", "S");
+        params.put("codFpg", getPrimeiroCodFpg(pedido));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
+    }
+
+    private String getPrimeiroCodFpg(PayloadPedido pedido) {
+        return pedido.getPagamentos().get(0).getForma().getCodFpg();
     }
 
     private HashMap<String, Object> prepareParamsForAlterarTransacao(PayloadPedido pedido, String token) {

@@ -54,6 +54,7 @@ class SOAPClientTest {
         String pswd = "PSWD";
         String encryption = "ENCRYPTION";
         String xmlBody = uut.prepareXmlBody(service, user, pswd, encryption, params, identificador);
+        System.out.println(xmlBody);
         assertThat(xmlBody, isSimilarTo(expectedParams).ignoreWhitespace());
     }
 
@@ -144,6 +145,7 @@ class SOAPClientTest {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", "1");
         params.put("codFil", "1");
+        params.put("codFpg", "8");
         params.put("numPed", "123456");
         params.put("opeExe", "A");
         params.put("temPar", "S");
