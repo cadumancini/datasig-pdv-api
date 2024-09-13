@@ -12,6 +12,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class ProdutosService extends WebServiceRequestsService{
-    public List<ProdutoPrecos> getProdutosPorTabelaDePreco(String token, String codTpr) throws SOAPClientException, ParserConfigurationException, IOException, SAXException {
+    public List<ProdutoPrecos> getProdutosPorTabelaDePreco(String token, String codTpr) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);

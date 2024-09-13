@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ProdutosController extends DataSIGController {
             description = "Busca todos os produtos presentes numa tabela de preço informada"
     )
     @GetMapping(value= "/tabela", produces = "application/json")
-    public List<ProdutoPrecos> getPreco(@RequestParam String token, @RequestParam String codTpr) throws SOAPClientException, IOException, ParserConfigurationException, SAXException {
+    public List<ProdutoPrecos> getPreco(@RequestParam String token, @RequestParam String codTpr) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token)) {
             return produtosService.getProdutosPorTabelaDePreco(token, codTpr);
         }
