@@ -18,4 +18,5 @@ public class PayloadPedido {
     private List<PayloadItemPedido> itens;
     private List<PagamentoPedido> pagamentos;
     private boolean fechar;
+    private boolean gerar;
 }
