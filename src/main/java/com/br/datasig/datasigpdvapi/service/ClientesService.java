@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.Cliente;
-import com.br.datasig.datasigpdvapi.entity.ClientePayload;
-import com.br.datasig.datasigpdvapi.entity.ClienteResponse;
-import com.br.datasig.datasigpdvapi.entity.ConsultaCEP;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.http.ConsultaCEPClient;
@@ -34,14 +31,19 @@ public class ClientesService extends WebServiceRequestsService{
     private final ConsultaCEPClient consultaCEPClient = new ConsultaCEPClient();
 
     public List<Cliente> getClientes(String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
-        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        addParamsForClientes(params);
+        HashMap<String, Object> params = getParamsConsultaCliente(token);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaCliente", "Cliente", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
         return getClientesFromXml(xml);
+    }
+
+    private HashMap<String, Object> getParamsConsultaCliente(String token) {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+        HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
+        addParamsForClientes(params);
+        return params;
     }
 
     private List<Cliente> getClientesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
@@ -187,5 +189,26 @@ public class ClientesService extends WebServiceRequestsService{
 
         logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
         throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
+    }
+
+    public List<ClienteSimplified> getClientesSimplified(String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> params = getParamsConsultaCliente(token);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaClienteFilial", "Cliente", token, "0", params, false);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getClientesSimplifiedFromXml(xml);
+    }
+
+    private List<ClienteSimplified> getClientesSimplifiedFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        List<ClienteSimplified> clientes = new ArrayList<>();
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "tabela");
+
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                clientes.add(ClienteSimplified.fromXml(nNode));
+            }
+        }
+        return clientes;
     }
 }
