@@ -47,6 +47,18 @@ public class ClientesController extends DataSIGController {
     }
 
     @Operation(
+            summary = "Buscar cliente",
+            description = "Busca os dados completos de determinado cliente"
+    )
+    @GetMapping(value= "cliente", produces = "application/json")
+    public Cliente getCliente(@RequestParam String token, @RequestParam(required = false) String codCli, @RequestParam(required = false) String cgcCpf) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        if(isTokenValid(token))
+            return clientesService.getCliente(token, codCli, cgcCpf);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
             summary = "Cadastrar cliente",
             description = "Cadastrar novo cliente na base"
     )

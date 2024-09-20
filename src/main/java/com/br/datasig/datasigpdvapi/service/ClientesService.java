@@ -46,6 +46,13 @@ public class ClientesService extends WebServiceRequestsService{
         return params;
     }
 
+    private HashMap<String, Object> getParamsConsultaCliente(String token, String codCli, String cgcCpf) {
+        HashMap<String, Object> params = getParamsConsultaCliente(token);
+        if (codCli != null) params.put("codCli", codCli);
+        if (cgcCpf != null) params.put("cgcCpf", cgcCpf);
+        return params;
+    }
+
     private List<Cliente> getClientesFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         List<Cliente> clientes = new ArrayList<>();
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "tabela");
@@ -210,5 +217,15 @@ public class ClientesService extends WebServiceRequestsService{
             }
         }
         return clientes;
+    }
+
+    public Cliente getCliente(String token, String codCli, String cgcCpf) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> params = getParamsConsultaCliente(token, codCli, cgcCpf);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaCliente", "Cliente", token, "0", params, false);
+
+        XmlUtils.validateXmlResponse(xml);
+        List<Cliente> clientes = getClientesFromXml(xml);
+        if (!clientes.isEmpty()) return clientes.get(0);
+        throw new ResourceNotFoundException("Cliente não encontrado");
     }
 }
