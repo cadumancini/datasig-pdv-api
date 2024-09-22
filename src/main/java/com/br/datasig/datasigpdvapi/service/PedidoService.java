@@ -29,7 +29,7 @@ public class PedidoService extends WebServiceRequestsService {
         setEmpFilToPedido(pedido, token);
         if(pedido.getNumPed().equals("0")) {
             RetornoPedido retornoPedido = sendPedidoRequest(pedido, token);
-            if (pedido.isFechar()) {
+            if (pedido.isFechar() || pedido.isGerar()) {
                 pedido.setNumPed(retornoPedido.getNumPed());
                 fecharPedido(pedido, token, false);
             }
@@ -53,8 +53,9 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        if (pedido.isFechar()) {
-            return fecharPedido(pedido, token, true);
+        if (pedido.isFechar() || pedido.isGerar()) {
+            boolean alterarTransacao = pedido.isFechar();
+            return fecharPedido(pedido, token, alterarTransacao);
         } else {
             return sendPedidoRequest(pedido, token);
         }
@@ -127,7 +128,7 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private String definirTnsPro(PayloadPedido pedido, String token) {
-        return pedido.isFechar() ? TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed() :
+        return (pedido.isFechar() || pedido.isGerar()) ? TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed() :
                 TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
     }
 
@@ -343,7 +344,9 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("numPed", pedido.getNumPed());
         params.put("opeExe", "A");
         params.put("temPar", "S");
-        params.put("fecPed", "S");
+        if (pedido.isFechar()) {
+            params.put("fecPed", "S");
+        }
         params.put("codFpg", getPrimeiroCodFpg(pedido));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
