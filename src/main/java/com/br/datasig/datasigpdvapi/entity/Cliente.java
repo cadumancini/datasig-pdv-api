@@ -1,17 +1,13 @@
 package com.br.datasig.datasigpdvapi.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-@Data
-@AllArgsConstructor
-public class Cliente {
-    private String codCli;
-    private String nomCli;
-    private String apeCli;
-    private String cgcCpf;
+@Getter
+@Setter
+public class Cliente extends ClienteSimplified {
     private String tipCli;
     private String endCli;
     private String baiCli;
@@ -22,6 +18,22 @@ public class Cliente {
     private String intNet;
     private String nenCli;
     private String sigUfs;
+
+    public Cliente(String codCli, String nomCli, String apeCli, String cgcCpf, String tipCli, String endCli,
+                   String baiCli, String cepCli, String cidCli, String cplEnd, String fonCli, String intNet,
+                   String nenCli, String sigUfs) {
+        super(codCli, nomCli, apeCli, cgcCpf);
+        this.tipCli = tipCli;
+        this.endCli = endCli;
+        this.baiCli = baiCli;
+        this.cepCli = cepCli;
+        this.cidCli = cidCli;
+        this.cplEnd = cplEnd;
+        this.fonCli = fonCli;
+        this.intNet = intNet;
+        this.nenCli = nenCli;
+        this.sigUfs = sigUfs;
+    }
 
     public static Cliente fromXml(Node nNode) {
         Element element = (Element) nNode;
