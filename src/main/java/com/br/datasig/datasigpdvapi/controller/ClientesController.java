@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.controller;
 
-import com.br.datasig.datasigpdvapi.entity.Cliente;
-import com.br.datasig.datasigpdvapi.entity.ClientePayload;
-import com.br.datasig.datasigpdvapi.entity.ClienteResponse;
-import com.br.datasig.datasigpdvapi.entity.ConsultaCEP;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.service.ClientesService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -33,6 +30,30 @@ public class ClientesController extends DataSIGController {
     public List<Cliente> getClientes(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
             return clientesService.getClientes(token);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar clientes (lista simples)",
+            description = "Busca os clientes cadastrados e retorna uma lista simplificada, para mostrar na consulta de clientes"
+    )
+    @GetMapping(value= "simplified", produces = "application/json")
+    public List<ClienteSimplified> getClientesSimplified(@RequestParam String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        if(isTokenValid(token))
+            return clientesService.getClientesSimplified(token);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar cliente",
+            description = "Busca os dados completos de determinado cliente"
+    )
+    @GetMapping(value= "cliente", produces = "application/json")
+    public Cliente getCliente(@RequestParam String token, @RequestParam(required = false) String codCli, @RequestParam(required = false) String cgcCpf) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        if(isTokenValid(token))
+            return clientesService.getCliente(token, codCli, cgcCpf);
         else
             throw new InvalidTokenException();
     }
