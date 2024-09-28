@@ -111,7 +111,7 @@ public class ClientesService extends WebServiceRequestsService{
             paramsDadosGerais.put("codCli", cliente.getCodCli());
         }
         paramsDadosGerais.put("tipCli", cliente.getTipCli());
-        paramsDadosGerais.put("apeCli", nomCli);
+        paramsDadosGerais.put("apeCli", sanitizeNomCli(nomCli));
         paramsDadosGerais.put("nomCli", nomCli);
         paramsDadosGerais.put("cgcCpf", cgcCpf);
         paramsDadosGerais.put("cepCli", cepCli);
@@ -149,6 +149,11 @@ public class ClientesService extends WebServiceRequestsService{
         HashMap<String, Object> params = new HashMap<>();
         params.put("dadosGeraisCliente", paramsDadosGerais);
         return params;
+    }
+
+    private String sanitizeNomCli(String nomCli) {
+        if (nomCli.length() > 50) return nomCli.substring(0, 49);
+        return nomCli;
     }
 
     private String removeLeadingZeros(String cgcCpf) {
