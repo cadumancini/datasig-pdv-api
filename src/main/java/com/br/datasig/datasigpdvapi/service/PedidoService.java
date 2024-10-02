@@ -87,7 +87,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codEmp", pedido.getCodEmp());
         params.put("codFil", pedido.getCodFil());
         params.put("codCli", definirCodCli(pedido.getCodCli(), token));
-        params.put("codCpg", pedido.getCodCpg());
+        params.put("codCpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodCpg());
         params.put("codRep", pedido.getCodRep());
         params.put("cifFob", "X");
         params.put("indPre", "1");
