@@ -9,7 +9,6 @@ public class PayloadPedido {
     private String codEmp;
     private String codFil;
     private String codCli;
-    private String codCpg;
     private String codRep;
     private String numPed;
     private Double vlrTot;
