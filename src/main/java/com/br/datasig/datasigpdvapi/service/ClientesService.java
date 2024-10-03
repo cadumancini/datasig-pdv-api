@@ -114,6 +114,7 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDadosGerais.put("apeCli", sanitizeNomCli(nomCli));
         paramsDadosGerais.put("nomCli", nomCli);
         paramsDadosGerais.put("cgcCpf", cgcCpf);
+        paramsDadosGerais.put("codRam", cliente.getCodRam());
         paramsDadosGerais.put("cepCli", cepCli);
         paramsDadosGerais.put("endCli", endCli);
         paramsDadosGerais.put("nenCli", cliente.getNenCli().trim());

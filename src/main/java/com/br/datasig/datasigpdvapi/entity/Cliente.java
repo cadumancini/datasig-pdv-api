@@ -18,10 +18,12 @@ public class Cliente extends ClienteSimplified {
     private String intNet;
     private String nenCli;
     private String sigUfs;
+    private String codRam;
+    private String desRam;
 
     public Cliente(String codCli, String nomCli, String apeCli, String cgcCpf, String tipCli, String endCli,
                    String baiCli, String cepCli, String cidCli, String cplEnd, String fonCli, String intNet,
-                   String nenCli, String sigUfs) {
+                   String nenCli, String sigUfs, String codRam, String desRam) {
         super(codCli, nomCli, apeCli, cgcCpf);
         this.tipCli = tipCli;
         this.endCli = endCli;
@@ -33,6 +35,8 @@ public class Cliente extends ClienteSimplified {
         this.intNet = intNet;
         this.nenCli = nenCli;
         this.sigUfs = sigUfs;
+        this.codRam = codRam;
+        this.desRam = desRam;
     }
 
     public static Cliente fromXml(Node nNode) {
@@ -51,9 +55,11 @@ public class Cliente extends ClienteSimplified {
         String intNet = element.getElementsByTagName("intNet").item(0).getTextContent();
         String nenCli = element.getElementsByTagName("nenCli").item(0).getTextContent();
         String sigUfs = element.getElementsByTagName("sigUfs").item(0).getTextContent();
+        String codRam = element.getElementsByTagName("codRam").item(0).getTextContent();
+        String desRam = element.getElementsByTagName("desRam").item(0).getTextContent();
 
         return new Cliente(codCli.trim(), nomCli.trim(), apeCli.trim(), cgcCpf.trim(), tipCli.trim(),
                 endCli.trim(), baiCli.trim(), cepCli.trim(), cidCli.trim(), cplEnd.trim(), fonCli.trim(),
-                intNet.trim(), nenCli.trim(), sigUfs.trim());
+                intNet.trim(), nenCli.trim(), sigUfs.trim(), codRam.trim(), desRam.trim());
     }
 }

@@ -40,6 +40,7 @@ public class ParamsPDV {
     private String cxaSan;
     private List<Deposito> depositos;
     private List<Caixa> caixas;
+    private List<RamoAtividade> ramos;
 
     public static ParamsPDV fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -78,7 +79,22 @@ public class ParamsPDV {
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
                 numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
-                getDepositos(element), getCaixas(element));
+                getDepositos(element), getCaixas(element), getRamos(element));
+    }
+
+    private static List<RamoAtividade> getRamos(Element element) {
+        List<RamoAtividade> ramos = new ArrayList<>();
+        NodeList ramosList = element.getElementsByTagName("ramo");
+        for (int i = 0; i < ramosList.getLength(); i++) {
+            Node nNode = ramosList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNode;
+                String codRam = el.getElementsByTagName("codRam").item(0).getTextContent();
+                String desRam = el.getElementsByTagName("desRam").item(0).getTextContent();
+                ramos.add(new RamoAtividade(codRam, desRam));
+            }
+        }
+        return ramos;
     }
 
     private static List<Deposito> getDepositos(Element element) {

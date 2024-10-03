@@ -18,4 +18,5 @@ public class ClientePayload {
     private String fonCli;
     private String emaCli;
     private String codRep;
+    private String codRam;
 }
