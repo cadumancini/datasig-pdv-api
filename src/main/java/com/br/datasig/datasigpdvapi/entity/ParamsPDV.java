@@ -26,6 +26,7 @@ public class ParamsPDV {
     private String tnsPed;
     private String tnsOrc;
     private String codCpg;
+    private String codFpg;
     private String regCan;
     private String regFat;
     private String regInu;
@@ -51,6 +52,7 @@ public class ParamsPDV {
         Element el = (Element) nNodeParams;
         String codCli = el.getElementsByTagName("codCli").item(0).getTextContent();
         String codCpg = el.getElementsByTagName("codCpg").item(0).getTextContent();
+        String codFpg = el.getElementsByTagName("codFpg").item(0).getTextContent();
         String codDep = el.getElementsByTagName("codDep").item(0).getTextContent();
         String codInt = el.getElementsByTagName("codInt").item(0).getTextContent();
         String codSnf = el.getElementsByTagName("codSnf").item(0).getTextContent();
@@ -77,7 +79,7 @@ public class ParamsPDV {
         String cxaSan = el.getElementsByTagName("cxaSan").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
-                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
+                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, codFpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
                 getDepositos(element), getCaixas(element), getRamos(element));
     }
