@@ -26,6 +26,7 @@ public class ParamsPDV {
     private String tnsPed;
     private String tnsOrc;
     private String codCpg;
+    private String codFpg;
     private String regCan;
     private String regFat;
     private String regInu;
@@ -40,6 +41,7 @@ public class ParamsPDV {
     private String cxaSan;
     private List<Deposito> depositos;
     private List<Caixa> caixas;
+    private List<RamoAtividade> ramos;
 
     public static ParamsPDV fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -50,6 +52,7 @@ public class ParamsPDV {
         Element el = (Element) nNodeParams;
         String codCli = el.getElementsByTagName("codCli").item(0).getTextContent();
         String codCpg = el.getElementsByTagName("codCpg").item(0).getTextContent();
+        String codFpg = el.getElementsByTagName("codFpg").item(0).getTextContent();
         String codDep = el.getElementsByTagName("codDep").item(0).getTextContent();
         String codInt = el.getElementsByTagName("codInt").item(0).getTextContent();
         String codSnf = el.getElementsByTagName("codSnf").item(0).getTextContent();
@@ -76,9 +79,24 @@ public class ParamsPDV {
         String cxaSan = el.getElementsByTagName("cxaSan").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
-                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, regCan, regFat,
+                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, codFpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
-                getDepositos(element), getCaixas(element));
+                getDepositos(element), getCaixas(element), getRamos(element));
+    }
+
+    private static List<RamoAtividade> getRamos(Element element) {
+        List<RamoAtividade> ramos = new ArrayList<>();
+        NodeList ramosList = element.getElementsByTagName("ramo");
+        for (int i = 0; i < ramosList.getLength(); i++) {
+            Node nNode = ramosList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element) nNode;
+                String codRam = el.getElementsByTagName("codRam").item(0).getTextContent();
+                String desRam = el.getElementsByTagName("desRam").item(0).getTextContent();
+                ramos.add(new RamoAtividade(codRam, desRam));
+            }
+        }
+        return ramos;
     }
 
     private static List<Deposito> getDepositos(Element element) {

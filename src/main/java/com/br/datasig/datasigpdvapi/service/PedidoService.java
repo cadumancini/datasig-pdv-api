@@ -88,6 +88,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("codFil", pedido.getCodFil());
         params.put("codCli", definirCodCli(pedido.getCodCli(), token));
         params.put("codCpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodCpg());
+        params.put("codFpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg());
         params.put("codRep", pedido.getCodRep());
         params.put("cifFob", "X");
         params.put("indPre", "1");
@@ -347,17 +348,12 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
-        params.put("codFpg", getPrimeiroCodFpg(pedido));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
-    }
-
-    private String getPrimeiroCodFpg(PayloadPedido pedido) {
-        return pedido.getPagamentos().get(0).getForma().getCodFpg();
     }
 
     private HashMap<String, Object> prepareParamsForAlterarTransacao(PayloadPedido pedido, String token) {

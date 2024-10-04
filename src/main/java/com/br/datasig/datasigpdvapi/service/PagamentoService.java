@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class PagamentoService extends WebServiceRequestsService {
@@ -25,10 +26,10 @@ public class PagamentoService extends WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPagamento", "Consultar", token, "0", params, false);
 
         XmlUtils.validateXmlResponse(xml);
-        return getFormasPagamentoFromXml(xml);
+        return getFormasPagamentoFromXml(xml, token);
     }
 
-    private List<FormaPagamento> getFormasPagamentoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+    private List<FormaPagamento> getFormasPagamentoFromXml(String xml, String token) throws ParserConfigurationException, IOException, SAXException {
         List<FormaPagamento> formas = new ArrayList<>();
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "formaPagamento");
 
@@ -38,6 +39,10 @@ public class PagamentoService extends WebServiceRequestsService {
                 formas.add(FormaPagamento.fromXml(nNode));
             }
         }
-        return formas;
+//        return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
+
+        return formas.stream().filter(forma -> forma.getCondicoes().size() > 0 &&
+                        !forma.getCodFpg().equals(TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg()))
+                .collect(Collectors.toList());
     }
 }

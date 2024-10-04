@@ -115,6 +115,7 @@ public class UserService extends WebServiceRequestsService {
                 paramsPDV.getCodTpr(),
                 paramsPDV.getDscTot(),
                 paramsPDV.getDepositos(),
+                paramsPDV.getRamos(),
                 paramsPDV.getCodDep(),
                 token.getCodEmp(),
                 token.getCodFil(),
