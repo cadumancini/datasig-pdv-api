@@ -485,8 +485,8 @@ public class PedidoService extends WebServiceRequestsService {
 
     public String calcularDesconto(double vlrPro, double vlrDsc) {
         double valor = vlrPro * vlrDsc;
-        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(2, RoundingMode.HALF_DOWN);
-        return String.format("%.2f", bdPrc).replace(",", ".");
+        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(4, RoundingMode.HALF_DOWN);
+        return String.format("%.4f", bdPrc).replace(",", ".");
     }
 
     @AllArgsConstructor
