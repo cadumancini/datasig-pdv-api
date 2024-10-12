@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class XmlUtils {
@@ -53,12 +54,16 @@ public class XmlUtils {
     }
 
     public static NodeList getNodeListByElementName(String xml, String elementName) throws ParserConfigurationException, IOException, SAXException {
+        return getNodeListByElementName(xml, elementName, StandardCharsets.UTF_8);
+    }
+
+    public static NodeList getNodeListByElementName(String xml, String elementName, Charset charset) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
         factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         DocumentBuilder builder = factory.newDocumentBuilder();
 
-        ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+        ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(charset));
         Document doc = builder.parse(input);
         doc.getDocumentElement().normalize();
         return doc.getElementsByTagName(elementName);

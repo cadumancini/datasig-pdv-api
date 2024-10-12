@@ -17,6 +17,7 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -271,7 +272,7 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
-        NodeList nList = XmlUtils.getNodeListByElementName(xml, "respostaPedido");
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "respostaPedido", StandardCharsets.ISO_8859_1);
 
         if (nList.getLength() == 1) {
             return RetornoPedido.fromXml(nList.item(0));
