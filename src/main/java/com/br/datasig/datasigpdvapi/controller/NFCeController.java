@@ -48,12 +48,13 @@ public class NFCeController extends DataSIGController {
     public List<ConsultaNotaFiscal> getNFCes(@RequestParam String token,
                                              @RequestParam(required = false) String numNfv,
                                              @RequestParam(required = false) String sitNfv,
+                                             @RequestParam(required = false) String sitDoe,
                                              @RequestParam(required = false) String datIni,
                                              @RequestParam(required = false) String datFim,
                                              @RequestParam(required = false) String codRep)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException, TransformerException {
         if(isTokenValid(token))
-            return nfceService.getNFCes(token, numNfv, sitNfv, datIni, datFim, codRep);
+            return nfceService.getNFCes(token, numNfv, sitNfv, sitDoe, datIni, datFim, codRep);
         else
             throw new InvalidTokenException();
     }
