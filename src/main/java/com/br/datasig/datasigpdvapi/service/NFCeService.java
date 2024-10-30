@@ -64,7 +64,8 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim, String codRep)
+    public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String sitDoe, String datIni,
+                                             String datFim, String codRep, String codFpg)
             throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
@@ -78,6 +79,9 @@ public class NFCeService extends WebServiceRequestsService {
         if (codRep != null && !codRep.trim().isEmpty()) {
             notas = filtrarNotasPorCodRep(notas, codRep);
         }
+        if (codFpg != null && !codFpg.trim().isEmpty()) {
+            notas = filtrarNotasPorCodFpg(notas, codFpg);
+        }
         return notas;
     }
 
@@ -85,6 +89,11 @@ public class NFCeService extends WebServiceRequestsService {
         List<String> reps = new ArrayList<>(Arrays.asList(codRep.split(",")));
         List<String> repsToFilter = reps.stream().map(String::trim).collect(Collectors.toList());
         return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
+    }
+
+    private List<ConsultaNotaFiscal> filtrarNotasPorCodFpg(List<ConsultaNotaFiscal> notas, String codFpg) {
+        return notas.stream().filter(nota -> nota.getPagamentos().stream()
+                .anyMatch(pagto -> codFpg.equals(pagto.getCodFpg()))).collect(Collectors.toList());
     }
 
     private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim) {
@@ -151,7 +160,7 @@ public class NFCeService extends WebServiceRequestsService {
         String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
         Map<String, Object> paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
-        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null).get(0);
+        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
     }
 
