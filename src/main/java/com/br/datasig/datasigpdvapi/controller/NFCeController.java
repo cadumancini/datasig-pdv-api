@@ -51,11 +51,10 @@ public class NFCeController extends DataSIGController {
                                              @RequestParam(required = false) String sitDoe,
                                              @RequestParam(required = false) String datIni,
                                              @RequestParam(required = false) String datFim,
-                                             @RequestParam(required = false) String codRep,
-                                             @RequestParam(required = false) String codFpg)
+                                             @RequestParam(required = false) String codRep)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException, TransformerException {
         if(isTokenValid(token))
-            return nfceService.getNFCes(token, numNfv, sitNfv, sitDoe, datIni, datFim, codRep, codFpg);
+            return nfceService.getNFCes(token, numNfv, sitNfv, sitDoe, datIni, datFim, codRep);
         else
             throw new InvalidTokenException();
     }

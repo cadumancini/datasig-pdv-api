@@ -4,13 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import static java.util.concurrent.TimeUnit.*;
 
@@ -35,7 +32,7 @@ public class ConsultaNotaFiscal {
     private int qtdFat;
     private Double vlrLiq;
     private String nomRep;
-    private List<Pagamento> pagamentos;
+    private String nomCli;
 
     public static ConsultaNotaFiscal fromXml(Node node) throws ParseException {
         Element element = (Element) node;
@@ -50,15 +47,15 @@ public class ConsultaNotaFiscal {
         String sitNfv = element.getElementsByTagName("sitNfv").item(0).getTextContent();
         String sitDoe = element.getElementsByTagName("sitDoe").item(0).getTextContent();
         String nomRep = element.getElementsByTagName("nomRep").item(0).getTextContent();
+        String nomCli = element.getElementsByTagName("nomCli").item(0).getTextContent();
         int qtdFat = Integer.parseInt(element.getElementsByTagName("qtdFat").item(0).getTextContent());
         Double vlrLiq = Double.parseDouble(element.getElementsByTagName("vlrLiq").item(0).getTextContent()
                 .replace(",", "."));
         String desSitNfv = getDesSitNfv(sitNfv);
         String desSitDoe = getDesSitDoe(sitDoe);
-        var pagamentos = getPagamentos(element);
         return new ConsultaNotaFiscal(codCli, codRep, codEmp, codFil, codSnf, numNfv, Integer.parseInt(numNfv), datEmi,
                 horEmi, sitNfv, desSitNfv, sitDoe, desSitDoe, isCancelavel(datEmi, horEmi, sitDoe), isInutilizavel(sitDoe),
-                qtdFat, vlrLiq, nomRep, pagamentos);
+                qtdFat, vlrLiq, nomRep, nomCli);
     }
 
     private static String getDesSitNfv(String sitNfv) {
@@ -108,21 +105,5 @@ public class ConsultaNotaFiscal {
 
     private static boolean isInutilizavel(String sitDoe) {
         return (Integer.parseInt(sitDoe) == 4 || Integer.parseInt(sitDoe) == 10);
-    }
-
-    private static List<Pagamento> getPagamentos(Element element) {
-        List<Pagamento> pagamentos = new ArrayList<>();
-        NodeList itensList = element.getElementsByTagName("pagamento");
-        for (int i = 0; i < itensList.getLength(); i++) {
-            Node nNodeItem = itensList.item(i);
-            if (nNodeItem.getNodeType() == Node.ELEMENT_NODE) {
-                Element elItem = (Element) nNodeItem;
-                String codFpg = elItem.getElementsByTagName("codFpg").item(0).getTextContent();
-                String desFpg = elItem.getElementsByTagName("desFpg").item(0).getTextContent();
-
-                pagamentos.add(new Pagamento(codFpg, desFpg));
-            }
-        }
-        return pagamentos;
     }
 }

@@ -65,7 +65,7 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String sitDoe, String datIni,
-                                             String datFim, String codRep, String codFpg)
+                                             String datFim, String codRep)
             throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
@@ -78,9 +78,6 @@ public class NFCeService extends WebServiceRequestsService {
         List<ConsultaNotaFiscal> notas = getNotasFromXml(xml);
         if (codRep != null && !codRep.trim().isEmpty()) {
             notas = filtrarNotasPorCodRep(notas, codRep);
-        }
-        if (codFpg != null && !codFpg.trim().isEmpty()) {
-            notas = filtrarNotasPorCodFpg(notas, codFpg);
         }
         return notas;
     }
@@ -160,7 +157,7 @@ public class NFCeService extends WebServiceRequestsService {
         String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
         Map<String, Object> paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
-        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null, null).get(0);
+        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
     }
 
