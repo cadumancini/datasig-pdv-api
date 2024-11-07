@@ -88,11 +88,6 @@ public class NFCeService extends WebServiceRequestsService {
         return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
     }
 
-    private List<ConsultaNotaFiscal> filtrarNotasPorCodFpg(List<ConsultaNotaFiscal> notas, String codFpg) {
-        return notas.stream().filter(nota -> nota.getPagamentos().stream()
-                .anyMatch(pagto -> codFpg.equals(pagto.getCodFpg()))).collect(Collectors.toList());
-    }
-
     private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim) {
         params.put("numNfv", numNfv == null ? "" : numNfv);
         params.put("sitNfv", sitNfv == null ? "" : sitNfv);
