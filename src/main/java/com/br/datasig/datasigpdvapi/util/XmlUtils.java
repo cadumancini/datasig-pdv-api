@@ -64,7 +64,13 @@ public class XmlUtils {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         ByteArrayInputStream input = new ByteArrayInputStream(xml.getBytes(charset));
-        Document doc = builder.parse(input);
+        Document doc;
+        try {
+            doc = builder.parse(input);
+        } catch(Exception e) {
+            input = new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8));
+            doc = builder.parse(input);
+        }
         doc.getDocumentElement().normalize();
         return doc.getElementsByTagName(elementName);
     }
