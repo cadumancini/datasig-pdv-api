@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -79,7 +80,8 @@ public class NFCeService extends WebServiceRequestsService {
         if (codRep != null && !codRep.trim().isEmpty()) {
             notas = filtrarNotasPorCodRep(notas, codRep);
         }
-        return notas;
+        if (!notas.isEmpty()) return notas;
+        throw new ResourceNotFoundException("Nenhuma NFC-e encontrada!");
     }
 
     private List<ConsultaNotaFiscal> filtrarNotasPorCodRep(List<ConsultaNotaFiscal> notas, String codRep) {

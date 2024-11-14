@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaTitulo;
+import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
@@ -28,7 +29,10 @@ public class TituloService extends WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaTitulos", "Consultar", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
 
-        return getTitutlosFromXml(xml);
+        List<ConsultaTitulo> titulos = getTitutlosFromXml(xml);
+        if(!titulos.isEmpty()) return titulos;
+
+        throw new ResourceNotFoundException("Nenhum título encontrado!");
     }
 
     private void addParamsForConsultaTitulos(HashMap<String, Object> params, String codFpg, String codRep, String datIni,
