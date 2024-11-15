@@ -176,7 +176,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static String formatValue(String vlr) {
         if (vlr == null) return "0,00";
-        return vlr.trim().isEmpty() ? "0,0" : vlr;
+        return vlr.trim().isEmpty() ? "0,0" : vlr.replace(".","");
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
