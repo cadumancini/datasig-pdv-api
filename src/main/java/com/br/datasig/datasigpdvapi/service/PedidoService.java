@@ -176,7 +176,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static String formatValue(String vlr) {
         if (vlr == null) return "0,00";
-        return vlr.trim().isEmpty() ? "0,0" : vlr;
+        return vlr.trim().isEmpty() ? "0,0" : vlr.replace(".","");
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
@@ -486,8 +486,15 @@ public class PedidoService extends WebServiceRequestsService {
 
     public String calcularDesconto(double vlrPro, double vlrDsc) {
         double valor = vlrPro * vlrDsc;
-        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(4, RoundingMode.HALF_DOWN);
+        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(4, RoundingMode.HALF_UP);
         return String.format("%.4f", bdPrc).replace(",", ".");
+    }
+
+    public String calcularItemComDesconto(double vlrPro, double vlrDsc) {
+        double valor = vlrPro * vlrDsc;
+        BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(4, RoundingMode.HALF_UP);
+        BigDecimal newValue = BigDecimal.valueOf(vlrPro).subtract(bdPrc).setScale(2, RoundingMode.HALF_UP);
+        return String.format("%.2f", newValue).replace(",", ".");
     }
 
     @AllArgsConstructor

@@ -32,6 +32,7 @@ public class ConsultaNotaFiscal {
     private int qtdFat;
     private Double vlrLiq;
     private String nomRep;
+    private String nomCli;
 
     public static ConsultaNotaFiscal fromXml(Node node) throws ParseException {
         Element element = (Element) node;
@@ -46,6 +47,7 @@ public class ConsultaNotaFiscal {
         String sitNfv = element.getElementsByTagName("sitNfv").item(0).getTextContent();
         String sitDoe = element.getElementsByTagName("sitDoe").item(0).getTextContent();
         String nomRep = element.getElementsByTagName("nomRep").item(0).getTextContent();
+        String nomCli = element.getElementsByTagName("nomCli").item(0).getTextContent();
         int qtdFat = Integer.parseInt(element.getElementsByTagName("qtdFat").item(0).getTextContent());
         Double vlrLiq = Double.parseDouble(element.getElementsByTagName("vlrLiq").item(0).getTextContent()
                 .replace(",", "."));
@@ -53,7 +55,7 @@ public class ConsultaNotaFiscal {
         String desSitDoe = getDesSitDoe(sitDoe);
         return new ConsultaNotaFiscal(codCli, codRep, codEmp, codFil, codSnf, numNfv, Integer.parseInt(numNfv), datEmi,
                 horEmi, sitNfv, desSitNfv, sitDoe, desSitDoe, isCancelavel(datEmi, horEmi, sitDoe), isInutilizavel(sitDoe),
-                qtdFat, vlrLiq, nomRep);
+                qtdFat, vlrLiq, nomRep, nomCli);
     }
 
     private static String getDesSitNfv(String sitNfv) {

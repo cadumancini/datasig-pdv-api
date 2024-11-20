@@ -77,4 +77,16 @@ public class PedidoController extends DataSIGController {
         else
             throw new InvalidTokenException();
     }
+
+    @Operation(
+            summary = "Calcular item com desconto",
+            description = "Cálculo de valor do item com desconto em porcentagem"
+    )
+    @GetMapping(value = "calcularItemComDesconto", produces = "text/plain;charset=UTF-8")
+    public String calcularItemComDesconto(@RequestParam String token, @RequestParam double vlrPro, @RequestParam double vlrDsc) {
+        if(isTokenValid(token))
+            return pedidoService.calcularItemComDesconto(vlrPro, vlrDsc);
+        else
+            throw new InvalidTokenException();
+    }
 }
