@@ -6,11 +6,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 @Data
 @AllArgsConstructor

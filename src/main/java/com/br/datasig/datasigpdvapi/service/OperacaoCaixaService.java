@@ -4,6 +4,7 @@ import com.br.datasig.datasigpdvapi.entity.ConsultaMovimentoCaixa;
 import com.br.datasig.datasigpdvapi.entity.OperacaoCaixaResultado;
 import com.br.datasig.datasigpdvapi.entity.TipoOperacaoCaixa;
 import com.br.datasig.datasigpdvapi.exceptions.CashOperationException;
+import com.br.datasig.datasigpdvapi.exceptions.ValueNotAllowedException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -17,6 +18,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
             }
             case SANGRIA -> {
                 baixarTitulos(token);
+                validarSalAcu(valorOperacao, token);
                 movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
@@ -51,6 +55,21 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
                 yield movimentar(numCco, cofFec, valorOperacao, hisMov, token);
             }
         };
+    }
+
+    private void validarSalAcu(String valorOperacao, String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        String datIni = defineDatIni();
+        List<ConsultaMovimentoCaixa> movtos = getMovimentosCaixa(token, datIni, null);
+        var lastMov = movtos.get(movtos.size() - 1);
+        var vlrMov = Double.parseDouble(valorOperacao.replace(".", "").replace(",", "."));
+        if (vlrMov > lastMov.getSalAcu())
+            throw new ValueNotAllowedException("O valor movimentado é maior que o último saldo acumulado em caixa.");
+    }
+
+    private String defineDatIni() {
+        LocalDate localDateSubstracted = LocalDate.now().minusDays(10);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return localDateSubstracted.format(formatter);
     }
 
     private void baixarTitulos(String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
