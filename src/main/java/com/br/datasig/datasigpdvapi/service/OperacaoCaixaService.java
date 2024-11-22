@@ -77,7 +77,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         var lastMov = movtos.get(movtos.size() - 1);
         var vlrMov = Double.parseDouble(valorOperacao.replace(".", "").replace(",", "."));
         if (vlrMov > lastMov.getSalAcu())
-            throw new ValueNotAllowedException("O valor movimentado é maior que o último saldo acumulado em caixa.");
+            throw new ValueNotAllowedException("O valor movimentado é maior que o saldo acumulado em caixa.");
     }
 
     private List<ConsultaMovimentoCaixa> getMovtosLastXDays(String token, int days) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
