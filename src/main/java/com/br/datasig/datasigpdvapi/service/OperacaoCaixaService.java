@@ -40,7 +40,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
 
         return switch (tipoOperacao) {
             case ABERTURA -> {
-                validarAbertura(token);
+                validarAbertura(token, cxaAbr, cxaFec);
                 movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
@@ -58,17 +58,17 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         };
     }
 
-    private void validarAbertura(String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+    private void validarAbertura(String token, String cxaAbr, String cxaFec) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
-        var lastValidMovtos = getAberturasAndFechamentos(movtos);
+        var lastValidMovtos = getAberturasAndFechamentos(movtos, cxaAbr, cxaFec);
         var lastMov = lastValidMovtos.get(lastValidMovtos.size() - 1);
-        if (!lastMov.getHisMov().startsWith("FECHAMENTO"))
+        if (!lastMov.getCodTns().equals(cxaFec))
             throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa");
     }
 
-    private List<ConsultaMovimentoCaixa> getAberturasAndFechamentos(List<ConsultaMovimentoCaixa> movtos) {
+    private List<ConsultaMovimentoCaixa> getAberturasAndFechamentos(List<ConsultaMovimentoCaixa> movtos, String tnsAbr, String tnsFec) {
         return movtos.stream()
-                .filter(mov -> (mov.getHisMov().startsWith("ABERTURA") || mov.getHisMov().startsWith("FECHAMENTO")))
+                .filter(mov -> (mov.getCodTns().equals(tnsAbr) || mov.getCodTns().equals(tnsFec)))
                 .toList();
     }
 
