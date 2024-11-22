@@ -41,14 +41,45 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
                 yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
             case SANGRIA -> {
+                baixarTitulos(token);
                 movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
             case FECHAMENTO -> {
+                baixarTitulos(token);
                 movimentar(numCxa, cxaFec, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofFec, valorOperacao, hisMov, token);
             }
         };
+    }
+
+    private void baixarTitulos(String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        Map<String, Object> params = preparaParamsForBaixarTitulos(token);
+        exeRegra(token, params);
+    }
+
+    private Map<String, Object> preparaParamsForBaixarTitulos(String token) {
+        String numReg = TokensManager.getInstance().getParamsPDVFromToken(token).getRegBai();
+        Map<String, Object> params = getBaseParams(token, numReg);
+        params.put("aWsPdv", "S");
+        return params;
+    }
+
+    private Map<String, Object> getBaseParams(String token, String numReg) {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("acao", "sid.srv.regra");
+        params.put("numreg", numReg);
+        params.put("aCodEmp", codEmp);
+        params.put("aCodFil", codFil);
+        return params;
+    }
+
+    private void exeRegra(String token, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        String xml = soapClient.requestFromSeniorWSSID("com_senior_g5_co_ger_sid", "Executar", token, "0", params);
+        XmlUtils.validateXmlResponse(xml);
     }
 
     private String getNumCxaFromToken(String token) {
