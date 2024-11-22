@@ -40,6 +40,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
 
         return switch (tipoOperacao) {
             case ABERTURA -> {
+                validarAbertura(token);
                 movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
@@ -57,17 +58,35 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         };
     }
 
+    private void validarAbertura(String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        var movtos = getMovtosLastXDays(token, 30);
+        var lastValidMovtos = getAberturasAndFechamentos(movtos);
+        var lastMov = lastValidMovtos.get(lastValidMovtos.size() - 1);
+        if (!lastMov.getHisMov().startsWith("FECHAMENTO"))
+            throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa");
+    }
+
+    private List<ConsultaMovimentoCaixa> getAberturasAndFechamentos(List<ConsultaMovimentoCaixa> movtos) {
+        return movtos.stream()
+                .filter(mov -> (mov.getHisMov().startsWith("ABERTURA") || mov.getHisMov().startsWith("FECHAMENTO")))
+                .toList();
+    }
+
     private void validarSalAcu(String valorOperacao, String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
-        String datIni = defineDatIni();
-        List<ConsultaMovimentoCaixa> movtos = getMovimentosCaixa(token, datIni, null);
+        var movtos = getMovtosLastXDays(token, 30);
         var lastMov = movtos.get(movtos.size() - 1);
         var vlrMov = Double.parseDouble(valorOperacao.replace(".", "").replace(",", "."));
         if (vlrMov > lastMov.getSalAcu())
             throw new ValueNotAllowedException("O valor movimentado é maior que o último saldo acumulado em caixa.");
     }
 
-    private String defineDatIni() {
-        LocalDate localDateSubstracted = LocalDate.now().minusDays(10);
+    private List<ConsultaMovimentoCaixa> getMovtosLastXDays(String token, int days) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        String datIni = defineDatIni(days);
+        return getMovimentosCaixa(token, datIni, null);
+    }
+
+    private String defineDatIni(int daysToSubstract) {
+        LocalDate localDateSubstracted = LocalDate.now().minusDays(daysToSubstract);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return localDateSubstracted.format(formatter);
     }
