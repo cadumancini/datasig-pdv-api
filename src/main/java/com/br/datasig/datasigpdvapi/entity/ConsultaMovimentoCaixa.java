@@ -15,6 +15,7 @@ public class ConsultaMovimentoCaixa {
     private String numCxa;
     private String seqMov;
     private Double vlrMov;
+    private Double salAcu;
 
     public static ConsultaMovimentoCaixa fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -24,13 +25,18 @@ public class ConsultaMovimentoCaixa {
         String hisMov = element.getElementsByTagName("hisMov").item(0).getTextContent();
         String numCxa = element.getElementsByTagName("numCxa").item(0).getTextContent();
         String seqMov = element.getElementsByTagName("seqMov").item(0).getTextContent();
+        Double vlrMov = parseField(element, "vlrMov");
+        Double salAcu = parseField(element, "salAcu");
 
-        String vlrMovStr = element.getElementsByTagName("vlrMov").item(0).getTextContent();
-        Double vlrMov = Double.valueOf("0");
-        if (!vlrMovStr.isEmpty()) {
-            vlrMov = Double.parseDouble(vlrMovStr.replace(".", "").replace(",", "."));
+        return new ConsultaMovimentoCaixa(codTns, datMov, debCre, hisMov, numCxa, seqMov, vlrMov, salAcu);
+    }
+
+    private static Double parseField(Element element, String field) {
+        var strValue = element.getElementsByTagName(field).item(0).getTextContent();
+        var dblValue = Double.parseDouble("0");
+        if (!strValue.isEmpty()) {
+            dblValue = Double.parseDouble(strValue.replace(".", "").replace(",", "."));
         }
-
-        return new ConsultaMovimentoCaixa(codTns, datMov, debCre, hisMov, numCxa, seqMov, vlrMov);
+        return dblValue;
     }
 }
