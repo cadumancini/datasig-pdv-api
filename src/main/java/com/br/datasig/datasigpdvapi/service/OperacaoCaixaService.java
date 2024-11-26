@@ -47,6 +47,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
             case SANGRIA -> {
                 baixarTitulos(token);
                 validarSalAcu(valorOperacao, token);
+                validarSangria(token, cxaAbr, cxaFec, cxaSan);
                 movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
@@ -60,21 +61,34 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
 
     private void validarAbertura(String token, String cxaAbr, String cxaFec) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
-        var lastValidMovtos = getAberturasAndFechamentos(movtos, cxaAbr, cxaFec);
-        var lastMov = lastValidMovtos.get(lastValidMovtos.size() - 1);
+        var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec));
+        var lastMov = validarListaDeMovtosERetornarUltimo(lastValidMovtos);
         if (!lastMov.getCodTns().equals(cxaFec))
-            throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa");
+            throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa.");
     }
 
-    private List<ConsultaMovimentoCaixa> getAberturasAndFechamentos(List<ConsultaMovimentoCaixa> movtos, String tnsAbr, String tnsFec) {
+    private void validarSangria(String token, String cxaAbr, String cxaFec, String cxaSan) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        var movtos = getMovtosLastXDays(token, 30);
+        var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec, cxaSan));
+        var lastMov = validarListaDeMovtosERetornarUltimo(lastValidMovtos);
+        if (lastMov.getCodTns().equals(cxaFec))
+            throw new CashOperationException("O caixa não está aberto, portanto não é permitido realizar sangria.");
+    }
+
+    private ConsultaMovimentoCaixa validarListaDeMovtosERetornarUltimo(List<ConsultaMovimentoCaixa> movtos) {
+        if (movtos.isEmpty())  throw new CashOperationException("Não existe movimento de caixa nos últimos 30 dias. Verifique no sistema ERP.");
+        return movtos.get(movtos.size() - 1);
+    }
+
+    private List<ConsultaMovimentoCaixa> filtrarLancamentosPorTransacoes(List<ConsultaMovimentoCaixa> movtos, List<String> validTns) {
         return movtos.stream()
-                .filter(mov -> (mov.getCodTns().equals(tnsAbr) || mov.getCodTns().equals(tnsFec)))
+                .filter(mov -> validTns.contains(mov.getCodTns()))
                 .toList();
     }
 
     private void validarSalAcu(String valorOperacao, String token) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
-        var lastMov = movtos.get(movtos.size() - 1);
+        var lastMov = validarListaDeMovtosERetornarUltimo(movtos);
         var vlrMov = Double.parseDouble(valorOperacao.replace(".", "").replace(",", "."));
         if (vlrMov > lastMov.getSalAcu())
             throw new ValueNotAllowedException("O valor movimentado é maior que o saldo acumulado em caixa.");
