@@ -24,6 +24,7 @@ public class ParamsPDV {
     private String snfNfc;
     private String tnsNfv;
     private String tnsPed;
+    private String pedTns;
     private String tnsOrc;
     private String codCpg;
     private String codFpg;
@@ -72,6 +73,7 @@ public class ParamsPDV {
         String tnsNfv = el.getElementsByTagName("tnsNfv").item(0).getTextContent();
         String tnsOrc = el.getElementsByTagName("tnsOrc").item(0).getTextContent();
         String tnsPed = el.getElementsByTagName("tnsPed").item(0).getTextContent();
+        String pedTns = el.getElementsByTagName("pedTns").item(0).getTextContent();
         String cofAbr = el.getElementsByTagName("cofAbr").item(0).getTextContent();
         String cofFec = el.getElementsByTagName("cofFec").item(0).getTextContent();
         String cofSan = el.getElementsByTagName("cofSan").item(0).getTextContent();
@@ -80,8 +82,8 @@ public class ParamsPDV {
         String cxaSan = el.getElementsByTagName("cxaSan").item(0).getTextContent();
         String regBai = el.getElementsByTagName("regBai").item(0).getTextContent();
 
-        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc,
-                numCsc, sigInt, snfNfc, tnsNfv, tnsPed, tnsOrc, codCpg, codFpg, regCan, regFat,
+        return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, numCsc,
+                sigInt, snfNfc, tnsNfv, tnsPed, pedTns, tnsOrc, codCpg, codFpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
                 regBai, getDepositos(element), getCaixas(element), getRamos(element));
     }

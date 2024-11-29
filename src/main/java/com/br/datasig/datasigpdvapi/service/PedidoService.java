@@ -130,8 +130,14 @@ public class PedidoService extends WebServiceRequestsService {
     }
 
     private String definirTnsPro(PayloadPedido pedido, String token) {
-        return (pedido.isFechar() || pedido.isGerar()) ? TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed() :
-                TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+        ParamsPDV params = TokensManager.getInstance().getParamsPDVFromToken(token);
+        if (pedido.isFechar()) {
+            return params.getTnsPed();
+        } else if (pedido.isGerar()) {
+            return params.getPedTns();
+        } else {
+            return params.getTnsOrc();
+        }
     }
 
     private String definirCodCli(String codCli, String token) {
