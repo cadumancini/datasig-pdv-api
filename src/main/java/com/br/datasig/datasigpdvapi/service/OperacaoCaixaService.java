@@ -62,9 +62,11 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
     private void validarAbertura(String token, String cxaAbr, String cxaFec) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
         var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec));
-        var lastMov = validarListaDeMovtosERetornarUltimo(lastValidMovtos);
-        if (!lastMov.getCodTns().equals(cxaFec))
-            throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa.");
+        if (!lastValidMovtos.isEmpty()) {
+            var lastMov = lastValidMovtos.get(movtos.size() - 1);
+            if (!lastMov.getCodTns().equals(cxaFec))
+                throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa.");
+        }
     }
 
     private void validarSangria(String token, String cxaAbr, String cxaFec, String cxaSan) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
