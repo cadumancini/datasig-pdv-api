@@ -75,7 +75,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec, cxaSan));
         var lastMov = validarListaDeMovtosERetornarUltimo(lastValidMovtos);
         if (lastMov.getCodTns().equals(cxaFec))
-            throw new CashOperationException("O caixa não está aberto, portanto não é permitido realizar sangria.");
+            throw new CashOperationException("O caixa não está aberto, portanto não é permitido realizar a operação.");
     }
 
     private ConsultaMovimentoCaixa validarListaDeMovtosERetornarUltimo(List<ConsultaMovimentoCaixa> movtos) {
