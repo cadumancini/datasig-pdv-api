@@ -40,18 +40,19 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
 
         return switch (tipoOperacao) {
             case ABERTURA -> {
-                validarAbertura(token, cxaAbr, cxaFec);
+                validarCaixaFechado(token, cxaAbr, cxaFec);
                 movimentar(numCxa, cxaAbr, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofAbr, valorOperacao, hisMov, token);
             }
             case SANGRIA -> {
                 baixarTitulos(token);
                 validarSalAcu(valorOperacao, token);
-                validarSangria(token, cxaAbr, cxaFec, cxaSan);
+                validarCaixaAberto(token, cxaAbr, cxaFec, cxaSan);
                 movimentar(numCxa, cxaSan, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofSan, valorOperacao, hisMov, token);
             }
             case FECHAMENTO -> {
+                validarCaixaAberto(token, cxaAbr, cxaFec, cxaSan);
                 baixarTitulos(token);
                 movimentar(numCxa, cxaFec, valorOperacao, hisMov, token);
                 yield movimentar(numCco, cofFec, valorOperacao, hisMov, token);
@@ -59,7 +60,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         };
     }
 
-    private void validarAbertura(String token, String cxaAbr, String cxaFec) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+    private void validarCaixaFechado(String token, String cxaAbr, String cxaFec) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
         var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec));
         if (!lastValidMovtos.isEmpty()) {
@@ -69,12 +70,12 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         }
     }
 
-    private void validarSangria(String token, String cxaAbr, String cxaFec, String cxaSan) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+    private void validarCaixaAberto(String token, String cxaAbr, String cxaFec, String cxaSan) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         var movtos = getMovtosLastXDays(token, 30);
         var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec, cxaSan));
         var lastMov = validarListaDeMovtosERetornarUltimo(lastValidMovtos);
         if (lastMov.getCodTns().equals(cxaFec))
-            throw new CashOperationException("O caixa não está aberto, portanto não é permitido realizar sangria.");
+            throw new CashOperationException("O caixa não está aberto, portanto não é permitido realizar a operação.");
     }
 
     private ConsultaMovimentoCaixa validarListaDeMovtosERetornarUltimo(List<ConsultaMovimentoCaixa> movtos) {
