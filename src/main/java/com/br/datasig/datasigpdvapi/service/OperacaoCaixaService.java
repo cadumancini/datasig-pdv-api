@@ -63,7 +63,7 @@ public class OperacaoCaixaService extends WebServiceRequestsService {
         var movtos = getMovtosLastXDays(token, 30);
         var lastValidMovtos = filtrarLancamentosPorTransacoes(movtos, List.of(cxaAbr, cxaFec));
         if (!lastValidMovtos.isEmpty()) {
-            var lastMov = lastValidMovtos.get(movtos.size() - 1);
+            var lastMov = lastValidMovtos.get(lastValidMovtos.size() - 1);
             if (!lastMov.getCodTns().equals(cxaFec))
                 throw new CashOperationException("Não existe um fechamento anterior para poder realizar uma nova abertura de caixa.");
         }
