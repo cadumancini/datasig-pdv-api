@@ -32,6 +32,7 @@ public class ConsultaTitulo {
     private String desSitTit;
     private Double vlrAbe;
     private Double vlrOri;
+    private String nomUsu;
 
     public static ConsultaTitulo fromXml(Node node) throws ParseException {
         Element element = (Element) node;
@@ -51,6 +52,7 @@ public class ConsultaTitulo {
         String sitDoe = element.getElementsByTagName("sitDoe").item(0).getTextContent();
         String sitNfv = element.getElementsByTagName("sitNfv").item(0).getTextContent();
         String sitTit = element.getElementsByTagName("sitTit").item(0).getTextContent();
+        String nomUsu = element.getElementsByTagName("nomUsu").item(0).getTextContent();
         String desSitNfv = getDesSitNfv(sitNfv);
         String desSitDoe = getDesSitDoe(sitDoe);
         String desSitTit = getDesSitTit(sitTit);
@@ -60,7 +62,7 @@ public class ConsultaTitulo {
                 .replace(",", "."));
         return new ConsultaTitulo(codCli, codEmp, codFil, codFpg, codRep, codSnf, codTpt, datEmi, desFpg, nomCli,
                 nomRep, numNfv, Integer.parseInt(numNfv), numTit, sitDoe, sitNfv, sitTit, desSitNfv, desSitDoe,
-                desSitTit, vlrAbe, vlrOri);
+                desSitTit, vlrAbe, vlrOri, nomUsu);
     }
 
     private static String getDesSitNfv(String sitNfv) {

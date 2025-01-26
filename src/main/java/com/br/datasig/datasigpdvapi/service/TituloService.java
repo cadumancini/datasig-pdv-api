@@ -19,12 +19,12 @@ import java.util.*;
 @Component
 public class TituloService extends WebServiceRequestsService {
     public List<ConsultaTitulo> getTitulos(String token, String codFpg, String codRep, String datIni, String datFim,
-                                           String numNfv, String sitDoe, String sitTit)
+                                           String numNfv, String sitDoe, String sitTit, String nomUsu)
             throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        addParamsForConsultaTitulos(params, codFpg, codRep, datIni, datFim, numNfv, sitDoe, sitTit);
+        addParamsForConsultaTitulos(params, codFpg, codRep, datIni, datFim, numNfv, sitDoe, sitTit, nomUsu);
 
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaTitulos", "Consultar", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
@@ -36,7 +36,7 @@ public class TituloService extends WebServiceRequestsService {
     }
 
     private void addParamsForConsultaTitulos(HashMap<String, Object> params, String codFpg, String codRep, String datIni,
-                                             String datFim, String numNfv, String sitDoe, String sitTit) {
+                                             String datFim, String numNfv, String sitDoe, String sitTit, String nomUsu) {
         params.put("codFpg", codFpg == null ? "" : codFpg);
         params.put("codRep", codRep == null ? "" : codRep);
         params.put("datIni", datIni == null ? "" : datIni);
@@ -44,6 +44,7 @@ public class TituloService extends WebServiceRequestsService {
         params.put("numNfv", numNfv == null ? "" : numNfv);
         params.put("sitDoe", sitDoe == null ? "" : sitDoe);
         params.put("sitTit", sitTit == null ? "" : sitTit);
+        params.put("nomUsu", nomUsu == null ? "" : nomUsu);
     }
 
     private List<ConsultaTitulo> getTitutlosFromXml(String xml) throws ParserConfigurationException, IOException, SAXException, ParseException {

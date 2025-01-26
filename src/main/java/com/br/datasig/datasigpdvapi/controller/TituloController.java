@@ -38,10 +38,11 @@ public class TituloController extends DataSIGController {
                                            @RequestParam(required = false) String datFim,
                                            @RequestParam(required = false) String numNfv,
                                            @RequestParam(required = false) String sitDoe,
-                                           @RequestParam(required = false) String sitTit)
+                                           @RequestParam(required = false) String sitTit,
+                                           @RequestParam(required = false) String nomUsu)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException, TransformerException {
         if(isTokenValid(token))
-            return tituloService.getTitulos(token, codFpg, codRep, datIni, datFim, numNfv, sitDoe, sitTit);
+            return tituloService.getTitulos(token, codFpg, codRep, datIni, datFim, numNfv, sitDoe, sitTit, nomUsu);
         else
             throw new InvalidTokenException();
     }
