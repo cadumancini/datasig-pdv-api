@@ -66,12 +66,12 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public List<ConsultaNotaFiscal> getNFCes(String token, String numNfv, String sitNfv, String sitDoe, String datIni,
-                                             String datFim, String codRep)
+                                             String datFim, String codRep, String nomUsu)
             throws SOAPClientException, ParserConfigurationException, IOException, SAXException, ParseException, TransformerException {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
         HashMap<String, Object> params = prepareBaseParams(codEmp, codFil);
-        addParamsForConsultaNFCes(params, numNfv, sitNfv, sitDoe, datIni, datFim);
+        addParamsForConsultaNFCes(params, numNfv, sitNfv, sitDoe, datIni, datFim, nomUsu);
 
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaNotaFiscal", "Consultar", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
@@ -90,12 +90,13 @@ public class NFCeService extends WebServiceRequestsService {
         return notas.stream().filter(nota -> repsToFilter.contains(nota.getCodRep())).collect(Collectors.toList());
     }
 
-    private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim) {
+    private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim, String nomUsu) {
         params.put("numNfv", numNfv == null ? "" : numNfv);
         params.put("sitNfv", sitNfv == null ? "" : sitNfv);
         params.put("sitDoe", sitDoe == null ? "" : sitDoe);
         params.put("datIni", datIni == null ? "" : datIni);
         params.put("datFim", datFim == null ? "" : datFim);
+        params.put("nomUsu", nomUsu == null ? "" : nomUsu);
     }
 
     private List<ConsultaNotaFiscal> getNotasFromXml(String xml) throws ParserConfigurationException, IOException, SAXException, ParseException {
@@ -154,7 +155,7 @@ public class NFCeService extends WebServiceRequestsService {
         String regRet = TokensManager.getInstance().getParamsPDVFromToken(token).getRegRet();
         Map<String, Object> paramsNFCe = prepareParamsForConsultaEDocs(token, codSnf, numNfv, regRet);
         String response = exeRegra(token, paramsNFCe);
-        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null).get(0);
+        ConsultaNotaFiscal notaFiscal = getNFCes(token, numNfv, null, null, null, null, null, null).get(0);
         return new SitEdocsResponse(response, notaFiscal);
     }
 
