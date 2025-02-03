@@ -31,7 +31,8 @@ public class FormaPagamento {
         String tipFpg = element.getElementsByTagName("tipFpg").item(0).getTextContent();
         String tipInt = element.getElementsByTagName("tipInt").item(0).getTextContent();
         String perDsc = element.getElementsByTagName("perDsc").item(0).getTextContent();
-        String codAta = element.getElementsByTagName("codAta").item(0).getTextContent();
+        Node codAtaNode = element.getElementsByTagName("codAta").item(0);
+        String codAta = codAtaNode != null ? codAtaNode.getTextContent() : null;
 
         List<CondicaoPagamento> condicoes = new ArrayList<>();
         NodeList condicoesNode = element.getElementsByTagName("condicao");
