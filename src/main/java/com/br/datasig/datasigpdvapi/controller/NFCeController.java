@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
@@ -9,11 +10,6 @@ import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
@@ -34,15 +30,11 @@ public class NFCeController extends DataSIGController {
             summary = "Gerar NFC-e",
             description = "Geração de NFC-e após pedido devidamente criado"
     )
-    @PutMapping(value = "", produces = MediaType.MULTIPART_MIXED_VALUE)
-    public ResponseEntity<MultiValueMap<String, Object>> putNFCe(@RequestParam String token, @RequestParam String numPed)
+    @PutMapping(value = "", produces = "application/json")
+    public RetornoNFCe putNFCe(@RequestParam String token, @RequestParam String numPed)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException, TransformerException {
         if(isTokenValid(token)) {
-            MultiValueMap<String, Object> responseBody = nfceService.createNFCe(token, numPed);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_MIXED);
-
-            return new ResponseEntity<>(responseBody, headers, HttpStatus.OK);
+            return nfceService.createNFCe(token, numPed);
         } else
             throw new InvalidTokenException();
     }

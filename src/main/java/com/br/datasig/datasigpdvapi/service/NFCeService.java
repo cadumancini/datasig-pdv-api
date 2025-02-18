@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
@@ -14,8 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -47,25 +46,17 @@ public class NFCeService extends WebServiceRequestsService {
         isLive = env.getProperty("environment").equals("live");
     }
 
-    public MultiValueMap<String, Object> createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
+    public RetornoNFCe createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
         String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
         Map<String, Object> paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
         String nfceResponse = exeRegra(token, paramsNFCe);
         validateNfceResponse(nfceResponse);
 
         String nfce = extractNfceNumberFromResponse(nfceResponse);
-        InputStreamResource pdf = loadInvoiceFromDisk(nfceResponse, token);
+        String pdf = extractNfceKeyFromResponse(nfceResponse);
         String printer = TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp();
 
-        return createResponseBody(nfce, pdf, printer);
-    }
-
-    private MultiValueMap<String, Object> createResponseBody(String nfce, InputStreamResource pdf, String printer) {
-        MultiValueMap<String, Object> responseBody = new LinkedMultiValueMap<>();
-        responseBody.add("nfce", nfce);
-        responseBody.add("pdf", pdf);
-        responseBody.add("printer", printer);
-        return responseBody;
+        return new RetornoNFCe(nfce, printer, pdf);
     }
 
     private InputStreamResource loadInvoiceFromDisk(String nfceResponse, String token) {
