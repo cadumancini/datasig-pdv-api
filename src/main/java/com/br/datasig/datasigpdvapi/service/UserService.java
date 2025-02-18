@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.ParamsEmpresa;
-import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
-import com.br.datasig.datasigpdvapi.entity.ParamsPDVResponse;
-import com.br.datasig.datasigpdvapi.entity.TokenResponse;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.NotAllowedUserException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
@@ -45,7 +42,8 @@ public class UserService extends WebServiceRequestsService {
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
             compareLoginUserWithParams(user, paramsPDV);
-            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsPDV);
+            ParamsImpressao paramsImpressao = defineParamsImpressao(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsPDV, paramsImpressao);
 
             return hash;
         }
@@ -91,6 +89,15 @@ public class UserService extends WebServiceRequestsService {
         return getParamsPDVFromXml(xml);
     }
 
+    private ParamsImpressao defineParamsImpressao(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        logger.info("Buscando parâmetros de impressão para usuário {}", user);
+        HashMap<String, Object> params = prepareParamsForParamsImpressao(codEmp, codFil, user);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaImpressora", "Consulta", user, pswd, "0", params);
+
+        XmlUtils.validateXmlResponse(xml);
+        return getParamsImpressaoFromXml(xml);
+    }
+
     private ParamsPDV getParamsPDVFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
 
@@ -101,10 +108,28 @@ public class UserService extends WebServiceRequestsService {
         }
     }
 
+    private ParamsImpressao getParamsImpressaoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "result");
+
+        if (nList.getLength() == 1) {
+            return ParamsImpressao.fromXml(nList.item(0));
+        } else {
+            throw new ResourceNotFoundException("Parâmetros de impressão não encontrados para o usuário");
+        }
+    }
+
     private HashMap<String, Object> prepareParamsForParamsPDV(String codEmp, String codFil) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
+        return params;
+    }
+
+    private HashMap<String, Object> prepareParamsForParamsImpressao(String codEmp, String codFil, String nomUsu) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", codEmp);
+        params.put("codFil", codFil);
+        params.put("nomUsu", nomUsu);
         return params;
     }
 

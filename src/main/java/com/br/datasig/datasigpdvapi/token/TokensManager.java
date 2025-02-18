@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.token;
 
 import com.br.datasig.datasigpdvapi.entity.Caixa;
+import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
 import lombok.Getter;
 
@@ -24,8 +25,8 @@ public class TokensManager {
         return instance;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, paramsPDV));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, paramsPDV, paramsImpressao));
     }
 
     public void removeInvalidTokens() {
