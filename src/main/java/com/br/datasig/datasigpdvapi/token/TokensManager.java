@@ -66,6 +66,11 @@ public class TokensManager {
         return token != null ? token.getParamsPDV() : null;
     }
 
+    public ParamsImpressao getParamsImpressaoFromToken(String tokenValue) {
+        Token token = getTokenByValue(tokenValue);
+        return token != null ? token.getParamsImpressao() : null;
+    }
+
     public Token getTokenByValue(String tokenValue) {
         return validTokens.stream().filter(token -> token.getValue().equals(tokenValue)).findFirst().orElse(null);
     }

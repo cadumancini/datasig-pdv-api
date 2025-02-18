@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
@@ -11,7 +12,10 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,6 +23,9 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
@@ -28,12 +35,35 @@ import java.util.stream.Collectors;
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
 
-    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
+    public MultiValueMap<String, Object> createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
         String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
         Map<String, Object> paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
         String nfceResponse = exeRegra(token, paramsNFCe);
         validateNfceResponse(nfceResponse);
-        return extractNfceNumberFromResponse(nfceResponse);
+
+        String nfce = extractNfceNumberFromResponse(nfceResponse);
+        InputStreamResource pdf = loadInvoiceFromDisk(nfceResponse, token);
+
+        return createResponseBody(nfce, pdf);
+    }
+
+    private MultiValueMap<String, Object> createResponseBody(String nfce, InputStreamResource pdf) {
+        MultiValueMap<String, Object> responseBody = new LinkedMultiValueMap<>();
+        responseBody.add("nfce", nfce);
+        responseBody.add("pdf", pdf);
+        return responseBody;
+    }
+
+    private InputStreamResource loadInvoiceFromDisk(String nfceResponse, String token) throws FileNotFoundException {
+        String chave = extractNfceNumberFromResponse(nfceResponse);
+        logger.info("Carregando PDF da nota {}", chave);
+        String dirNfc = TokensManager.getInstance().getParamsImpressaoFromToken(token).getDirNfc();
+
+        File pdfFile = new File(dirNfc + chave);
+        if (!pdfFile.exists()) {
+            throw new ResourceNotFoundException("Arquivo PDF da nota " + chave + " não encontrado no diretório " + dirNfc + ".");
+        }
+        return new InputStreamResource(new FileInputStream(pdfFile));
     }
 
     private void validateNfceResponse(String nfceResponse) {
