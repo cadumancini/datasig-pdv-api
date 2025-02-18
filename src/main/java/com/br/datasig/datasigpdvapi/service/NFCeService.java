@@ -55,14 +55,16 @@ public class NFCeService extends WebServiceRequestsService {
 
         String nfce = extractNfceNumberFromResponse(nfceResponse);
         InputStreamResource pdf = loadInvoiceFromDisk(nfceResponse, token);
+        String printer = TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp();
 
-        return createResponseBody(nfce, pdf);
+        return createResponseBody(nfce, pdf, printer);
     }
 
-    private MultiValueMap<String, Object> createResponseBody(String nfce, InputStreamResource pdf) {
+    private MultiValueMap<String, Object> createResponseBody(String nfce, InputStreamResource pdf, String printer) {
         MultiValueMap<String, Object> responseBody = new LinkedMultiValueMap<>();
         responseBody.add("nfce", nfce);
         responseBody.add("pdf", pdf);
+        responseBody.add("printer", printer);
         return responseBody;
     }
 
