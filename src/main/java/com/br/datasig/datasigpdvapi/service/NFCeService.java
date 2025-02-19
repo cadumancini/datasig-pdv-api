@@ -59,8 +59,8 @@ public class NFCeService extends WebServiceRequestsService {
         return new RetornoNFCe(nfce, printer, pdf);
     }
 
-    private InputStreamResource loadInvoiceFromDisk(String nfceResponse, String token) {
-        String chave = isLive ? extractNfceKeyFromResponse(nfceResponse) : chaveLocal;
+    public byte[] loadInvoiceFromDisk(String token, String nfce) {
+        String chave = isLive ? nfce : chaveLocal;
         logger.info("Carregando PDF da nota com chave {}", chave);
         String dirNfc = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getDirNfc() : dirNfcLocal;
 
@@ -69,8 +69,7 @@ public class NFCeService extends WebServiceRequestsService {
 
             for (Path file : stream) {
                 logger.info("Arquivo encontrado: {}", file.getFileName());
-                File pdfFile = file.toFile();
-                return new InputStreamResource(new FileInputStream(pdfFile));
+                Files.readAllBytes(file);
             }
         } catch (IOException e) {
             e.printStackTrace();

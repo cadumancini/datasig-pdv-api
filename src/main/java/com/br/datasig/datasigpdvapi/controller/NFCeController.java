@@ -10,6 +10,10 @@ import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
 
@@ -94,6 +98,27 @@ public class NFCeController extends DataSIGController {
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException, TransformerException {
         if(isTokenValid(token))
             return nfceService.getSitEDocs(token, codSnf, numNfv);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Baixar PDF de NFCe",
+            description = "Baixar PDF de NFCe para ser impresso"
+    )
+    @GetMapping(value = "pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @RequestParam String nfce) {
+        if(isTokenValid(token)) {
+            byte[] pdfBytes = nfceService.loadInvoiceFromDisk(token, nfce);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.inline().filename("nfce.pdf").build());
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        }
         else
             throw new InvalidTokenException();
     }
