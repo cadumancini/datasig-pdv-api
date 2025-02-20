@@ -1,5 +1,6 @@
 package com.br.datasig.datasigpdvapi.token;
 
+import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
 import com.br.datasig.datasigpdvapi.entity.ParamsPDV;
 import lombok.Getter;
 
@@ -17,17 +18,20 @@ public class Token {
     @Getter
     private final ParamsPDV paramsPDV;
     @Getter
+    private final ParamsImpressao paramsImpressao;
+    @Getter
     private final long createdAt;
     @Getter
     private boolean valid;
 
-    public Token (String value, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV) {
+    public Token (String value, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
         this.value = value;
         this.nomUsu = nomUsu;
         this.senUsu = senUsu;
         this.codEmp = codEmp;
         this.codFil = codFil;
         this.paramsPDV = paramsPDV;
+        this.paramsImpressao = paramsImpressao;
         this.createdAt = Calendar.getInstance().getTimeInMillis();
         this.valid = true;
     }
