@@ -69,7 +69,7 @@ public class NFCeService extends WebServiceRequestsService {
 
             for (Path file : stream) {
                 logger.info("Arquivo encontrado: {}", file.getFileName());
-                Files.readAllBytes(file);
+                return Files.readAllBytes(file);
             }
         } catch (IOException e) {
             e.printStackTrace();
