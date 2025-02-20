@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
@@ -11,6 +12,8 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -19,7 +22,13 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,17 +36,50 @@ import java.util.stream.Collectors;
 @Component
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
+    private final String chaveLocal;
+    private final String dirNfcLocal;
+    private final boolean isLive;
 
-    public String createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
+    public NFCeService(Environment env) {
+        chaveLocal = env.getProperty("chaveNfc");
+        dirNfcLocal = env.getProperty("dirNfc");
+        isLive = env.getProperty("environment").equals("live");
+    }
+
+    public RetornoNFCe createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
         String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
         Map<String, Object> paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
         String nfceResponse = exeRegra(token, paramsNFCe);
         validateNfceResponse(nfceResponse);
-        return extractNfceNumberFromResponse(nfceResponse);
+
+        String nfce = extractNfceNumberFromResponse(nfceResponse);
+        String pdf = extractNfceKeyFromResponse(nfceResponse);
+        String printer = TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp();
+
+        return new RetornoNFCe(nfce, printer, pdf);
+    }
+
+    public byte[] loadInvoiceFromDisk(String token, String nfce) {
+        String chave = isLive ? nfce : chaveLocal;
+        logger.info("Carregando PDF da nota com chave {}", chave);
+        String dirNfc = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getDirNfc() : dirNfcLocal;
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirNfc),
+                path -> path.getFileName().toString().contains(chave) && path.getFileName().toString().endsWith(".pdf"))) {
+
+            for (Path file : stream) {
+                logger.info("Arquivo encontrado: {}", file.getFileName());
+                return Files.readAllBytes(file);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        throw new ResourceNotFoundException("Arquivo PDF da nota " + chave + " não encontrado no diretório " + dirNfc + ".");
     }
 
     private void validateNfceResponse(String nfceResponse) {
-        if (!nfceResponse.startsWith("NFC")) {
+        if (!nfceResponse.startsWith("NFC") || !nfceResponse.contains("CHAVE")) {
             logger.error(nfceResponse);
             throw new NfceException(nfceResponse);
         }
@@ -53,6 +95,11 @@ public class NFCeService extends WebServiceRequestsService {
     private String extractNfceNumberFromResponse(String response) {
         String[] terms = response.split(" ");
         return terms[1];
+    }
+
+    private String extractNfceKeyFromResponse(String response) {
+        String[] terms = response.split(" ");
+        return terms[4];
     }
 
     private String getResponseNFCeFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
