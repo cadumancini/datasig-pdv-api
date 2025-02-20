@@ -5,11 +5,11 @@
 #webservicesUrl=
 
 # local - desenvolvimento; live - servidor
-environment=
+#environment=
 
 # caso local, setar chaveNFC e dirNfc
-chaveNfc=
-dirNfc=
+#chaveNfc=
+#dirNfc=
 
 # Se true, ao rodar o projeto e acessar a home (ex: http://localhost:8080) via browser, irá abrir o Swagger com todos os Endpoints disponíveis
 springdoc.swagger-ui.use-root-path=true
