@@ -60,6 +60,15 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     public byte[] loadInvoiceFromDisk(String token, String nfce) {
+        System.out.println("Iniciando espera");
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            System.out.println("Espera interrompida");
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("Prossegundo");
+
         String chave = isLive ? nfce : chaveLocal;
         logger.info("Carregando PDF da nota com chave {}", chave);
         String dirNfc = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getDirNfc() : dirNfcLocal;
