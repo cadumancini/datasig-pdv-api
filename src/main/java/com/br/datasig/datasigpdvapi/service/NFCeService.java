@@ -62,7 +62,7 @@ public class NFCeService extends WebServiceRequestsService {
     public byte[] loadInvoiceFromDisk(String token, String nfce) {
         System.out.println("Iniciando espera");
         try {
-            Thread.sleep(10000);
+            Thread.sleep(60000);
         } catch (InterruptedException e) {
             System.out.println("Espera interrompida");
             Thread.currentThread().interrupt();
