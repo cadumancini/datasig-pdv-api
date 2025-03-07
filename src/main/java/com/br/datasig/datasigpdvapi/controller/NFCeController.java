@@ -107,7 +107,7 @@ public class NFCeController extends DataSIGController {
             description = "Baixar PDF de NFCe para ser impresso"
     )
     @GetMapping(value = "pdf", produces = "application/pdf")
-    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @RequestParam String nfce) {
+    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @RequestParam String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         if(isTokenValid(token)) {
             byte[] pdfBytes = nfceService.loadInvoiceFromDisk(token, nfce);
 

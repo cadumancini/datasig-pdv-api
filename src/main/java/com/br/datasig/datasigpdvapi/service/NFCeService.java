@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.service;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
 import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
@@ -13,7 +14,6 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -22,8 +22,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -59,20 +57,36 @@ public class NFCeService extends WebServiceRequestsService {
         return new RetornoNFCe(nfce, printer, pdf);
     }
 
-    public byte[] loadInvoiceFromDisk(String token, String nfce) {
-        System.out.println("Iniciando espera");
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            System.out.println("Espera interrompida");
-            Thread.currentThread().interrupt();
+    public byte[] loadInvoiceFromDisk(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        if (isLive) {
+            ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
+            forceInvoiceFileToDisk(paramsImpressao, nfce);
+
+            String dirNfc = paramsImpressao.getDirNfc();
+            return loadFromDisk(nfce, dirNfc);
+        } else {
+            return loadFromDisk(chaveLocal, dirNfcLocal);
         }
-        System.out.println("Prossegundo");
+    }
 
-        String chave = isLive ? nfce : chaveLocal;
+    public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
+
+        String xml = soapClient.requestFromSdeWS("Impressao", "Imprimir", params);
+        XmlUtils.validateXmlResponse(xml);
+    }
+
+    private static Map<String, Object> getParamsForImpressaoSDE(ParamsImpressao paramsImpressao, String chave) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("nfe:usuario", paramsImpressao.getLogNfc());
+        params.put("nfe:senha", paramsImpressao.getSenNfc());
+        params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
+        params.put("nfe:chaveDocumento", chave);
+        return params;
+    }
+
+    private byte[] loadFromDisk(String chave, String dirNfc) {
         logger.info("Carregando PDF da nota com chave {}", chave);
-        String dirNfc = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getDirNfc() : dirNfcLocal;
-
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirNfc),
                 path -> path.getFileName().toString().contains(chave) && path.getFileName().toString().endsWith(".pdf"))) {
 
@@ -147,12 +161,16 @@ public class NFCeService extends WebServiceRequestsService {
     }
 
     private void addParamsForConsultaNFCes(HashMap<String, Object> params, String numNfv, String sitNfv, String sitDoe, String datIni, String datFim, String nomUsu) {
-        params.put("numNfv", numNfv == null ? "" : numNfv);
-        params.put("sitNfv", sitNfv == null ? "" : sitNfv);
-        params.put("sitDoe", sitDoe == null ? "" : sitDoe);
-        params.put("datIni", datIni == null ? "" : datIni);
-        params.put("datFim", datFim == null ? "" : datFim);
-        params.put("nomUsu", nomUsu == null ? "" : nomUsu);
+        params.put("numNfv", evaluateValue(numNfv));
+        params.put("sitNfv", evaluateValue(sitNfv));
+        params.put("sitDoe", evaluateValue(sitDoe));
+        params.put("datIni", evaluateValue(datIni));
+        params.put("datFim", evaluateValue(datFim));
+        params.put("nomUsu", evaluateValue(nomUsu));
+    }
+
+    private String evaluateValue(String value) {
+        return value == null ? "" : value;
     }
 
     private List<ConsultaNotaFiscal> getNotasFromXml(String xml) throws ParserConfigurationException, IOException, SAXException, ParseException {
