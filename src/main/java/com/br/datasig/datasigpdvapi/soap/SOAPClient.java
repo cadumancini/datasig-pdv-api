@@ -33,11 +33,13 @@ import java.util.Map;
 public class SOAPClient {
     private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
     private final String wsUrl;
+    private final String wsSdeUrl;
     private static final String WS_URL_SUFFIX = "?wsdl";
     private static final String REQUEST_LOG_MESSAGE = "Requisição para URL {}\nParâmetros: {}";
 
     public SOAPClient(Environment env) {
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", env.getProperty("webservicesUrl"));
+        wsSdeUrl = String.format("%sSDE/", env.getProperty("webservicesUrlSDE"));
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
@@ -46,11 +48,19 @@ public class SOAPClient {
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
     }
+
     public String requestFromSeniorWS(String wsPath, String service, String token, String encryption, Map<String, Object> params, boolean includeIdentificador) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String user = TokensManager.getInstance().getUserNameFromToken(token);
         String pswd = TokensManager.getInstance().getPasswordFromToken(token);
         String xmlBody = prepareXmlBody(service, user, pswd, encryption, params, getIdentificadorSistema(includeIdentificador, token));
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
+        logger.info(REQUEST_LOG_MESSAGE, url, params);
+        return makeRequest(url, xmlBody);
+    }
+
+    public String requestFromSdeWS(String wsPath, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
+        String xmlBody = prepareXmlBodyNFE(service, params);
+        String url = wsSdeUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
         return makeRequest(url, xmlBody);
     }
@@ -85,6 +95,30 @@ public class SOAPClient {
 
     String prepareXmlBody(String service, String usr, String pswd, String encryption, Map<String, Object> params, String identificador) throws ParserConfigurationException, TransformerException {
         return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
+    }
+
+    String prepareXmlBodyNFE(String service, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+        // root elements
+        Document doc = docBuilder.newDocument();
+        Element envelope = doc.createElement("soapenv:Envelope");
+        envelope.setAttribute("xmlns:soapenv", "http://schemas.xmlsoap.org/soap/envelope/");
+        envelope.setAttribute("xmlns:nfe", "http://www.senior.com.br/nfe");
+        doc.appendChild(envelope);
+
+        Element header = doc.createElement("soapenv:Header");
+        envelope.appendChild(header);
+
+        Element body = doc.createElement("soapenv:Body");
+        envelope.appendChild(body);
+
+        Element serviceElement = doc.createElement("nfe:" + service);
+        body.appendChild(serviceElement);
+
+        buildXmlParameters(doc, serviceElement, params);
+        return transformDocumentToString(doc);
     }
 
     String prepareXmlBodySID(String service, String usr, String pswd, String encryption, Map<String, Object> params) throws ParserConfigurationException, TransformerException {

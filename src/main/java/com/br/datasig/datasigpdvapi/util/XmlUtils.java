@@ -44,6 +44,14 @@ public class XmlUtils {
             } catch (Exception e) {
                 // do nothing
             }
+        } else if (xml.contains("<ImprimirResult")) { // Retorno de WS de impressão do SDE
+            if (xml.contains("<Sucesso>false</Sucesso>")) {
+                String codigo = getMessageFromXml(xml, "ImprimirResult", "Codigo");
+                String mensagem = getMessageFromXml(xml, "ImprimirResult", "Mensagem");
+                String executionError = "Erro código: " + codigo + " - mensagem: " + mensagem;
+                logger.error(executionError);
+                throw new WebServiceRuntimeException(executionError);
+            }
         }
     }
 
