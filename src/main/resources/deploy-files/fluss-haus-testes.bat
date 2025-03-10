@@ -7,7 +7,6 @@ SET base=teste
 SET environment=live
 
 SET webservices_url=http://172.25.14.254:28080/
-SET webservices_sde_url=http://172.25.14.254:18989/
 SET api_url=http://172.25.14.254:%porta%
 SET impressao=true
 
@@ -69,7 +68,6 @@ COPY src\main\resources\application.properties.example src\main\resources\applic
   ECHO:
   ECHO server.port=%porta%
   ECHO webservicesUrl=%webservices_url%
-  ECHO webservicesUrlSDE=%webservices_sde_url%
   ECHO environment=%environment%
 ) >> src\main\resources\application.properties
 ECHO [SCRIPT] Valores definidos
