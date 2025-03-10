@@ -14,6 +14,7 @@ public class ParamsImpressao {
     private String nomImp;
     private String senNfc;
     private String tipDoc;
+    private String urlSde;
 
     public static ParamsImpressao fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -23,7 +24,8 @@ public class ParamsImpressao {
         String nomImp = element.getElementsByTagName("nomImp").item(0).getTextContent();
         String senNfc = element.getElementsByTagName("senNfc").item(0).getTextContent();
         String tipDoc = element.getElementsByTagName("tipDoc").item(0).getTextContent();
+        String urlSde = element.getElementsByTagName("urlSde").item(0).getTextContent();
 
-        return new ParamsImpressao(codUsu, dirNfc, logNfc, nomImp, senNfc, tipDoc);
+        return new ParamsImpressao(codUsu, dirNfc, logNfc, nomImp, senNfc, tipDoc, urlSde);
     }
 }

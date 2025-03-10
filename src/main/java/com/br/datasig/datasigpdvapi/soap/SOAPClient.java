@@ -33,13 +33,11 @@ import java.util.Map;
 public class SOAPClient {
     private static final Logger logger = LoggerFactory.getLogger(SOAPClient.class);
     private final String wsUrl;
-    private final String wsSdeUrl;
     private static final String WS_URL_SUFFIX = "?wsdl";
     private static final String REQUEST_LOG_MESSAGE = "Requisição para URL {}\nParâmetros: {}";
 
     public SOAPClient(Environment env) {
         wsUrl = String.format("%sg5-senior-services/sapiens_Sync", env.getProperty("webservicesUrl"));
-        wsSdeUrl = String.format("%sSDE/", env.getProperty("webservicesUrlSDE"));
     }
 
     public String requestFromSeniorWS(String wsPath, String service, String user, String pswd, String encryption, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
@@ -58,11 +56,10 @@ public class SOAPClient {
         return makeRequest(url, xmlBody);
     }
 
-    public String requestFromSdeWS(String wsPath, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
+    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
-        String url = wsSdeUrl + wsPath + WS_URL_SUFFIX;
-        logger.info(REQUEST_LOG_MESSAGE, url, params);
-        return makeRequest(url, xmlBody);
+        logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
+        return makeRequest(wsUrl, xmlBody);
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {

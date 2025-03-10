@@ -72,7 +72,7 @@ public class NFCeService extends WebServiceRequestsService {
     public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS("Impressao", "Imprimir", params);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
         XmlUtils.validateXmlResponse(xml);
     }
 

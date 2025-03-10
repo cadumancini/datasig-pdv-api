@@ -4,9 +4,6 @@
 # URL onde acessar os WebServices Senior
 #webservicesUrl=
 
-# URL onde acessar o WebService do SDE
-#webservicesUrlSDE=
-
 # local - desenvolvimento; live - servidor
 #environment=
 
