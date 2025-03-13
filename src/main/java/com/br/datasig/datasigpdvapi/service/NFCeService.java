@@ -61,7 +61,7 @@ public class NFCeService extends WebServiceRequestsService {
         if (isLive) {
             ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
             forceInvoiceFileToDisk(paramsImpressao, nfce);
-
+            logger.info("Nota {} baixada. Seguindo para download.", nfce);
             String dirNfc = paramsImpressao.getDirNfc();
             return loadFromDisk(nfce, dirNfc);
         } else {
@@ -73,6 +73,7 @@ public class NFCeService extends WebServiceRequestsService {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
+        logger.info("Retorno do eDocs: " + xml);
         XmlUtils.validateXmlResponse(xml);
     }
 
