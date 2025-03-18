@@ -59,6 +59,7 @@ public class SOAPClient {
     public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
+        logger.info("Corpo da requisição completo:\n{}", xmlBody);
         return makeRequest(wsUrl, xmlBody);
     }
 
@@ -114,7 +115,10 @@ public class SOAPClient {
         Element serviceElement = doc.createElement("nfe:" + service);
         body.appendChild(serviceElement);
 
-        buildXmlParameters(doc, serviceElement, params);
+        appendElementWithText(doc, serviceElement, "nfe:usuario", params.get("nfe:usuario").toString());
+        appendElementWithText(doc, serviceElement, "nfe:senha", params.get("nfe:senha").toString());
+        appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
+        appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
         return transformDocumentToString(doc);
     }
 
