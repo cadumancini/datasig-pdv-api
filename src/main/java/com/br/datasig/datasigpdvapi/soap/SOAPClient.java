@@ -77,13 +77,24 @@ public class SOAPClient {
         String xmlBody = prepareXmlBodySID(service, user, pswd, encryption, params);
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
-        return makeRequest(url, xmlBody);
+        return makeRequest(url, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
     }
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
         try {
             String header = xmlBody.contains("GravarPedido") ? "text/xml;charset=ISO-8859-1" : "text/xml";
             return postRequest(url, xmlBody, header);
+        } catch (Exception e) {
+            String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
+            logger.error(msg);
+            throw new SOAPClientException(msg);
+        }
+    }
+
+    private String makeRequest(String url, String xmlBody, String soapAction) throws SOAPClientException {
+        try {
+            String contentTypeHeader = "text/xml";
+            return postRequestSDE(url, xmlBody, contentTypeHeader, soapAction);
         } catch (Exception e) {
             String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
             logger.error(msg);
@@ -222,6 +233,18 @@ public class SOAPClient {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.setHeader("Content-Type", header);
+        StringEntity xmlEntity = new StringEntity(xmlBody);
+        httpRequest.setEntity(xmlEntity);
+        HttpResponse httpResponse = client.execute(httpRequest);
+        validateStatusCode(httpResponse.getStatusLine().getStatusCode());
+        return EntityUtils.toString(httpResponse.getEntity());
+    }
+
+    private static String postRequestSDE(String url, String xmlBody, String contentType, String soapAction) throws IOException {
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpPost httpRequest = new HttpPost(url);
+        httpRequest.setHeader("Content-Type", contentType);
+        httpRequest.setHeader("SOAPAction", soapAction);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
