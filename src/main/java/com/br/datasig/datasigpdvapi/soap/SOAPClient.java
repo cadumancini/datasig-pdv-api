@@ -2,6 +2,7 @@ package com.br.datasig.datasigpdvapi.soap;
 
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -60,7 +61,7 @@ public class SOAPClient {
         String xmlBody = prepareXmlBodyNFE(service, params);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
         logger.info("Corpo da requisição completo:\n{}", xmlBody);
-        return makeRequest(wsUrl, xmlBody);
+        return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {
@@ -77,7 +78,7 @@ public class SOAPClient {
         String xmlBody = prepareXmlBodySID(service, user, pswd, encryption, params);
         String url = wsUrl + wsPath + WS_URL_SUFFIX;
         logger.info(REQUEST_LOG_MESSAGE, url, params);
-        return makeRequest(url, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
+        return makeRequest(url, xmlBody);
     }
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
@@ -243,8 +244,8 @@ public class SOAPClient {
     private static String postRequestSDE(String url, String xmlBody, String contentType, String soapAction) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
-        httpRequest.setHeader("Content-Type", contentType);
-        httpRequest.setHeader("SOAPAction", soapAction);
+        httpRequest.addHeader("Content-Type", contentType);
+        httpRequest.addHeader("SOAPAction", soapAction);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
