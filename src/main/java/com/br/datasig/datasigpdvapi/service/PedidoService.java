@@ -164,7 +164,7 @@ public class PedidoService extends WebServiceRequestsService {
                 paramsItem.put("perDsc", formatValue(itemPedido.getPerDsc()));
                 paramsItem.put("perAcr", formatValue(itemPedido.getPerAcr()));
                 paramsItem.put("codDep", itemPedido.getCodDep());
-                paramsItem.put("tnsPro", tnsPed);
+                paramsItem.put("tnsPro", definirTnsPedItem(pedido, tnsPed, itemPedido));
                 paramsItem.put("resEst", "N");
                 paramsItem.put("pedPrv", "N");
                 if (itemPedido.getSeqIpd().equals("0")) {
@@ -178,6 +178,17 @@ public class PedidoService extends WebServiceRequestsService {
         });
 
         return listaItens;
+    }
+
+    private String definirTnsPedItem(PayloadPedido pedido, String tnsPedCab, PayloadItemPedido item) {
+        if (pedido.isFechar() || pedido.isGerar()) {
+            if (item.getTnsPed() != null && !item.getTnsPed().isEmpty())
+                return item.getTnsPed();
+            else
+                return tnsPedCab;
+        } else {
+            return tnsPedCab;
+        }
     }
 
     private static String formatValue(String vlr) {

@@ -2,7 +2,6 @@ package com.br.datasig.datasigpdvapi.soap;
 
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceNotFoundException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -60,7 +59,7 @@ public class SOAPClient {
     public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
-        logger.info("Corpo da requisição completo:\n{}", xmlBody);
+//        logger.info("Corpo da requisição completo:\n{}", xmlBody);
         return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
     }
 

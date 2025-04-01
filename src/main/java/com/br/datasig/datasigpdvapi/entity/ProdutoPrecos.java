@@ -14,5 +14,6 @@ public class ProdutoPrecos {
     private String codTpr;
     private String datIni;
     private String desPro;
+    private String tnsPed;
     private List<FaixaPreco> faixasPreco;
 }
