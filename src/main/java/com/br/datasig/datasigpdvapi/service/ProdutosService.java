@@ -49,7 +49,7 @@ public class ProdutosService extends WebServiceRequestsService{
                 List<FaixaPreco> faixasPreco = new ArrayList<>();
                 faixasPreco.add(new FaixaPreco(produto.getPreBas(), produto.getQtdMax()));
                 produtosGrouped.add(new ProdutoPrecos(produto.getCodPro(), produto.getCodDer(), produto.getCodBar(),
-                        produto.getCodTpr(), produto.getDatIni(), produto.getDesPro(), faixasPreco));
+                        produto.getCodTpr(), produto.getDatIni(), produto.getDesPro(), produto.getTnsPed(), faixasPreco));
             } else {
                 produtosGrouped.get(produtosGrouped.indexOf(produtoPrecos))
                         .getFaixasPreco().add(new FaixaPreco(produto.getPreBas(), produto.getQtdMax()));
