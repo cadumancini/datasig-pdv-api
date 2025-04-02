@@ -30,7 +30,7 @@ public class ProdutoTabela {
 
         String tnsPed = "";
         try {
-            tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent();
+            tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent().trim();
         } catch (Exception ignored) {}
 
         desPro += " " + desDer;
