@@ -9,4 +9,5 @@ public class Operadora {
     private String cgcCpf;
     private String codOpe;
     private String desOpe;
+    private String banOpe;
 }
