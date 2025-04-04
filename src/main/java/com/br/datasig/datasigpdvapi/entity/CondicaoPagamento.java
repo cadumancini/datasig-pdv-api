@@ -59,8 +59,9 @@ public class CondicaoPagamento {
                 String cgcCpf = el.getElementsByTagName("cgcCpf").item(0).getTextContent();
                 String codOpe = el.getElementsByTagName("codOpe").item(0).getTextContent();
                 String desOpe = el.getElementsByTagName("desOpe").item(0).getTextContent();
+                String banOpe = el.getElementsByTagName("banOpe").item(0).getTextContent();
 
-                operadoras.add(new Operadora(cgcCpf, codOpe, desOpe));
+                operadoras.add(new Operadora(cgcCpf, codOpe, desOpe, banOpe));
             }
         }
         return operadoras;
