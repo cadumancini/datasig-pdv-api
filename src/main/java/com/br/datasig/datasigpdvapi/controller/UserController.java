@@ -28,10 +28,6 @@ public class UserController extends DataSIGController {
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
     public String login(@RequestParam String user, @RequestParam String pswd, HttpServletRequest request) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
-        System.out.println("IP: " + getClientIp(request));
-        System.out.println("Name: " + request.getRemoteHost());
-        System.out.println("IP 2: " + request.getRemoteAddr());
-
         return userService.login(user, pswd);
     }
 
