@@ -6,6 +6,7 @@ import com.br.datasig.datasigpdvapi.service.PedidoService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +30,11 @@ public class PedidoController extends DataSIGController {
     )
     @PutMapping(value = "", produces = "application/json", consumes = "application/json")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public RetornoPedido putPedido(@RequestParam String token, @RequestBody PayloadPedido pedido) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
-        if(isTokenValid(token))
-            return pedidoService.createPedido(token, pedido);
+    public RetornoPedido putPedido(@RequestParam String token, @RequestBody PayloadPedido pedido, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+        if(isTokenValid(token)) {
+            String clientIP = getClientIp(request);
+            return pedidoService.createPedido(token, pedido, clientIP);
+        }
         else
             throw new InvalidTokenException();
     }

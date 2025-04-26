@@ -18,4 +18,5 @@ public class ParamsPDVResponse {
     private String nomEmp;
     private String nomFil;
     private String nomUsu;
+    private String codIp;
 }

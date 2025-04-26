@@ -125,10 +125,11 @@ public class ParamsPDV {
             Node nNode = caixasList.item(i);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element el = (Element) nNode;
-                String logSis = el.getElementsByTagName("logSis").item(0).getTextContent();
+                String codIp = el.getElementsByTagName("codIp").item(0).getTextContent();
+                String codPDV = el.getElementsByTagName("codPdv").item(0).getTextContent();
                 String numCco = el.getElementsByTagName("numCco").item(0).getTextContent();
                 String numCxa = el.getElementsByTagName("numCxa").item(0).getTextContent();
-                caixas.add(new Caixa(logSis, numCco, numCxa));
+                caixas.add(new Caixa(codIp, codPDV, numCco, numCxa));
             }
         }
         return caixas;

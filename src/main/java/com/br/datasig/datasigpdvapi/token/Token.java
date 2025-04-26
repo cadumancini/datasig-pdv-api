@@ -23,8 +23,10 @@ public class Token {
     private final long createdAt;
     @Getter
     private boolean valid;
+    @Getter
+    private String codIp;
 
-    public Token (String value, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
+    public Token (String value, String nomUsu, String senUsu, String codEmp, String codFil, String codIp, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
         this.value = value;
         this.nomUsu = nomUsu;
         this.senUsu = senUsu;
@@ -34,6 +36,7 @@ public class Token {
         this.paramsImpressao = paramsImpressao;
         this.createdAt = Calendar.getInstance().getTimeInMillis();
         this.valid = true;
+        this.codIp = codIp;
     }
 
     public String getUserName() {

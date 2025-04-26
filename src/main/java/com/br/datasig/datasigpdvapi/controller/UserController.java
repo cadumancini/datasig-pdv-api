@@ -28,7 +28,8 @@ public class UserController extends DataSIGController {
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
     public String login(@RequestParam String user, @RequestParam String pswd, HttpServletRequest request) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
-        return userService.login(user, pswd);
+        String clientIp = getClientIp(request);
+        return userService.login(user, pswd, clientIp);
     }
 
     @Operation(
@@ -47,21 +48,5 @@ public class UserController extends DataSIGController {
     @GetMapping(value = "/params", produces = "application/json")
     public TokenResponse getParamsFromToken(@RequestParam String token) {
         return userService.getParamsFromToken(token);
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.split(",")[0];
-        }
-        ip = request.getHeader("Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-        ip = request.getHeader("WL-Proxy-Client-IP");
-        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-        return request.getRemoteAddr();
     }
 }
