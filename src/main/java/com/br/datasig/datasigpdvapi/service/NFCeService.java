@@ -73,7 +73,6 @@ public class NFCeService extends WebServiceRequestsService {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
-//        logger.info("Retorno do eDocs: " + xml);
         XmlUtils.validateXmlResponse(xml);
     }
 

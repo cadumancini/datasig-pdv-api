@@ -25,8 +25,8 @@ public class TokensManager {
         return instance;
     }
 
-    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
-        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, paramsPDV, paramsImpressao));
+    public void addToken(String tokenValue, String nomUsu, String senUsu, String codEmp, String codFil, String codIp, ParamsPDV paramsPDV, ParamsImpressao paramsImpressao) {
+        validTokens.add(new Token(tokenValue, nomUsu, senUsu, codEmp, codFil, codIp, paramsPDV, paramsImpressao));
     }
 
     public void removeInvalidTokens() {
@@ -75,10 +75,15 @@ public class TokensManager {
         return validTokens.stream().filter(token -> token.getValue().equals(tokenValue)).findFirst().orElse(null);
     }
 
-    public Caixa getCaixaByToken(String tokenValue) {
-        String logSis = getUserNameFromToken(tokenValue);
+    private String getNumIPFromToken(String tokenValue) {
         Token token = getTokenByValue(tokenValue);
-        Optional<Caixa> caixa = token.getParamsPDV().getCaixas().stream().filter(conta -> conta.getLogSis().equals(logSis)).findFirst();
+        return token != null ? token.getCodIp() : "";
+    }
+
+    public Caixa getCaixaByToken(String tokenValue) {
+        String codIp = getNumIPFromToken(tokenValue);
+        Token token = getTokenByValue(tokenValue);
+        Optional<Caixa> caixa = token.getParamsPDV().getCaixas().stream().filter(conta -> conta.getCodIp().equals(codIp)).findFirst();
         return caixa.orElse(null);
     }
 }
