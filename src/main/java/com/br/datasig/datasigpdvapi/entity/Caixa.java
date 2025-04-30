@@ -6,7 +6,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class Caixa {
-    private String logSis;
+    private String codIp;
+    private String codPDV;
     private String numCco;
     private String numCxa;
 }

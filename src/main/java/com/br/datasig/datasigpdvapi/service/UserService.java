@@ -3,6 +3,7 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.NotAllowedUserException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
+import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.Token;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
@@ -10,6 +11,7 @@ import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -24,8 +26,13 @@ import java.util.HashMap;
 @Component
 public class UserService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final boolean isLive;
 
-    public String login(String user, String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
+    public UserService(Environment env) {
+        isLive = env.getProperty("environment").equals("live");
+    }
+
+    public String login(String user, String pswd, String clientIp) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -41,17 +48,17 @@ public class UserService extends WebServiceRequestsService {
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
-            compareLoginUserWithParams(user, paramsPDV);
-            ParamsImpressao paramsImpressao = defineParamsImpressao(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
-            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), paramsPDV, paramsImpressao);
+            if (isLive) compareLoginIPWithParams(clientIp, paramsPDV);
+            ParamsImpressao paramsImpressao = defineParamsImpressao(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), clientIp);
+            TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), clientIp, paramsPDV, paramsImpressao);
 
             return hash;
         }
     }
 
-    private void compareLoginUserWithParams(String user, ParamsPDV paramsPDV) throws NotAllowedUserException {
-        if(paramsPDV.getCaixas().stream().noneMatch(caixa -> caixa.getLogSis().equals(user))) {
-            throw new NotAllowedUserException("O usuário usado no login não está presente na lista de usuários definidos nos parâmetros da filial para utilização nos caixas.");
+    private void compareLoginIPWithParams(String codIp, ParamsPDV paramsPDV) throws NotAllowedUserException {
+        if(paramsPDV.getCaixas().stream().noneMatch(caixa -> caixa.getCodIp().equals(codIp))) {
+            throw new NotAllowedUserException("O IP usado no login não está presente na lista de IPs definidos nos parâmetros da filial para utilização nos caixas.");
         }
     }
 
@@ -89,10 +96,13 @@ public class UserService extends WebServiceRequestsService {
         return getParamsPDVFromXml(xml);
     }
 
-    private ParamsImpressao defineParamsImpressao(String user, String pswd, String codEmp, String codFil) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        logger.info("Buscando parâmetros de impressão para usuário {}", user);
-        HashMap<String, Object> params = prepareParamsForParamsImpressao(codEmp, codFil, user);
+    private ParamsImpressao defineParamsImpressao(String user, String pswd, String codEmp, String codFil, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        logger.info("Buscando parâmetros de impressão para o IP {}", clientIP);
+        HashMap<String, Object> params = prepareParamsForParamsImpressao(codEmp, codFil, clientIP);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaImpressora", "Consulta", user, pswd, "0", params);
+
+        if (xml.contains("<erroExecucao xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>") && (!isLive))
+            return null;
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsImpressaoFromXml(xml);
@@ -125,11 +135,11 @@ public class UserService extends WebServiceRequestsService {
         return params;
     }
 
-    private HashMap<String, Object> prepareParamsForParamsImpressao(String codEmp, String codFil, String nomUsu) {
+    private HashMap<String, Object> prepareParamsForParamsImpressao(String codEmp, String codFil, String clientIP) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", codEmp);
         params.put("codFil", codFil);
-        params.put("nomUsu", nomUsu);
+        params.put("codIp", clientIP);
         return params;
     }
 
@@ -146,7 +156,8 @@ public class UserService extends WebServiceRequestsService {
                 token.getCodFil(),
                 paramsPDV.getNomEmp(),
                 paramsPDV.getNomFil(),
-                token.getUserName());
+                token.getUserName(),
+                token.getCodIp());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 

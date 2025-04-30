@@ -6,6 +6,7 @@ import com.br.datasig.datasigpdvapi.service.UserService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.xml.sax.SAXException;
@@ -26,8 +27,9 @@ public class UserController extends DataSIGController {
             description = "Cria um token baseado no usuário, senha e timestamp de login, que é retornado ao FrontEnd e utilizado nas outras requisições"
     )
     @PostMapping(value = "/login", produces = "text/plain;charset=UTF-8")
-    public String login(@RequestParam String user, @RequestParam String pswd) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
-        return userService.login(user, pswd);
+    public String login(@RequestParam String user, @RequestParam String pswd, HttpServletRequest request) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
+        String clientIp = getClientIp(request);
+        return userService.login(user, pswd, clientIp);
     }
 
     @Operation(

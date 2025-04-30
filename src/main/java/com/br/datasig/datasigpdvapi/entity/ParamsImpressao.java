@@ -8,7 +8,8 @@ import org.w3c.dom.Node;
 @Data
 @AllArgsConstructor
 public class ParamsImpressao {
-    private String codUsu;
+    private String codIp;
+    private String codPDV;
     private String dirNfc;
     private String logNfc;
     private String nomImp;
@@ -18,7 +19,8 @@ public class ParamsImpressao {
 
     public static ParamsImpressao fromXml(Node nNode) {
         Element element = (Element) nNode;
-        String codUsu = element.getElementsByTagName("codUsu").item(0).getTextContent();
+        String codIp = element.getElementsByTagName("codIp").item(0).getTextContent();
+        String codPDV = element.getElementsByTagName("codPdv").item(0).getTextContent();
         String dirNfc = element.getElementsByTagName("dirNfc").item(0).getTextContent();
         String logNfc = element.getElementsByTagName("logNfc").item(0).getTextContent();
         String nomImp = element.getElementsByTagName("nomImp").item(0).getTextContent();
@@ -26,6 +28,6 @@ public class ParamsImpressao {
         String tipDoc = element.getElementsByTagName("tipDoc").item(0).getTextContent();
         String urlSde = element.getElementsByTagName("urlSde").item(0).getTextContent();
 
-        return new ParamsImpressao(codUsu, dirNfc, logNfc, nomImp, senNfc, tipDoc, urlSde);
+        return new ParamsImpressao(codIp, codPDV, dirNfc, logNfc, nomImp, senNfc, tipDoc, urlSde);
     }
 }

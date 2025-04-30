@@ -26,22 +26,22 @@ import java.util.stream.Collectors;
 public class PedidoService extends WebServiceRequestsService {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    public RetornoPedido createPedido(String token, PayloadPedido pedido) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+    public RetornoPedido createPedido(String token, PayloadPedido pedido, String clientIP) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         setEmpFilToPedido(pedido, token);
         if(pedido.getNumPed().equals("0")) {
-            RetornoPedido retornoPedido = sendPedidoRequest(pedido, token);
+            RetornoPedido retornoPedido = sendPedidoRequest(pedido, token, clientIP);
             if (pedido.isFechar() || pedido.isGerar()) {
                 pedido.setNumPed(retornoPedido.getNumPed());
                 fecharPedido(pedido, token, false);
             }
             return retornoPedido;
         } else {
-            return handlePedidoExistente(pedido, token);
+            return handlePedidoExistente(pedido, token, clientIP);
         }
     }
 
-    private RetornoPedido sendPedidoRequest(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> params = prepareParamsForPedido(pedido, token);
+    private RetornoPedido sendPedidoRequest(PayloadPedido pedido, String token, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> params = prepareParamsForPedido(pedido, token, clientIP);
         String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoPedido = getRetornoPedidoFromXml(xml);
@@ -53,12 +53,12 @@ public class PedidoService extends WebServiceRequestsService {
         return soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_pedidos", "GravarPedidos_13", token, "0", params, false);
     }
 
-    private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+    private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if (pedido.isFechar() || pedido.isGerar()) {
             boolean alterarTransacao = pedido.isFechar();
             return fecharPedido(pedido, token, alterarTransacao);
         } else {
-            return sendPedidoRequest(pedido, token);
+            return sendPedidoRequest(pedido, token, clientIP);
         }
     }
 
@@ -69,7 +69,7 @@ public class PedidoService extends WebServiceRequestsService {
         pedido.setCodFil(codFil);
     }
 
-    private HashMap<String, Object> prepareParamsForPedido(PayloadPedido pedido, String token) {
+    private HashMap<String, Object> prepareParamsForPedido(PayloadPedido pedido, String token, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
         paramsPedido.put("converterQtdUnidadeEstoque", "N");
         paramsPedido.put("converterQtdUnidadeVenda", "N");
@@ -103,7 +103,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
-        params.put("usuario", getCamposUsuario(pedido));
+        params.put("usuario", getCamposUsuario(pedido, clientIP));
 
         if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed);
@@ -119,13 +119,18 @@ public class PedidoService extends WebServiceRequestsService {
         return doubleToString(vlrDar);
     }
 
-    private List<HashMap<String, Object>> getCamposUsuario(PayloadPedido pedido) {
+    private List<HashMap<String, Object>> getCamposUsuario(PayloadPedido pedido, String clientIP) {
         HashMap<String, Object> paramsTroco = new HashMap<>();
         paramsTroco.put("cmpUsu", "USU_VLRTRO");
         paramsTroco.put("vlrUsu", pedido.getVlrTro() > 0 ? doubleToString(pedido.getVlrTro()) : "0");
 
+        HashMap<String, Object> paramsIP = new HashMap<>();
+        paramsIP.put("cmpUsu", "USU_CodIp");
+        paramsIP.put("vlrUsu", clientIP);
+
         List<HashMap<String, Object>> list = new ArrayList<>();
         list.add(paramsTroco);
+        list.add(paramsIP);
         return list;
     }
 
