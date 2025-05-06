@@ -58,7 +58,7 @@ public class UserService extends WebServiceRequestsService {
 
     private void compareLoginIPWithParams(String codIp, ParamsPDV paramsPDV) throws NotAllowedUserException {
         if(paramsPDV.getCaixas().stream().noneMatch(caixa -> caixa.getCodIp().equals(codIp))) {
-            throw new NotAllowedUserException("O IP usado no login não está presente na lista de IPs definidos nos parâmetros da filial para utilização nos caixas.");
+            throw new NotAllowedUserException("O IP usado no login (%s) não está presente na lista de IPs definidos nos parâmetros da filial para utilização nos caixas.".formatted(codIp));
         }
     }
 
