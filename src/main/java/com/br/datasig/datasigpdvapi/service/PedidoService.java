@@ -220,6 +220,7 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("seqPar", String.valueOf(seqPar));
                     paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
                     paramsParcela.put("vctPar", dateFormat.format(dataParcela));
+                    paramsParcela.put("vctDat", dataParcela);
                     paramsParcela.put("vlrPar", getVlrPar(parcelaParametro, seqParCpg, pagto, parcela));
                     paramsParcela.put("tipInt", pagto.getForma().getTipInt());
                     paramsParcela.put("banOpe", pagto.getBanOpe());
@@ -230,7 +231,34 @@ public class PedidoService extends WebServiceRequestsService {
                 }
             }
         }
+        orderParcelas(parcelas);
         return parcelas;
+    }
+
+    private void orderParcelas(List<HashMap<String, Object>> parcelas) {
+        parcelas.sort((map1, map2) -> {
+            // Comparar por data
+            var data1 = (Comparable) map1.get("vctDat");
+            var data2 = (Comparable) map2.get("vctDat");
+
+            int result = data1.compareTo(data2);
+
+            // Se forem iguais, comparar por foma de pagto.
+            if (result == 0) {
+                var fpg1 = (Comparable) map1.get("codFpg");
+                var fpg2 = (Comparable) map2.get("codFpg");
+                result = fpg1.compareTo(fpg2);
+            }
+
+            return result;
+        });
+
+        // Redefinir seqPar
+        int seqPar = 0;
+        for (HashMap<String, Object> parcela : parcelas) {
+            seqPar++;
+            parcela.put("seqPar", String.valueOf(seqPar));
+        }
     }
 
     private static String getVlrPar(ParcelaParametro parcelaParametro, int seqPar, PagamentoPedido pagto, Parcela parcela) {
