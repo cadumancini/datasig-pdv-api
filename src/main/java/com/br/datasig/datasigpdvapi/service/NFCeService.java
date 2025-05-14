@@ -38,6 +38,8 @@ public class NFCeService extends WebServiceRequestsService {
     private final String dirNfcLocal;
     private final boolean isLive;
 
+    private static final Object EXEC_REGRA_LOCK = new Object();
+
     public NFCeService(Environment env) {
         chaveLocal = env.getProperty("chaveNfc");
         dirNfcLocal = env.getProperty("dirNfc");
@@ -47,12 +49,19 @@ public class NFCeService extends WebServiceRequestsService {
     public RetornoNFCe createNFCe(String token, String numPed) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, NfceException, TransformerException {
         String regFat = TokensManager.getInstance().getParamsPDVFromToken(token).getRegFat();
         Map<String, Object> paramsNFCe = prepareParamsForGeracaoNFCe(token, numPed, regFat);
-        String nfceResponse = exeRegra(token, paramsNFCe);
+
+        String nfceResponse;
+        synchronized (EXEC_REGRA_LOCK) {
+            logger.info("Iniciando chamada para gerar NFCe com pedido {}. Thread: {}", numPed, Thread.currentThread().getName());
+            nfceResponse = exeRegra(token, paramsNFCe);
+            logger.info("Finalizando chamada de geração de NFCe com pedido {}", numPed);
+        }
+
         validateNfceResponse(nfceResponse);
 
         String nfce = extractNfceNumberFromResponse(nfceResponse);
         String pdf = extractNfceKeyFromResponse(nfceResponse);
-        String printer = TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp();
+        String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
 
         return new RetornoNFCe(nfce, printer, pdf);
     }
