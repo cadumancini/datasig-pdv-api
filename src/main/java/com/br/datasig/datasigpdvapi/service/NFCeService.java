@@ -55,30 +55,38 @@ public class NFCeService extends WebServiceRequestsService {
         String nfceResponse = processNFCeSynchronously(token, numPed, paramsNFCe);
         validateNfceResponse(nfceResponse);
 
-        String nfce = extractNfceNumberFromResponse(nfceResponse);
-        String pdf = extractNfceKeyFromResponse(nfceResponse);
-        String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
-
-        return new RetornoNFCe(nfce, printer, pdf);
+        return buildRetornoNFCe(token, nfceResponse);
     }
 
     private String processNFCeSynchronously(String token, String numPed, Map<String, Object> paramsNFCe) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String nfceResponse;
 
-        String snfNfc = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim();
-        snfNfc = snfNfc.isBlank() ? TokensManager.getInstance().getParamsPDVFromToken(token).getSnfNfc() : snfNfc;
-
+        String snfNfc = getSnfNfcForLock(token);
         ReentrantLock lock = LOCKS_BY_SNFNFC.computeIfAbsent(snfNfc, key -> new ReentrantLock());
-        lock.lock();  // Acquire the lock
+        lock.lock();
         try {
             logger.info("Iniciando chamada para gerar NFCe com pedido {}. Thread: {}", numPed, Thread.currentThread().getName());
             nfceResponse = exeRegra(token, paramsNFCe);
             logger.info("Finalizando chamada de geração de NFCe com pedido {}", numPed);
         } finally {
-            lock.unlock();  // Always release in finally
+            lock.unlock();
             LOCKS_BY_SNFNFC.remove(snfNfc, lock);
         }
         return nfceResponse;
+    }
+
+    private String getSnfNfcForLock(String token) {
+        String snfNfc = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim();
+        snfNfc = snfNfc.isBlank() ? TokensManager.getInstance().getParamsPDVFromToken(token).getSnfNfc() : snfNfc;
+        return snfNfc;
+    }
+
+    private RetornoNFCe buildRetornoNFCe(String token, String nfceResponse) {
+        String nfce = extractNfceNumberFromResponse(nfceResponse);
+        String pdf = extractNfceKeyFromResponse(nfceResponse);
+        String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
+
+        return new RetornoNFCe(nfce, printer, pdf);
     }
 
     public byte[] loadInvoiceFromDisk(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
