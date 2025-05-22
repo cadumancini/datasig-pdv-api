@@ -16,6 +16,7 @@ public class ParamsImpressao {
     private String senNfc;
     private String tipDoc;
     private String urlSde;
+    private String snfNfc;
 
     public static ParamsImpressao fromXml(Node nNode) {
         Element element = (Element) nNode;
@@ -27,7 +28,11 @@ public class ParamsImpressao {
         String senNfc = element.getElementsByTagName("senNfc").item(0).getTextContent();
         String tipDoc = element.getElementsByTagName("tipDoc").item(0).getTextContent();
         String urlSde = element.getElementsByTagName("urlSde").item(0).getTextContent();
+        String snfNfc = "";
+        try {
+            snfNfc = element.getElementsByTagName("snfNfc").item(0).getTextContent();
+        } catch (Exception e) {}
 
-        return new ParamsImpressao(codIp, codPDV, dirNfc, logNfc, nomImp, senNfc, tipDoc, urlSde);
+        return new ParamsImpressao(codIp, codPDV, dirNfc, logNfc, nomImp, senNfc, tipDoc, urlSde, snfNfc);
     }
 }
