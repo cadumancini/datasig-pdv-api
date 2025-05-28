@@ -50,6 +50,10 @@ public class UserService extends WebServiceRequestsService {
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
             if (isLive) compareLoginIPWithParams(clientIp, paramsPDV);
             ParamsImpressao paramsImpressao = defineParamsImpressao(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), clientIp);
+            if (paramsImpressao == null) {
+                logger.error("Parâmetros de impressão não definidos para o IP {}", clientIp);
+                throw new WebServiceRuntimeException("Parâmetros de impressão não definidos para o IP" + clientIp);
+            }
             TokensManager.getInstance().addToken(hash, user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), clientIp, paramsPDV, paramsImpressao);
 
             return hash;
@@ -146,6 +150,7 @@ public class UserService extends WebServiceRequestsService {
     public TokenResponse getParamsFromToken(String tokenValue) {
         Token token = TokensManager.getInstance().getTokenByValue(tokenValue);
         ParamsPDV paramsPDV = TokensManager.getInstance().getParamsPDVFromToken(tokenValue);
+        ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(tokenValue);
         ParamsPDVResponse paramsPDVResponse = new ParamsPDVResponse(
                 paramsPDV.getCodTpr(),
                 paramsPDV.getDscTot(),
@@ -158,7 +163,8 @@ public class UserService extends WebServiceRequestsService {
                 paramsPDV.getNomFil(),
                 token.getUserName(),
                 token.getCodIp(),
-                paramsPDV.getIndImp());
+                paramsImpressao.getIndImp(),
+                paramsImpressao.getQtdImp());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 

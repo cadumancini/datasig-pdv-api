@@ -41,7 +41,6 @@ public class ParamsPDV {
     private String cxaFec;
     private String cxaSan;
     private String regBai;
-    private String indImp;
     private List<Deposito> depositos;
     private List<Caixa> caixas;
     private List<RamoAtividade> ramos;
@@ -82,12 +81,11 @@ public class ParamsPDV {
         String cxaFec = el.getElementsByTagName("cxaFec").item(0).getTextContent();
         String cxaSan = el.getElementsByTagName("cxaSan").item(0).getTextContent();
         String regBai = el.getElementsByTagName("regBai").item(0).getTextContent();
-        String indImp = el.getElementsByTagName("indImp").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, numCsc,
                 sigInt, snfNfc, tnsNfv, tnsPed, pedTns, tnsOrc, codCpg, codFpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
-                regBai, indImp, getDepositos(element), getCaixas(element), getRamos(element));
+                regBai, getDepositos(element), getCaixas(element), getRamos(element));
     }
 
     private static List<RamoAtividade> getRamos(Element element) {
