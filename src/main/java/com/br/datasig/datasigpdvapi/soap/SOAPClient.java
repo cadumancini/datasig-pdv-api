@@ -81,7 +81,7 @@ public class SOAPClient {
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
         try {
-            String header = "text/xml;charset=ISO-8859-1";
+            String header = "text/xml;charset=UTF-8";
             return postRequest(url, xmlBody, header);
         } catch (Exception e) {
             String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
@@ -232,7 +232,7 @@ public class SOAPClient {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.setHeader("Content-Type", header);
-        StringEntity xmlEntity = new StringEntity(xmlBody);
+        StringEntity xmlEntity = new StringEntity(xmlBody, "UTF-8");
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
         validateStatusCode(httpResponse.getStatusLine().getStatusCode());
