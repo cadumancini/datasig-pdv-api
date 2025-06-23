@@ -59,7 +59,6 @@ public class SOAPClient {
     public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
-//        logger.info("Corpo da requisição completo:\n{}", xmlBody);
         return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
     }
 
@@ -82,7 +81,7 @@ public class SOAPClient {
 
     private String makeRequest(String url, String xmlBody) throws SOAPClientException {
         try {
-            String header = xmlBody.contains("GravarPedido") ? "text/xml;charset=ISO-8859-1" : "text/xml";
+            String header = "text/xml;charset=ISO-8859-1";
             return postRequest(url, xmlBody, header);
         } catch (Exception e) {
             String msg = String.format("Erro na requisição: %s".formatted(e.getMessage()));
