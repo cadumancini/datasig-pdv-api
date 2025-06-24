@@ -97,12 +97,12 @@ public class ClientesService extends WebServiceRequestsService{
     }
 
     private HashMap<String, Object> prepareParams(String token, ClientePayload cliente) {
-        String nomCli = sanitizeString(cliente.getNomCli().trim());
-        String endCli = sanitizeString(cliente.getEndCli()).trim();
-        String baiCli = sanitizeString(cliente.getBaiCli().trim());
-        String cplEnd = sanitizeString(cliente.getCplEnd().trim());
-        String cepCli = sanitizeString(cliente.getCepCli().trim()).replace("-", "");
-        String cgcCpf = sanitizeString(cliente.getCgcCpf().trim()).replace("-", "").replace(".", "").replace("/", "");
+        String nomCli = sanitizeString(cliente.getNomCli().trim(), false);
+        String endCli = sanitizeString(cliente.getEndCli().trim(), false);
+        String baiCli = sanitizeString(cliente.getBaiCli().trim(), false);
+        String cplEnd = sanitizeString(cliente.getCplEnd().trim(), false);
+        String cepCli = sanitizeString(cliente.getCepCli().trim(), false).replace("-", "");
+        String cgcCpf = sanitizeString(cliente.getCgcCpf().trim(), false).replace("-", "").replace(".", "").replace("/", "");
 
         cgcCpf = removeLeadingZeros(cgcCpf);
 
@@ -164,10 +164,13 @@ public class ClientesService extends WebServiceRequestsService{
         return cgcCpf;
     }
 
-    private String sanitizeString(String value) {
-        String normalizer = Normalizer.normalize(value, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(normalizer).replaceAll("").toUpperCase();
+    private String sanitizeString(String value, boolean removeAccents) {
+        if (removeAccents) {
+            String normalizer = Normalizer.normalize(value, Normalizer.Form.NFD);
+            Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+            return pattern.matcher(normalizer).replaceAll("").toUpperCase();
+        }
+        return value.toUpperCase();
     }
 
     private ClienteResponse getClienteResponseFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
