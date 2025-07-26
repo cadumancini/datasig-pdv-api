@@ -451,6 +451,7 @@ public class PedidoService extends WebServiceRequestsService {
             case CANCELADOS -> "5";
             case ABERTOS -> "9";
             case TODOS -> "";
+            case ABERTOS_FECHADOS -> "1,9";
         };
     }
 
