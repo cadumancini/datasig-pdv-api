@@ -421,8 +421,10 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    public List<ConsultaPedido> getPedidos(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao, String order, String numPed, String datIni, String datFim) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipo, situacao, numPed, datIni, datFim);
+    public List<ConsultaPedido> getPedidos(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao,
+                                           String order, String numPed, String datIni, String datFim, String codCli, String codRep)
+            throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipo, situacao, numPed, datIni, datFim, codCli, codRep);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
@@ -433,7 +435,8 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos.stream().filter(ped -> !ped.getSitPed().equals("4")).collect(Collectors.toList());
     }
 
-    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao, String numPed, String datIni, String datFim) {
+    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao,
+                                                                   String numPed, String datIni, String datFim, String codCli, String codRep) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
@@ -442,6 +445,8 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("numPed", numPed == null ? "" : numPed);
         params.put("datIni", datIni == null ? "" : "'" + datIni + "'");
         params.put("datFim", datFim == null ? "" : "'" + datFim + "'");
+        params.put("codCli", codCli == null ? "" : "'" + codCli + "'");
+        params.put("codRep", datFim == null ? "" : "'" + codRep + "'");
         return params;
     }
 
@@ -451,6 +456,7 @@ public class PedidoService extends WebServiceRequestsService {
             case CANCELADOS -> "5";
             case ABERTOS -> "9";
             case TODOS -> "";
+            case ABERTOS_FECHADOS -> "1,9";
         };
     }
 
@@ -458,7 +464,7 @@ public class PedidoService extends WebServiceRequestsService {
         return switch (tipo) {
             case ORÇAMENTO -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
             case NORMAL -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
-            case TODOS -> "";
+            case TODOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc() + "," + TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
         };
     }
 
