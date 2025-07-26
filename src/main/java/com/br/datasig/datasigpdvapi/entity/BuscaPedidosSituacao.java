@@ -4,6 +4,5 @@ public enum BuscaPedidosSituacao {
     TODOS,
     ABERTOS,
     FECHADOS,
-    CANCELADOS,
-    ABERTOS_FECHADOS
+    CANCELADOS
 }
