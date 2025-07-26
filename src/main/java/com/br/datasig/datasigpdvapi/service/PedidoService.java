@@ -458,7 +458,7 @@ public class PedidoService extends WebServiceRequestsService {
         return switch (tipo) {
             case ORÇAMENTO -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
             case NORMAL -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
-            case TODOS -> "";
+            case TODOS -> TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc() + "," + TokensManager.getInstance().getParamsPDVFromToken(token).getTnsPed();
         };
     }
 
