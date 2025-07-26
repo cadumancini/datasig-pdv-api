@@ -164,8 +164,7 @@ public class UserService extends WebServiceRequestsService {
                 token.getUserName(),
                 token.getCodIp(),
                 paramsImpressao == null ? "N" : paramsImpressao.getIndImp(),
-                paramsImpressao == null ? "1" : paramsImpressao.getQtdImp(),
-                paramsPDV.getCodCli());
+                paramsImpressao == null ? "1" : paramsImpressao.getQtdImp());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 

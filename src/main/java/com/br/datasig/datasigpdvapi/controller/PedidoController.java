@@ -50,11 +50,9 @@ public class PedidoController extends DataSIGController {
                                            @RequestParam String order,
                                            @RequestParam(required = false) String numPed,
                                            @RequestParam(required = false) String datIni,
-                                           @RequestParam(required = false) String datFim,
-                                           @RequestParam(required = false) String codCli,
-                                           @RequestParam(required = false) String codRep) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+                                           @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
-            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim, codCli, codRep);
+            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim);
         else
             throw new InvalidTokenException();
     }
