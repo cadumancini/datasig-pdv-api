@@ -445,8 +445,8 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("numPed", numPed == null ? "" : numPed);
         params.put("datIni", datIni == null ? "" : "'" + datIni + "'");
         params.put("datFim", datFim == null ? "" : "'" + datFim + "'");
-        params.put("codCli", codCli == null ? "" : "'" + codCli + "'");
-        params.put("codRep", datFim == null ? "" : "'" + codRep + "'");
+        params.put("codCli", codCli == null ? "" : codCli);
+        params.put("codRep", codRep == null ? "" : codRep);
         return params;
     }
 
