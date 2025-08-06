@@ -7,8 +7,10 @@ import com.br.datasig.datasigpdvapi.http.ConsultaCEPClient;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -189,22 +191,30 @@ public class ClientesService extends WebServiceRequestsService{
         params.put("sitCli", "A");
     }
 
-    public ConsultaCEP getInformacoesCEP(String numCep) throws IOException, ParserConfigurationException, SAXException {
+    public ConsultaCEP getInformacoesCEP(String numCep) throws IOException {
         logger.info("Buscando informações para o CEP {}", numCep);
-        HttpResponse response = consultaCEPClient.getRequest(numCep + "/xml/");
-        String xmlResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
-        XmlUtils.validateXmlResponse(xmlResponse);
-        NodeList nList = XmlUtils.getNodeListByElementName(xmlResponse, "xmlcep");
+        HttpResponse response = consultaCEPClient.getRequest(numCep + ".json");
+        validateResponse(numCep, response);
+        return parseCEP(response);
+    }
 
-        if (nList.getLength() > 0) {
-            Node nNode = nList.item(0);
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                return ConsultaCEP.fromXml(nNode);
-            }
+    private void validateResponse(String numCep, HttpResponse response) {
+        if (response.getStatusLine().getStatusCode() != 200) {
+            logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
+            throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
         }
+    }
 
-        logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
-        throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
+    private ConsultaCEP parseCEP(HttpResponse response) throws IOException {
+        String jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
+        JSONObject obj = new JSONObject(jsonResponse);
+        return new ConsultaCEP(
+                obj.getString("cep"),
+                obj.getString("logradouro"),
+                obj.getString("bairro"),
+                obj.getString("localidade"),
+                obj.getString("uf")
+        );
     }
 
     public List<ClienteSimplified> getClientesSimplified(String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {

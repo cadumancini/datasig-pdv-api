@@ -7,10 +7,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.io.IOException;
 
-public class HttpRequesClient {
+public class HttpRequestClient {
     private final String url;
 
-    public HttpRequesClient(String url) {
+    public HttpRequestClient(String url) {
         this.url = url;
     }
 
