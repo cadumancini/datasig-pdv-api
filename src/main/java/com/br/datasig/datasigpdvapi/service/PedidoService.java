@@ -447,6 +447,16 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos.stream().filter(ped -> !ped.getSitPed().equals("4")).collect(Collectors.toList());
     }
 
+    public ConsultaPedidoDetalhes getPedido(String token, String numPed)
+            throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, numPed);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPedidoDetalhes", "Consultar", token, "0", paramsPedido, false);
+        XmlUtils.validateXmlResponse(xml);
+
+        String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
+        return getConsultaPedidoDetalhesFromXml(xml, tnsOrc);
+    }
+
     private HashMap<String, Object> prepareParamsForConsultaPedido(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao,
                                                                    String numPed, String datIni, String datFim, String codCli, String codRep) {
         HashMap<String, Object> params = new HashMap<>();
@@ -459,6 +469,14 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("datFim", datFim == null ? "" : "'" + datFim + "'");
         params.put("codCli", codCli == null ? "" : codCli);
         params.put("codRep", codRep == null ? "" : codRep);
+        return params;
+    }
+
+    private HashMap<String, Object> prepareParamsForConsultaPedido(String token, String numPed) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        params.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
+        params.put("numPed", numPed);
         return params;
     }
 
@@ -490,6 +508,17 @@ public class PedidoService extends WebServiceRequestsService {
             }
         }
         return pedidos;
+    }
+
+    private ConsultaPedidoDetalhes getConsultaPedidoDetalhesFromXml(String xml, String tnsOrc) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "dadosGerais");
+        for (int i = 0; i < nList.getLength(); i++) {
+            Node nNode = nList.item(i);
+            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                return ConsultaPedidoDetalhes.fromXml(nNode, tnsOrc);
+            }
+        }
+        return null;
     }
 
     public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
