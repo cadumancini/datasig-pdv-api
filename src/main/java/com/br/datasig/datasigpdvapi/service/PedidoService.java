@@ -32,7 +32,7 @@ public class PedidoService extends WebServiceRequestsService {
             RetornoPedido retornoPedido = sendPedidoRequest(pedido, token, clientIP);
             if (pedido.isFechar() || pedido.isGerar()) {
                 pedido.setNumPed(retornoPedido.getNumPed());
-                fecharPedido(pedido, token, false);
+                fecharPedido(pedido, token, false, clientIP);
             }
             return retornoPedido;
         } else {
@@ -56,7 +56,7 @@ public class PedidoService extends WebServiceRequestsService {
     private RetornoPedido handlePedidoExistente(PayloadPedido pedido, String token, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if (pedido.isFechar() || pedido.isGerar()) {
             boolean alterarTransacao = pedido.isFechar();
-            return fecharPedido(pedido, token, alterarTransacao);
+            return fecharPedido(pedido, token, alterarTransacao, clientIP);
         } else {
             return sendPedidoRequest(pedido, token, clientIP);
         }
@@ -130,6 +130,16 @@ public class PedidoService extends WebServiceRequestsService {
 
         List<HashMap<String, Object>> list = new ArrayList<>();
         list.add(paramsTroco);
+        list.add(paramsIP);
+        return list;
+    }
+
+    private List<HashMap<String, Object>> getCampoUsuario(String campo, String valor) {
+        HashMap<String, Object> paramsIP = new HashMap<>();
+        paramsIP.put("cmpUsu", campo);
+        paramsIP.put("vlrUsu", valor);
+
+        List<HashMap<String, Object>> list = new ArrayList<>();
         list.add(paramsIP);
         return list;
     }
@@ -363,15 +373,15 @@ public class PedidoService extends WebServiceRequestsService {
                 retornoPedido.getNumPed().equals("0");
     }
 
-    private RetornoPedido fecharPedido(PayloadPedido pedido, String token, boolean alterarTransacao) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+    private RetornoPedido fecharPedido(PayloadPedido pedido, String token, boolean alterarTransacao, String clientIP) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         if (alterarTransacao) {
-            alterarTransacao(pedido, token);
+            alterarTransacao(pedido, token, clientIP);
         }
-        return fecharPedido(pedido, token);
+        return fecharPedido(pedido, token, clientIP);
     }
 
-    private RetornoPedido fecharPedido(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido);
+    private RetornoPedido fecharPedido(PayloadPedido pedido, String token, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedido(pedido, clientIP);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
@@ -379,15 +389,15 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private void alterarTransacao(PayloadPedido pedido, String token) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token);
+    private void alterarTransacao(PayloadPedido pedido, String token, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsAlterarTransacao = prepareParamsForAlterarTransacao(pedido, token, clientIP);
         String xml = makeRequest(token, paramsAlterarTransacao);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
     }
 
-    private HashMap<String, Object> prepareParamsForFecharPedido(PayloadPedido pedido) {
+    private HashMap<String, Object> prepareParamsForFecharPedido(PayloadPedido pedido, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -399,6 +409,7 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
@@ -407,7 +418,7 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForAlterarTransacao(PayloadPedido pedido, String token) {
+    private HashMap<String, Object> prepareParamsForAlterarTransacao(PayloadPedido pedido, String token, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -416,6 +427,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("opeExe", "A");
         params.put("numPed", pedido.getNumPed());
         params.put("tnsPro", definirTnsPro(pedido, token));
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
@@ -480,7 +492,7 @@ public class PedidoService extends WebServiceRequestsService {
         return pedidos;
     }
 
-    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         String sitPedCancelado = "5";
         if (sitPed.equals("9")) {
             PayloadPedido pedido = new PayloadPedido();
@@ -488,7 +500,7 @@ public class PedidoService extends WebServiceRequestsService {
             pedido.setCodEmp(TokensManager.getInstance().getCodEmpFromToken(token));
             pedido.setCodFil(TokensManager.getInstance().getCodFilFromToken(token));
             pedido.setFechar(true);
-            alterarTransacao(pedido, token);
+            alterarTransacao(pedido, token, clientIp);
             fecharOrcamentoComObs(pedido, token);
         }
         return altSituacaoPedido(token, numPed, sitPedCancelado);
