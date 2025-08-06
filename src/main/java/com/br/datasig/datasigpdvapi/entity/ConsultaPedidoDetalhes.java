@@ -11,7 +11,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ConsultaPedidoDetalhes {
+public class ConsultaPedidoDetalhes implements PedidoConsultavel {
     private String codCli;
     private String codCpg;
     private String codEmp;
@@ -27,7 +27,6 @@ public class ConsultaPedidoDetalhes {
     private String vlrTro;
     private String staPed;
     private String tipPed;
-    private int numPedInt;
     private List<ConsultaItemPedido> itens;
     private List<ConsultaParcelaPedido> parcelas;
 
@@ -52,7 +51,7 @@ public class ConsultaPedidoDetalhes {
         List<ConsultaParcelaPedido> parcelas = getParcelasPedido(element);
 
         return new ConsultaPedidoDetalhes(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed,
-                vlrDar, perDs1, vlrTro, staPed, tipPed, Integer.parseInt(numPed), itens, parcelas);
+                vlrDar, perDs1, vlrTro, staPed, tipPed, itens, parcelas);
     }
 
     private static String defineTipPed(String codTns, String tnsOrc) {
@@ -127,5 +126,10 @@ public class ConsultaPedidoDetalhes {
             }
         }
         return parcelas;
+    }
+
+    @Override
+    public int getNumPedInt() {
+        return Integer.parseInt(numPed);
     }
 }

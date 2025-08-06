@@ -4,14 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ConsultaPedido {
+public class ConsultaPedido implements PedidoConsultavel {
     private String codCli;
     private String codCpg;
     private String codEmp;
@@ -25,7 +21,6 @@ public class ConsultaPedido {
     private String vlrDar;
     private String staPed;
     private String tipPed;
-    private int numPedInt;
 
     public static ConsultaPedido fromXml(Node node, String tnsOrc) {
         Element element = (Element) node;
@@ -43,7 +38,7 @@ public class ConsultaPedido {
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, tipPed, Integer.parseInt(numPed));
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, tipPed);
     }
 
     private static String defineTipPed(String codTns, String tnsOrc) {
@@ -57,5 +52,10 @@ public class ConsultaPedido {
             case "9" -> "ABERTO";
             default -> "";
         };
+    }
+
+    @Override
+    public int getNumPedInt() {
+        return Integer.parseInt(numPed);
     }
 }

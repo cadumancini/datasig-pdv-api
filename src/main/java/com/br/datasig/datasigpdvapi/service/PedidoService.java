@@ -433,17 +433,20 @@ public class PedidoService extends WebServiceRequestsService {
         return paramsPedido;
     }
 
-    public List<ConsultaPedido> getPedidos(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao,
-                                           String order, String numPed, String datIni, String datFim, String codCli, String codRep)
+    public List<PedidoConsultavel> getPedidos(String token, BuscaPedidosTipo tipo, BuscaPedidosSituacao situacao,
+                                           String order, String numPed, String datIni, String datFim, String codCli,
+                                           String codRep, boolean detalhado)
             throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         HashMap<String, Object> paramsPedido = prepareParamsForConsultaPedido(token, tipo, situacao, numPed, datIni, datFim, codCli, codRep);
-        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaPedido", "Consultar", token, "0", paramsPedido, false);
+
+        String ws = detalhado ? "PDV_DS_ConsultaPedidoDetalhes" : "PDV_DS_ConsultaPedido";
+        String xml = soapClient.requestFromSeniorWS(ws, "Consultar", token, "0", paramsPedido, false);
         XmlUtils.validateXmlResponse(xml);
 
         String tnsOrc = TokensManager.getInstance().getParamsPDVFromToken(token).getTnsOrc();
-        List<ConsultaPedido> pedidos = getConsultaPedidosFromXml(xml, tnsOrc);
+        List<PedidoConsultavel> pedidos = getConsultaPedidosFromXml(xml, tnsOrc, detalhado);
 
-        if(order.equals("DESC")) pedidos.sort(Comparator.comparing(ConsultaPedido::getNumPedInt).reversed());
+        if(order.equals("DESC")) pedidos.sort(Comparator.comparing(PedidoConsultavel::getNumPedInt).reversed());
         return pedidos.stream().filter(ped -> !ped.getSitPed().equals("4")).collect(Collectors.toList());
     }
 
@@ -498,13 +501,16 @@ public class PedidoService extends WebServiceRequestsService {
         };
     }
 
-    private List<ConsultaPedido> getConsultaPedidosFromXml(String xml, String tnsOrc) throws ParserConfigurationException, IOException, SAXException {
-        List<ConsultaPedido> pedidos = new ArrayList<>();
+    private List<PedidoConsultavel> getConsultaPedidosFromXml(String xml, String tnsOrc, boolean detalhado) throws ParserConfigurationException, IOException, SAXException {
+        List<PedidoConsultavel> pedidos = new ArrayList<>();
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "dadosGerais");
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                pedidos.add(ConsultaPedido.fromXml(nNode, tnsOrc));
+                if (detalhado)
+                    pedidos.add(ConsultaPedidoDetalhes.fromXml(nNode, tnsOrc));
+                else
+                    pedidos.add(ConsultaPedido.fromXml(nNode, tnsOrc));
             }
         }
         return pedidos;
