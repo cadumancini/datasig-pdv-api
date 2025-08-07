@@ -19,6 +19,7 @@ public class ConsultaPedido implements PedidoConsultavel {
     private String numPed;
     private String sitPed;
     private String vlrDar;
+    private String vlrTro;
     private String staPed;
     private String tipPed;
 
@@ -35,10 +36,11 @@ public class ConsultaPedido implements PedidoConsultavel {
         String numPed = element.getElementsByTagName("numPed").item(0).getTextContent();
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent();
+        String vlrTro = element.getElementsByTagName("vlrTro").item(0).getTextContent();
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
 
-        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, staPed, tipPed);
+        return new ConsultaPedido(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed, vlrDar, vlrTro, staPed, tipPed);
     }
 
     private static String defineTipPed(String codTns, String tnsOrc) {
