@@ -44,7 +44,7 @@ public class PedidoController extends DataSIGController {
             description = "Busca de pedidos para consulta no PDV"
     )
     @GetMapping(value = "", produces = "application/json")
-    public List<ConsultaPedido> getPedidos(@RequestParam String token,
+    public List<PedidoConsultavel> getPedidos(@RequestParam String token,
                                            @RequestParam BuscaPedidosTipo tipo,
                                            @RequestParam BuscaPedidosSituacao situacao,
                                            @RequestParam String order,
@@ -52,9 +52,23 @@ public class PedidoController extends DataSIGController {
                                            @RequestParam(required = false) String datIni,
                                            @RequestParam(required = false) String datFim,
                                            @RequestParam(required = false) String codCli,
-                                           @RequestParam(required = false) String codRep) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+                                           @RequestParam(required = false) String codRep,
+                                           @RequestParam(required = false) boolean detalhado) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
-            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim, codCli, codRep);
+            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim, codCli, codRep, detalhado);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar pedido detalhado",
+            description = "Busca de dados de pedido para consulta no PDV"
+    )
+    @GetMapping(value = "/{numPed}", produces = "application/json")
+    public ConsultaPedidoDetalhes getPedido(@RequestParam String token,
+                                              @PathVariable String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+        if(isTokenValid(token))
+            return pedidoService.getPedido(token, numPed);
         else
             throw new InvalidTokenException();
     }
@@ -64,9 +78,12 @@ public class PedidoController extends DataSIGController {
             description = "Cancelamento de pedido"
     )
     @PostMapping(value = "cancelar", produces = "application/json")
-    public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed, @RequestParam String sitPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
-        if(isTokenValid(token))
-            return pedidoService.cancelarPedido(token, numPed, sitPed);
+    public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed,
+                                        @RequestParam String sitPed, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+        if(isTokenValid(token)) {
+            String clientIP = getClientIp(request);
+            return pedidoService.cancelarPedido(token, numPed, sitPed, clientIP);
+        }
         else
             throw new InvalidTokenException();
     }
