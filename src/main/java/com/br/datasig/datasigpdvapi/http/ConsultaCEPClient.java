@@ -1,7 +1,7 @@
 package com.br.datasig.datasigpdvapi.http;
 
-public class ConsultaCEPClient extends HttpRequesClient {
+public class ConsultaCEPClient extends HttpRequestClient {
     public ConsultaCEPClient() {
-        super("https://viacep.com.br/ws/");
+        super("https://opencep.com/v1/");
     }
 }
