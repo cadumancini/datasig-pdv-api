@@ -151,7 +151,10 @@ public class PedidoService extends WebServiceRequestsService {
         } else if (pedido.isGerar()) {
             return params.getPedTns();
         } else {
-            return params.getTnsOrc();
+            if (pedido.getTnsPed() != null && !pedido.getTnsPed().isEmpty())
+                return pedido.getTnsPed();
+            else
+                return params.getTnsOrc();
         }
     }
 
