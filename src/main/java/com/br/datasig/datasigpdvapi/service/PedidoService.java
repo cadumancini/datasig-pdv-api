@@ -103,7 +103,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
-        params.put("usuario", getCamposUsuario(pedido, clientIP));
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed);
@@ -416,7 +416,7 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
-        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
+        params.put("usuario", getCamposUsuario(pedido, clientIP));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
