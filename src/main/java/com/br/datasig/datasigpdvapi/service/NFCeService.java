@@ -89,6 +89,7 @@ public class NFCeService extends WebServiceRequestsService {
         return new RetornoNFCe(nfce, printer, pdf);
     }
 
+    @Deprecated // TODO: remove
     public byte[] loadInvoiceFromDisk(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         if (isLive) {
             ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
@@ -101,17 +102,18 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
+    @Deprecated // TODO: remove
     public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Impressao?wsdl", "Imprimir", params);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
         XmlUtils.validateXmlResponse(xml);
     }
 
     private String downloadPDFBase64(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Download?wsdl", "Download", params);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Download", params);
         XmlUtils.validateXmlResponse(xml);
         return XmlUtils.getTextFromXmlElement(xml, "BaixarPdfResult", "Pdf");
     }
@@ -125,6 +127,7 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
+    @Deprecated // TODO: remove
     private byte[] loadFromDisk(String chave, String dirNfc) {
         logger.info("Carregando PDF da nota com chave {}", chave);
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirNfc),
