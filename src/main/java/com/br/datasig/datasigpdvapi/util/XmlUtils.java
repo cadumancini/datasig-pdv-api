@@ -23,11 +23,11 @@ public class XmlUtils {
 
     public static void validateXmlResponse(String xml) throws ParserConfigurationException, IOException, SAXException, ResourceNotFoundException, WebServiceRuntimeException {
         if (xml.contains("<erroExecucao>")) {
-            String executionError = getMessageFromXml(xml, "result", "erroExecucao");
+            String executionError = getTextFromXmlElement(xml, "result", "erroExecucao");
             logger.error(executionError);
             throw new WebServiceRuntimeException(executionError);
         } else if (xml.contains("<mensagemErro>")) {
-            String executionError = getMessageFromXml(xml, "erros", "mensagemErro");
+            String executionError = getTextFromXmlElement(xml, "erros", "mensagemErro");
             logger.error(executionError);
             if (executionError.contains("não encontrado")) {
                 throw new ResourceNotFoundException(executionError);
@@ -38,7 +38,7 @@ public class XmlUtils {
             throw new WebServiceRuntimeException("Ocorreu um erro ao validar o retorno.");
         } else if (xml.contains("ERRO:")) {
             try {
-                String executionError = getMessageFromXml(xml, "result", "resultado");
+                String executionError = getTextFromXmlElement(xml, "result", "resultado");
                 logger.error(executionError);
                 throw new WebServiceRuntimeException(executionError);
             } catch (Exception e) {
@@ -46,8 +46,8 @@ public class XmlUtils {
             }
         } else if (xml.contains("<ImprimirResult")) { // Retorno de WS de impressão do SDE
             if (xml.contains("<Sucesso>false</Sucesso>")) {
-                String codigo = getMessageFromXml(xml, "ImprimirResult", "Codigo");
-                String mensagem = getMessageFromXml(xml, "ImprimirResult", "Mensagem");
+                String codigo = getTextFromXmlElement(xml, "ImprimirResult", "Codigo");
+                String mensagem = getTextFromXmlElement(xml, "ImprimirResult", "Mensagem");
                 String executionError = "Erro código: " + codigo + " - mensagem: " + mensagem;
                 logger.error(executionError);
                 throw new WebServiceRuntimeException(executionError);
@@ -55,7 +55,7 @@ public class XmlUtils {
         }
     }
 
-    private static String getMessageFromXml(String xml, String parentElement, String desiredElement) throws ParserConfigurationException, IOException, SAXException {
+    public static String getTextFromXmlElement(String xml, String parentElement, String desiredElement) throws ParserConfigurationException, IOException, SAXException {
         NodeList nListError = getNodeListByElementName(xml, parentElement);
         Element element = (Element) nListError.item(0);
         return element.getElementsByTagName(desiredElement).item(0).getTextContent();

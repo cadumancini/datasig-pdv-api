@@ -106,8 +106,8 @@ public class NFCeController extends DataSIGController {
             summary = "Baixar PDF de NFCe",
             description = "Baixar PDF de NFCe para ser impresso"
     )
-    @GetMapping(value = "pdf", produces = "application/pdf")
-    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @RequestParam String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+    @GetMapping(value = "/{nfce}/pdf", produces = "application/pdf")
+    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @PathVariable String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         if(isTokenValid(token)) {
             byte[] pdfBytes = nfceService.loadInvoiceFromDisk(token, nfce);
 
@@ -118,6 +118,19 @@ public class NFCeController extends DataSIGController {
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(pdfBytes);
+        }
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Obter NFCe em Base64",
+            description = "Baixar PDF de NFCe para ser impresso em Base64"
+    )
+    @GetMapping(value = "/{nfce}/base64", produces = "text/plain;charset=UTF-8")
+    public String getNFCeBase64(@RequestParam String token, @PathVariable String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        if(isTokenValid(token)) {
+            return nfceService.loadInvoiceBase64(token, nfce);
         }
         else
             throw new InvalidTokenException();

@@ -104,8 +104,16 @@ public class NFCeService extends WebServiceRequestsService {
     public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Impressao?wsdl", "Imprimir", params);
         XmlUtils.validateXmlResponse(xml);
+    }
+
+    private String downloadPDFBase64(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
+
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Download?wsdl", "Download", params);
+        XmlUtils.validateXmlResponse(xml);
+        return XmlUtils.getTextFromXmlElement(xml, "BaixarPdfResult", "Pdf");
     }
 
     private static Map<String, Object> getParamsForImpressaoSDE(ParamsImpressao paramsImpressao, String chave) {
@@ -271,5 +279,10 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("aNumNfvPDV", numNfv);
 
         return params;
+    }
+
+    public String loadInvoiceBase64(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
+        return downloadPDFBase64(paramsImpressao, nfce);
     }
 }
