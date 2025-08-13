@@ -175,7 +175,7 @@ public class PedidoService extends WebServiceRequestsService {
             } else {
                 paramsItem.put("codPro", itemPedido.getCodPro());
                 paramsItem.put("codDer", itemPedido.getCodDer());
-                paramsItem.put("qtdPed", itemPedido.getQtdPed());
+                paramsItem.put("qtdPed", normalizeQtdPed(itemPedido.getQtdPed()));
                 paramsItem.put("codTpr", itemPedido.getCodTpr());
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
                 paramsItem.put("vlrDsc", formatValue(itemPedido.getVlrDsc()));
@@ -209,9 +209,13 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    private static String formatValue(String vlr) {
+    private String formatValue(String vlr) {
         if (vlr == null) return "0,00";
         return vlr.trim().isEmpty() ? "0,0" : vlr.replace(".","");
+    }
+
+    private String normalizeQtdPed(String vlr) {
+        return vlr.replace(".",",");
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
