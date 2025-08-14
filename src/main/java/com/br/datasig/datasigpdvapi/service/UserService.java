@@ -48,7 +48,6 @@ public class UserService extends WebServiceRequestsService {
 
             ParamsEmpresa paramsEmpFil = defineCodEmpCodFil(user, pswd);
             ParamsPDV paramsPDV = defineParamsPDV(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil());
-            clientIp = "192.168.11.197";
             if (isLive) compareLoginIPWithParams(clientIp, paramsPDV);
             ParamsImpressao paramsImpressao = defineParamsImpressao(user, pswd, paramsEmpFil.getCodEmp(), paramsEmpFil.getCodFil(), clientIp);
             if (paramsImpressao == null && isLive) {
@@ -106,8 +105,8 @@ public class UserService extends WebServiceRequestsService {
         HashMap<String, Object> params = prepareParamsForParamsImpressao(codEmp, codFil, clientIP);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaImpressora", "Consulta", user, pswd, "0", params);
 
-//        if (xml.contains("<erroExecucao xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>") && (!isLive))
-//            return null;
+        if (xml.contains("<erroExecucao xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>") && (!isLive))
+            return null;
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsImpressaoFromXml(xml);
