@@ -128,7 +128,7 @@ public class SOAPClient {
         appendElementWithText(doc, serviceElement, "nfe:usuario", params.get("nfe:usuario").toString());
         appendElementWithText(doc, serviceElement, "nfe:senha", params.get("nfe:senha").toString());
         appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
-        appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
+        appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
         return transformDocumentToString(doc);
     }
 
