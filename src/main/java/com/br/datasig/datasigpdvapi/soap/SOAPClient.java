@@ -59,7 +59,7 @@ public class SOAPClient {
     public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
-        return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
+        return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf");
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {
