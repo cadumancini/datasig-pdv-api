@@ -243,7 +243,7 @@ public class SOAPClient {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.addHeader("Content-Type", contentType);
-        httpRequest.addHeader("SOAPAction", soapAction);
+//        httpRequest.addHeader("SOAPAction", soapAction);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
