@@ -112,7 +112,6 @@ public class NFCeService extends WebServiceRequestsService {
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "BaixarPdf", params);
         XmlUtils.validateXmlResponse(xml);
-        System.out.println(xml);
         return getPdfStringBase64(xml);
     }
 
