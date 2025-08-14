@@ -44,10 +44,10 @@ public class XmlUtils {
             } catch (Exception e) {
                 // do nothing
             }
-        } else if (xml.contains("<ImprimirResult")) { // Retorno de WS de impressão do SDE
+        } else if (xml.contains("<BaixarPdfResponse")) { // Retorno de WS de impressão do SDE
             if (xml.contains("<Sucesso>false</Sucesso>")) {
-                String codigo = getTextFromXmlElement(xml, "ImprimirResult", "Codigo");
-                String mensagem = getTextFromXmlElement(xml, "ImprimirResult", "Mensagem");
+                String codigo = getTextFromXmlElement(xml, "BaixarPdfResponse", "Codigo");
+                String mensagem = getTextFromXmlElement(xml, "BaixarPdfResponse", "Mensagem");
                 String executionError = "Erro código: " + codigo + " - mensagem: " + mensagem;
                 logger.error(executionError);
                 throw new WebServiceRuntimeException(executionError);
