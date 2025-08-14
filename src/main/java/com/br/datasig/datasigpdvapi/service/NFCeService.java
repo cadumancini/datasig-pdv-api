@@ -123,7 +123,7 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("nfe:usuario", paramsImpressao.getLogNfc());
         params.put("nfe:senha", paramsImpressao.getSenNfc());
         params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
-        params.put("nfe:chaveDocumento", chave);
+        params.put("nfe:chave", chave);
         return params;
     }
 
