@@ -110,7 +110,7 @@ public class NFCeService extends WebServiceRequestsService {
     private String downloadPDFBase64(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Download", params);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "BaixarPdf", params);
         XmlUtils.validateXmlResponse(xml);
         System.out.println(xml);
         return getPdfStringBase64(xml);
