@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
-import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
-import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
-import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
@@ -115,7 +112,16 @@ public class NFCeService extends WebServiceRequestsService {
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Download", params);
         XmlUtils.validateXmlResponse(xml);
-        return XmlUtils.getTextFromXmlElement(xml, "BaixarPdfResult", "Pdf");
+        return getPdfStringBase64(xml);
+    }
+
+    private String getPdfStringBase64(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "BaixarPdfResult");
+        Node nNode = nList.item(0);
+        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            return DownloadNFCeResult.fromXml(nNode).getPdf();
+        }
+        throw new WebServiceRuntimeException("Erro ao converter retorno do WebService de Download do PDF em Base64");
     }
 
     private static Map<String, Object> getParamsForImpressaoSDE(ParamsImpressao paramsImpressao, String chave) {
