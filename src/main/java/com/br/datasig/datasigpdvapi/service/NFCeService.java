@@ -86,7 +86,7 @@ public class NFCeService extends WebServiceRequestsService {
         return new RetornoNFCe(nfce, printer, pdf);
     }
 
-    @Deprecated // TODO: remove
+    // @Deprecated // TODO: remove
     public byte[] loadInvoiceFromDisk(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         if (isLive) {
             ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
@@ -99,7 +99,7 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    @Deprecated // TODO: remove
+    // @Deprecated // TODO: remove
     public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
@@ -129,11 +129,12 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("nfe:usuario", paramsImpressao.getLogNfc());
         params.put("nfe:senha", paramsImpressao.getSenNfc());
         params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
+        params.put("nfe:chaveDocumento", chave);
         params.put("nfe:chave", chave);
         return params;
     }
 
-    @Deprecated // TODO: remove
+    // @Deprecated // TODO: remove
     private byte[] loadFromDisk(String chave, String dirNfc) {
         logger.info("Carregando PDF da nota com chave {}", chave);
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirNfc),
