@@ -103,7 +103,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
-        params.put("usuario", getCamposUsuario(pedido, clientIP));
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         if(!pedido.getItens().isEmpty()) {
             List<HashMap<String, Object>> itens = definirParamsItens(pedido, tnsPed);
@@ -151,7 +151,10 @@ public class PedidoService extends WebServiceRequestsService {
         } else if (pedido.isGerar()) {
             return params.getPedTns();
         } else {
-            return params.getTnsOrc();
+            if (pedido.getTnsPed() != null && !pedido.getTnsPed().isEmpty())
+                return pedido.getTnsPed();
+            else
+                return params.getTnsOrc();
         }
     }
 
@@ -172,7 +175,7 @@ public class PedidoService extends WebServiceRequestsService {
             } else {
                 paramsItem.put("codPro", itemPedido.getCodPro());
                 paramsItem.put("codDer", itemPedido.getCodDer());
-                paramsItem.put("qtdPed", itemPedido.getQtdPed());
+                paramsItem.put("qtdPed", normalizeQtdPed(itemPedido.getQtdPed()));
                 paramsItem.put("codTpr", itemPedido.getCodTpr());
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
                 paramsItem.put("vlrDsc", formatValue(itemPedido.getVlrDsc()));
@@ -206,9 +209,13 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    private static String formatValue(String vlr) {
+    private String formatValue(String vlr) {
         if (vlr == null) return "0,00";
         return vlr.trim().isEmpty() ? "0,0" : vlr.replace(".","");
+    }
+
+    private String normalizeQtdPed(String vlr) {
+        return vlr.replace(".",",");
     }
 
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
@@ -409,7 +416,7 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
-        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
+        params.put("usuario", getCamposUsuario(pedido, clientIP));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);

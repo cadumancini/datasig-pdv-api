@@ -14,6 +14,7 @@ public class PayloadPedido {
     private Double vlrTot;
     private Double vlrDar;
     private Double vlrTro;
+    private String tnsPed;
     private List<PayloadItemPedido> itens;
     private List<PagamentoPedido> pagamentos;
     private boolean fechar;

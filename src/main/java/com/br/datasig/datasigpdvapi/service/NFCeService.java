@@ -1,9 +1,6 @@
 package com.br.datasig.datasigpdvapi.service;
 
-import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
-import com.br.datasig.datasigpdvapi.entity.ParamsImpressao;
-import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
-import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
+import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
@@ -89,6 +86,7 @@ public class NFCeService extends WebServiceRequestsService {
         return new RetornoNFCe(nfce, printer, pdf);
     }
 
+    // @Deprecated // TODO: remove
     public byte[] loadInvoiceFromDisk(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         if (isLive) {
             ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
@@ -101,11 +99,29 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
+    // @Deprecated // TODO: remove
     public void forceInvoiceFileToDisk(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "Imprimir", params);
         XmlUtils.validateXmlResponse(xml);
+    }
+
+    private String downloadPDFBase64(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
+
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde(), "BaixarPdf", params);
+        XmlUtils.validateXmlResponse(xml);
+        return getPdfStringBase64(xml);
+    }
+
+    private String getPdfStringBase64(String xml) throws ParserConfigurationException, IOException, SAXException {
+        NodeList nList = XmlUtils.getNodeListByElementName(xml, "BaixarPdfResult");
+        Node nNode = nList.item(0);
+        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            return DownloadNFCeResult.fromXml(nNode).getPdf();
+        }
+        throw new WebServiceRuntimeException("Erro ao converter retorno do WebService de Download do PDF em Base64");
     }
 
     private static Map<String, Object> getParamsForImpressaoSDE(ParamsImpressao paramsImpressao, String chave) {
@@ -114,9 +130,11 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("nfe:senha", paramsImpressao.getSenNfc());
         params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
         params.put("nfe:chaveDocumento", chave);
+        params.put("nfe:chave", chave);
         return params;
     }
 
+    // @Deprecated // TODO: remove
     private byte[] loadFromDisk(String chave, String dirNfc) {
         logger.info("Carregando PDF da nota com chave {}", chave);
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(dirNfc),
@@ -271,5 +289,10 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("aNumNfvPDV", numNfv);
 
         return params;
+    }
+
+    public String loadInvoiceBase64(String token, String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
+        return downloadPDFBase64(paramsImpressao, nfce);
     }
 }
