@@ -58,9 +58,9 @@ public class SOAPClient {
 
     public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         String xmlBody = prepareXmlBodyNFE(service, params);
+        String soapAction = service.equals("BaixarPdf") ? "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf" : "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir";
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
-        // return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf"); TODO: voltar
-        return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
+        return makeRequest(wsUrl, xmlBody, soapAction);
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {
@@ -129,8 +129,8 @@ public class SOAPClient {
         appendElementWithText(doc, serviceElement, "nfe:usuario", params.get("nfe:usuario").toString());
         appendElementWithText(doc, serviceElement, "nfe:senha", params.get("nfe:senha").toString());
         appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
-        // appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString()); TODO: voltar
-        appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
+        if (service.equals("BaixarPdf")) appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
+        else appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
         return transformDocumentToString(doc);
     }
 
