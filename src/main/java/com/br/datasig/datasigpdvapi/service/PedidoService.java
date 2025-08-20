@@ -103,6 +103,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
+        params.put("perDs1", getVlrDarFormatted(pedido.getPerDs1()));
         params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         if(!pedido.getItens().isEmpty()) {
