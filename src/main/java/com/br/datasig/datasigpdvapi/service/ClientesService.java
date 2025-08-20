@@ -105,6 +105,7 @@ public class ClientesService extends WebServiceRequestsService{
         String cplEnd = sanitizeString(cliente.getCplEnd().trim(), false);
         String cepCli = sanitizeString(cliente.getCepCli().trim(), false).replace("-", "");
         String cgcCpf = sanitizeString(cliente.getCgcCpf().trim(), false).replace("-", "").replace(".", "").replace("/", "");
+        String cidCli = cliente.getCidCli().trim().toUpperCase();
 
         cgcCpf = removeLeadingZeros(cgcCpf);
 
@@ -122,7 +123,7 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDadosGerais.put("nenCli", cliente.getNenCli().trim());
         paramsDadosGerais.put("cplEnd", cplEnd);
         paramsDadosGerais.put("baiCli", baiCli);
-        paramsDadosGerais.put("cidCli", cliente.getCidCli().trim().toUpperCase());
+        paramsDadosGerais.put("cidCli", cidCli);
         paramsDadosGerais.put("sigUfs", cliente.getSigUfs().trim());
         paramsDadosGerais.put("fonCli", cliente.getFonCli().trim());
         paramsDadosGerais.put("fonCl2", cliente.getFonCli().trim());
@@ -148,6 +149,17 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDefinicoesCliente.put("exiLcp", "N");
         listaDefinicoes.add(paramsDefinicoesCliente);
         paramsDadosGerais.put("definicoesCliente", listaDefinicoes);
+
+        List<HashMap<String, Object>> listaCadastroCep = new ArrayList<>();
+        HashMap<String, Object> paramsCadastroCep = new HashMap<>();
+        paramsCadastroCep.put("cepIni", cepCli);
+        paramsCadastroCep.put("cepFim", cepCli);
+        paramsCadastroCep.put("codRai", cliente.getCodRai());
+        paramsCadastroCep.put("nomCid", cidCli);
+        paramsCadastroCep.put("baiCid", baiCli);
+        paramsCadastroCep.put("endCid", endCli);
+        listaCadastroCep.add(paramsCadastroCep);
+        paramsDadosGerais.put("cadastroCEP", listaCadastroCep);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("dadosGeraisCliente", paramsDadosGerais);
@@ -213,7 +225,8 @@ public class ClientesService extends WebServiceRequestsService{
                 obj.getString("logradouro"),
                 obj.getString("bairro"),
                 obj.getString("localidade"),
-                obj.getString("uf")
+                obj.getString("uf"),
+                obj.getString("ibge")
         );
     }
 
