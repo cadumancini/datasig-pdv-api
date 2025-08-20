@@ -13,6 +13,7 @@ public class PayloadPedido {
     private String numPed;
     private Double vlrTot;
     private Double vlrDar;
+    private Double perDs1;
     private Double vlrTro;
     private String tnsPed;
     private List<PayloadItemPedido> itens;

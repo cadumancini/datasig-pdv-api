@@ -15,6 +15,7 @@ public class ClientePayload {
     private String baiCli;
     private String cidCli;
     private String sigUfs;
+    private String codRai;
     private String fonCli;
     private String emaCli;
     private String codRep;
