@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -79,7 +80,7 @@ public class PedidoController extends DataSIGController {
     )
     @PostMapping(value = "cancelar", produces = "application/json")
     public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed,
-                                        @RequestParam String sitPed, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+                                        @RequestParam String sitPed, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException, ParseException {
         if(isTokenValid(token)) {
             String clientIP = getClientIp(request);
             return pedidoService.cancelarPedido(token, numPed, sitPed, clientIP);
