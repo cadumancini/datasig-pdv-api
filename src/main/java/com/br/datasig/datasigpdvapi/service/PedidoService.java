@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -535,7 +536,7 @@ public class PedidoService extends WebServiceRequestsService {
         return null;
     }
 
-    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException, ParseException {
         String sitPedCancelado = "5";
         if (sitPed.equals("9")) {
             PayloadPedido pedido = new PayloadPedido();
@@ -546,7 +547,57 @@ public class PedidoService extends WebServiceRequestsService {
             alterarTransacao(pedido, token, clientIp);
             fecharOrcamentoComObs(pedido, token);
         }
+        verificarEAjustarParcelas(token, numPed, clientIp);
         return altSituacaoPedido(token, numPed, sitPedCancelado);
+    }
+
+    public void verificarEAjustarParcelas(String token, String numPed, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException, ParseException {
+        ConsultaPedidoDetalhes pedidoDetalhes = getPedido(token, numPed);
+        var parcelasAbertas = pedidoDetalhes.getParcelas().stream().filter(parc -> parc.getIndPag().equals("0") || parc.getIndPag().equals(" ")).toList();
+        if (!parcelasAbertas.isEmpty()) {
+            List<HashMap<String, Object>> parcelasAjustadas = ajustarParcelasAntigas(parcelasAbertas);
+            if (!parcelasAjustadas.isEmpty()) {
+                atualizarParcelas(pedidoDetalhes, clientIP, parcelasAjustadas, token);
+            }
+        }
+    }
+
+    private void atualizarParcelas(ConsultaPedidoDetalhes pedido, String clientIP, List<HashMap<String, Object>> parcelas, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> paramsAtualizarParcelas = prepareParamsForAtualizarParcelas(pedido, clientIP, parcelas);
+        String xml = makeRequest(token, paramsAtualizarParcelas);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoFecharPedido);
+    }
+
+    private HashMap<String, Object> prepareParamsForAtualizarParcelas(ConsultaPedidoDetalhes pedido, String clientIP, List<HashMap<String, Object>> parcelas) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", pedido.getCodEmp());
+        params.put("codFil", pedido.getCodFil());
+        params.put("numPed", pedido.getNumPed());
+        params.put("opeExe", "A");
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
+        params.put("parcelas", parcelas);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
+    }
+
+    private List<HashMap<String, Object>> ajustarParcelasAntigas(List<ConsultaParcelaPedido> parcelasAbertas) throws ParseException {
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        for(var parcela : parcelasAbertas) {
+            Date vct = dateFormat.parse(parcela.getVctPar());
+            if (vct.before(new Date())) {
+                HashMap<String, Object> paramsParcela = new HashMap<>();
+                paramsParcela.put("opeExe", "A");
+                paramsParcela.put("seqPar", parcela.getSeqPar());
+                paramsParcela.put("vctPar", dateFormat.format(new Date()));
+                parcelas.add(paramsParcela);
+            }
+        }
+        return parcelas;
     }
 
     private void fecharOrcamentoComObs(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
