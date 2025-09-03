@@ -34,8 +34,8 @@ public class NFCeController extends DataSIGController {
             summary = "Gerar NFC-e",
             description = "Geração de NFC-e após pedido devidamente criado"
     )
-    @PutMapping(value = "", produces = "application/json")
-    public RetornoNFCe putNFCe(@RequestParam String token, @RequestParam String numPed)
+    @PostMapping(value = "", produces = "application/json")
+    public RetornoNFCe postNFCe(@RequestParam String token, @RequestParam String numPed)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException, TransformerException {
         if(isTokenValid(token)) {
             return nfceService.createNFCe(token, numPed);
@@ -67,7 +67,7 @@ public class NFCeController extends DataSIGController {
             summary = "Cancelar NFC-e",
             description = "Cancelamento de NFC-e"
     )
-    @PutMapping(value = "cancelar", produces = "text/plain;charset=UTF-8")
+    @PostMapping(value = "cancelar", produces = "text/plain;charset=UTF-8")
     public String cancelarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
@@ -80,7 +80,7 @@ public class NFCeController extends DataSIGController {
             summary = "Inutilizar NFC-e",
             description = "Inutilização de NFC-e"
     )
-    @PutMapping(value = "inutilizar", produces = "text/plain;charset=UTF-8")
+    @PostMapping(value = "inutilizar", produces = "text/plain;charset=UTF-8")
     public String inutilizarNFCe(@RequestParam String token, @RequestParam String codSnf, @RequestParam String numNfv, @RequestParam String jusCan)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))

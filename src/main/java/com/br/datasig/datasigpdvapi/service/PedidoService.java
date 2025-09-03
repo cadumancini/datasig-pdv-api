@@ -229,6 +229,7 @@ public class PedidoService extends WebServiceRequestsService {
             Date dataParcela = new Date();
             ParcelaParametro parcelaParametro = definirValorParcela(pagto);
             pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
+            List<HashMap<String, Object>> pacelasPagto = new ArrayList<>();
             for (Parcela parcela : pagto.getCondicao().getParcelas()) {
                 for (int i = 0; i < parcela.getQtdPar(); i++) {
                     seqPar++;
@@ -246,12 +247,50 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("catTef", pagto.getCatTef());
                     paramsParcela.put("nsuTef", pagto.getNsuTef());
                     paramsParcela.put("cgcCre", pagto.getCgcCre());
-                    parcelas.add(paramsParcela);
+                    pacelasPagto.add(paramsParcela);
                 }
             }
+            ajustarValores(pacelasPagto, pagto.getValorPago());
+            parcelas.addAll(pacelasPagto);
         }
         orderParcelas(parcelas);
         return parcelas;
+    }
+
+    private void ajustarValores(List<HashMap<String, Object>> lista, double valorPago) {
+        // Convert "vlrPar" strings to doubles
+        List<Double> valores = new ArrayList<>();
+        for (Map<String, Object> map : lista) {
+            String valorStr = (String) map.get("vlrPar");
+            double valor = Double.parseDouble(valorStr.replace(",", "."));
+            valores.add(valor);
+        }
+
+        // Calculate sum
+        double soma = valores.stream().mapToDouble(Double::doubleValue).sum();
+
+        // Difference
+        double diff = valorPago - soma;
+
+        if (Math.abs(diff) > 0.00001) { // If adjustment needed
+            // Find index of max value
+            int idxMax = 0;
+            for (int i = 1; i < valores.size(); i++) {
+                if (valores.get(i) > valores.get(idxMax)) {
+                    idxMax = i;
+                }
+            }
+
+            // Adjust the highest value
+            double novoValor = valores.get(idxMax) + diff;
+            valores.set(idxMax, novoValor);
+
+            // Update back in the list (converting dot back to comma)
+            for (int i = 0; i < lista.size(); i++) {
+                String formatted = String.format(Locale.US, "%.2f", valores.get(i)).replace(".", ",");
+                lista.get(i).put("vlrPar", formatted);
+            }
+        }
     }
 
     private void orderParcelas(List<HashMap<String, Object>> parcelas) {
