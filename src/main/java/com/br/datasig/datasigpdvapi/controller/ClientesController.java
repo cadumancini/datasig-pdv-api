@@ -62,10 +62,10 @@ public class ClientesController extends DataSIGController {
             summary = "Cadastrar cliente",
             description = "Cadastrar novo cliente na base"
     )
-    @PutMapping(value= "", produces = "application/json")
-    public ClienteResponse putCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+    @PostMapping(value= "", produces = "application/json")
+    public ClienteResponse postCliente(@RequestParam String token, @RequestBody ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
         if(isTokenValid(token))
-            return clientesService.putCliente(token, cliente);
+            return clientesService.postCliente(token, cliente);
         else
             throw new InvalidTokenException();
     }

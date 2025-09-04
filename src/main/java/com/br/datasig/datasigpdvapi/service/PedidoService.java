@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -103,6 +104,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("temPar", "N");
         params.put("acePar", "N");
         params.put("vlrDar", getVlrDarFormatted(pedido.getVlrDar()));
+        params.put("perDs1", getVlrDarFormatted(pedido.getPerDs1()));
         params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         if(!pedido.getItens().isEmpty()) {
@@ -227,6 +229,7 @@ public class PedidoService extends WebServiceRequestsService {
             Date dataParcela = new Date();
             ParcelaParametro parcelaParametro = definirValorParcela(pagto);
             pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
+            List<HashMap<String, Object>> pacelasPagto = new ArrayList<>();
             for (Parcela parcela : pagto.getCondicao().getParcelas()) {
                 for (int i = 0; i < parcela.getQtdPar(); i++) {
                     seqPar++;
@@ -244,12 +247,50 @@ public class PedidoService extends WebServiceRequestsService {
                     paramsParcela.put("catTef", pagto.getCatTef());
                     paramsParcela.put("nsuTef", pagto.getNsuTef());
                     paramsParcela.put("cgcCre", pagto.getCgcCre());
-                    parcelas.add(paramsParcela);
+                    pacelasPagto.add(paramsParcela);
                 }
             }
+            ajustarValores(pacelasPagto, pagto.getValorPago());
+            parcelas.addAll(pacelasPagto);
         }
         orderParcelas(parcelas);
         return parcelas;
+    }
+
+    private void ajustarValores(List<HashMap<String, Object>> lista, double valorPago) {
+        // Convert "vlrPar" strings to doubles
+        List<Double> valores = new ArrayList<>();
+        for (Map<String, Object> map : lista) {
+            String valorStr = (String) map.get("vlrPar");
+            double valor = Double.parseDouble(valorStr.replace(",", "."));
+            valores.add(valor);
+        }
+
+        // Calculate sum
+        double soma = valores.stream().mapToDouble(Double::doubleValue).sum();
+
+        // Difference
+        double diff = valorPago - soma;
+
+        if (Math.abs(diff) > 0.00001) { // If adjustment needed
+            // Find index of max value
+            int idxMax = 0;
+            for (int i = 1; i < valores.size(); i++) {
+                if (valores.get(i) > valores.get(idxMax)) {
+                    idxMax = i;
+                }
+            }
+
+            // Adjust the highest value
+            double novoValor = valores.get(idxMax) + diff;
+            valores.set(idxMax, novoValor);
+
+            // Update back in the list (converting dot back to comma)
+            for (int i = 0; i < lista.size(); i++) {
+                String formatted = String.format(Locale.US, "%.2f", valores.get(i)).replace(".", ",");
+                lista.get(i).put("vlrPar", formatted);
+            }
+        }
     }
 
     private void orderParcelas(List<HashMap<String, Object>> parcelas) {
@@ -534,7 +575,7 @@ public class PedidoService extends WebServiceRequestsService {
         return null;
     }
 
-    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+    public RetornoPedido cancelarPedido(String token, String numPed, String sitPed, String clientIp) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException, ParseException {
         String sitPedCancelado = "5";
         if (sitPed.equals("9")) {
             PayloadPedido pedido = new PayloadPedido();
@@ -545,7 +586,57 @@ public class PedidoService extends WebServiceRequestsService {
             alterarTransacao(pedido, token, clientIp);
             fecharOrcamentoComObs(pedido, token);
         }
+        verificarEAjustarParcelas(token, numPed, clientIp);
         return altSituacaoPedido(token, numPed, sitPedCancelado);
+    }
+
+    public void verificarEAjustarParcelas(String token, String numPed, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException, ParseException {
+        ConsultaPedidoDetalhes pedidoDetalhes = getPedido(token, numPed);
+        var parcelasAbertas = pedidoDetalhes.getParcelas().stream().filter(parc -> parc.getIndPag().equals("0") || parc.getIndPag().equals(" ")).toList();
+        if (!parcelasAbertas.isEmpty()) {
+            List<HashMap<String, Object>> parcelasAjustadas = ajustarParcelasAntigas(parcelasAbertas);
+            if (!parcelasAjustadas.isEmpty()) {
+                atualizarParcelas(pedidoDetalhes, clientIP, parcelasAjustadas, token);
+            }
+        }
+    }
+
+    private void atualizarParcelas(ConsultaPedidoDetalhes pedido, String clientIP, List<HashMap<String, Object>> parcelas, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> paramsAtualizarParcelas = prepareParamsForAtualizarParcelas(pedido, clientIP, parcelas);
+        String xml = makeRequest(token, paramsAtualizarParcelas);
+        XmlUtils.validateXmlResponse(xml);
+        RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
+        validateRetornoPedido(retornoFecharPedido);
+    }
+
+    private HashMap<String, Object> prepareParamsForAtualizarParcelas(ConsultaPedidoDetalhes pedido, String clientIP, List<HashMap<String, Object>> parcelas) {
+        HashMap<String, Object> paramsPedido = new HashMap<>();
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("codEmp", pedido.getCodEmp());
+        params.put("codFil", pedido.getCodFil());
+        params.put("numPed", pedido.getNumPed());
+        params.put("opeExe", "A");
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
+        params.put("parcelas", parcelas);
+
+        paramsPedido.put("pedido", params);
+        return paramsPedido;
+    }
+
+    private List<HashMap<String, Object>> ajustarParcelasAntigas(List<ConsultaParcelaPedido> parcelasAbertas) throws ParseException {
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        for(var parcela : parcelasAbertas) {
+            Date vct = dateFormat.parse(parcela.getVctPar());
+            if (vct.before(new Date())) {
+                HashMap<String, Object> paramsParcela = new HashMap<>();
+                paramsParcela.put("opeExe", "A");
+                paramsParcela.put("seqPar", parcela.getSeqPar());
+                paramsParcela.put("vctPar", dateFormat.format(new Date()));
+                parcelas.add(paramsParcela);
+            }
+        }
+        return parcelas;
     }
 
     private void fecharOrcamentoComObs(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
