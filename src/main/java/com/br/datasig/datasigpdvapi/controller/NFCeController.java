@@ -1,6 +1,7 @@
 package com.br.datasig.datasigpdvapi.controller;
 
 import com.br.datasig.datasigpdvapi.entity.ConsultaNotaFiscal;
+import com.br.datasig.datasigpdvapi.entity.PayloadPedido;
 import com.br.datasig.datasigpdvapi.entity.RetornoNFCe;
 import com.br.datasig.datasigpdvapi.entity.SitEdocsResponse;
 import com.br.datasig.datasigpdvapi.exceptions.InvalidTokenException;
@@ -9,6 +10,7 @@ import com.br.datasig.datasigpdvapi.service.NFCeService;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -39,6 +41,19 @@ public class NFCeController extends DataSIGController {
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException, TransformerException {
         if(isTokenValid(token)) {
             return nfceService.createNFCe(token, numPed);
+        } else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Gerar NFC-e sem pedido",
+            description = "Geração de NFC-e sem geração de pedido"
+    )
+    @PostMapping(value = "no-order", produces = "application/json")
+    public RetornoNFCe postNFCeNoOrder(@RequestParam String token, @RequestBody PayloadPedido pedido, HttpServletRequest request)
+            throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException, TransformerException {
+        if(isTokenValid(token)) {
+            return nfceService.createNFCeNoOrder(token, pedido);
         } else
             throw new InvalidTokenException();
     }
@@ -98,28 +113,6 @@ public class NFCeController extends DataSIGController {
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, ParseException, TransformerException {
         if(isTokenValid(token))
             return nfceService.getSitEDocs(token, codSnf, numNfv);
-        else
-            throw new InvalidTokenException();
-    }
-
-    @Operation(
-            summary = "Baixar PDF de NFCe",
-            description = "Baixar PDF de NFCe para ser impresso"
-    )
-    @GetMapping(value = "/{nfce}/pdf", produces = "application/pdf")
-    // @Deprecated(forRemoval = true) //TODO: remove
-    public ResponseEntity<byte[]> getPdf(@RequestParam String token, @PathVariable String nfce) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
-        if(isTokenValid(token)) {
-            byte[] pdfBytes = nfceService.loadInvoiceFromDisk(token, nfce);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(ContentDisposition.inline().filename("nfce.pdf").build());
-
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-        }
         else
             throw new InvalidTokenException();
     }
