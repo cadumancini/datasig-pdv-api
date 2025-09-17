@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
     private final boolean isLive;
+    private final List<String> nfcesBeingProcessed = new ArrayList<>();
 
     private static final ConcurrentHashMap<String, ReentrantLock> LOCKS_BY_SNFNFC = new ConcurrentHashMap<>();
 
@@ -250,7 +251,45 @@ public class NFCeService extends WebServiceRequestsService {
         return downloadPDFBase64(paramsImpressao, nfce);
     }
 
-    public RetornoNFCe createNFCeNoOrder(String token, PayloadPedido pedido) {
+    public RetornoNFCe createNFCeNoOrder(String token, PayloadPedido pedido) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        /*
+        Steps:
+        - [OK] Buscar última NFC gerada
+        - Enviar primeira requisição com itens, parcelas e dados gerais
+        - Enviar segunda requisição com dados gerais e parcelas
+        - Realizar consulta sobre situação
+        - Caso retornar chave e situação autorizada, permitir impressão (se configurado)
+        - Caso retornar algum erro conhecido, mostrar na tela
+        - Caso retornar erro com código 999, buscar em consulta de críticas de integração e mostrar na tela
+         */
+        String numNfc = getNFCNumber(token);
+        nfcesBeingProcessed.add(numNfc);
+
+
+        nfcesBeingProcessed.remove(numNfc);
         return null;
+    }
+
+    private String getNFCNumber(String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        Map<String, Object> params = getParamsForNFCNumber(token);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaNumeroNFC", "NumeroNFC", token, "0", params, false);
+        XmlUtils.validateXmlResponse(xml);
+        String ultNum = XmlUtils.getTextFromXmlElement(xml, "ultimoNumero", "ultNum");
+        int ultNumInt = Integer.parseInt(ultNum) + nfcesBeingProcessed.size() + 1;
+        return String.valueOf(ultNumInt);
+    }
+
+    private static Map<String, Object> getParamsForNFCNumber(String token) {
+        String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
+        String codFil = TokensManager.getInstance().getCodFilFromToken(token);
+//        String codSnf = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim(); TODO: remove comment and line below
+        String codSnf = "NFC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("codEmp", codEmp);
+        params.put("codFil", codFil);
+        params.put("codSnf", codSnf);
+
+        return params;
     }
 }
