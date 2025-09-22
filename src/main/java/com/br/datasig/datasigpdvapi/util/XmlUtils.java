@@ -52,6 +52,12 @@ public class XmlUtils {
                 logger.error(executionError);
                 throw new WebServiceRuntimeException(executionError);
             }
+        } else if (xml.contains("<retornosNotasSaida>")) {
+            String retornoMsg = getTextFromXmlElement(xml, "retornosNotasSaida", "retorno");
+            if (!retornoMsg.equals("OK")) {
+                logger.error(retornoMsg);
+                throw new WebServiceRuntimeException(retornoMsg);
+            }
         }
     }
 

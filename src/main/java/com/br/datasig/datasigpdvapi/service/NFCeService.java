@@ -4,6 +4,10 @@ import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.NfceException;
 import com.br.datasig.datasigpdvapi.exceptions.ResourceNotFoundException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
+import com.br.datasig.datasigpdvapi.service.nfce.NFCeManager;
+import com.br.datasig.datasigpdvapi.service.pedidos.DescontosProcessor;
+import com.br.datasig.datasigpdvapi.service.pedidos.ParcelaParametro;
+import com.br.datasig.datasigpdvapi.service.pedidos.PedidoUtils;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
@@ -21,6 +25,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,7 +35,7 @@ import java.util.stream.Collectors;
 public class NFCeService extends WebServiceRequestsService {
     private static final Logger logger = LoggerFactory.getLogger(NFCeService.class);
     private final boolean isLive;
-    private final List<String> nfcesBeingProcessed = new ArrayList<>();
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
     private static final ConcurrentHashMap<String, ReentrantLock> LOCKS_BY_SNFNFC = new ConcurrentHashMap<>();
 
@@ -263,10 +268,11 @@ public class NFCeService extends WebServiceRequestsService {
         - Caso retornar erro com código 999, buscar em consulta de críticas de integração e mostrar na tela
          */
         String numNfc = getNFCNumber(token);
-        nfcesBeingProcessed.add(numNfc);
+        NFCeManager.getInstance().addNFCE(numNfc);
+        criarNFC(token, pedido, numNfc);
+//        fecharNFC(token, pedido, numNfc);
 
-
-        nfcesBeingProcessed.remove(numNfc);
+        NFCeManager.getInstance().removeNFCE(numNfc);
         return null;
     }
 
@@ -275,11 +281,11 @@ public class NFCeService extends WebServiceRequestsService {
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaNumeroNFC", "NumeroNFC", token, "0", params, false);
         XmlUtils.validateXmlResponse(xml);
         String ultNum = XmlUtils.getTextFromXmlElement(xml, "ultimoNumero", "ultNum");
-        int ultNumInt = Integer.parseInt(ultNum) + nfcesBeingProcessed.size() + 1;
+        int ultNumInt = Integer.parseInt(ultNum) + NFCeManager.getInstance().getNumberOfNFCe() + 1;
         return String.valueOf(ultNumInt);
     }
 
-    private static Map<String, Object> getParamsForNFCNumber(String token) {
+    private Map<String, Object> getParamsForNFCNumber(String token) {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
 //        String codSnf = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim(); TODO: remove comment and line below
@@ -291,5 +297,139 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("codSnf", codSnf);
 
         return params;
+    }
+
+    private void criarNFC(String token, PayloadPedido pedido, String numNfc) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> params = createParamsCriarNFC(token, pedido, numNfc);
+        String xml = makeRequest(token, params);
+        XmlUtils.validateXmlResponse(xml);
+    }
+
+    private void fecharNFC(String token, PayloadPedido pedido, String numNfc) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        HashMap<String, Object> params = createParamsFecharNFC(token, pedido, numNfc);
+        String xml = makeRequest(token, params);
+        System.out.println(xml);
+    }
+
+    private String makeRequest(String token, HashMap<String, Object> params) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        return soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_notafiscal", "GravarNotasFiscaisSaida_16", token, "0", params, false);
+    }
+
+    private HashMap<String, Object> createParamsCriarNFC(String token, PayloadPedido pedido, String numNfc) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("tipoProcessamento", "1");
+        params.put("prCallMode", "1");
+        params.put("tipCal", "0");
+        params.put("gerPar", "0");
+        params.put("fecNot", "2");
+        params.put("cstPar", "1");
+        params.put("gerarDocumentoEletronico", "0");
+        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, true));
+
+        return params;
+    }
+
+    private HashMap<String, Object> createParamsFecharNFC(String token, PayloadPedido pedido, String numNfc) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("tipoProcessamento", "2");
+        params.put("prCallMode", "1");
+        params.put("tipCal", "1");
+        params.put("gerPar", "0");
+        params.put("fecNot", "1");
+        params.put("cstPar", "1");
+        params.put("gerarDocumentoEletronico", "0");
+        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, false));
+
+        return params;
+    }
+
+    private HashMap<String, Object> definirParamsDadosGerais(String token, PayloadPedido pedido, String numNfc, boolean addParcelas) {
+        Date dataAtual = new Date();
+
+        HashMap<String, Object> dadosGerais = new HashMap<>();
+        dadosGerais.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
+        dadosGerais.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
+//        dadosGerais.put("codSnf", TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim()); //TODO: remove comment
+        dadosGerais.put("codSnf", "NFC"); //TODO: remove line
+        dadosGerais.put("numNfv", numNfc);
+        dadosGerais.put("codEdc", "65");
+        dadosGerais.put("tnsPro", TokensManager.getInstance().getParamsPDVFromToken(token).getTnsNfv());
+        dadosGerais.put("datEmi", dateFormat.format(dataAtual));
+        dadosGerais.put("codCli", PedidoUtils.definirCodCli(pedido.getCodCli(), token));
+        dadosGerais.put("codRep", pedido.getCodRep());
+        dadosGerais.put("codCpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodCpg());
+        dadosGerais.put("codFpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg());
+        dadosGerais.put("datSai", dateFormat.format(dataAtual));
+        dadosGerais.put("cifFob", "X");
+        dadosGerais.put("produtos", definirParamsItens(pedido));
+        if (addParcelas) dadosGerais.put("parcelas", definirParamsParcelas(pedido));
+
+        return dadosGerais;
+    }
+
+    private List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido) {
+        setSeqIpdToItems(pedido);
+        var descontosMap = DescontosProcessor.calcularDescontos(pedido);
+        List<HashMap<String, Object>> itens = new ArrayList<>();
+        for (var itemPedido : pedido.getItens()) {
+            HashMap<String, Object> paramsItem = new HashMap<>();
+            paramsItem.put("seqIpv", itemPedido.getSeqIpd());
+            paramsItem.put("tnsPro", itemPedido.getTnsNfv());
+            paramsItem.put("codPro", itemPedido.getCodPro());
+            paramsItem.put("codDer", itemPedido.getCodDer());
+            paramsItem.put("codDep", itemPedido.getCodDep());
+            paramsItem.put("qtdFat", PedidoUtils.normalizeQtdPed(itemPedido.getQtdPed()));
+            paramsItem.put("codTpr", itemPedido.getCodTpr());
+            String vlrDsc = descontosMap.get(itemPedido.getSeqIpd()).getDescontoTotalStr();
+            paramsItem.put("vlrDsc", PedidoUtils.formatValue(vlrDsc));
+            itens.add(paramsItem);
+        }
+
+        return itens;
+    }
+
+    private static void setSeqIpdToItems(PayloadPedido pedido) {
+        int seqIpd = 0;
+        for(var item : pedido.getItens()) {
+            seqIpd++;
+            item.setSeqIpd(String.valueOf(seqIpd));
+        }
+    }
+
+    private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
+        List<HashMap<String, Object>> parcelas = new ArrayList<>();
+        int seqPar = 0;
+        int seqParCpg;
+        for(PagamentoPedido pagto : pedido.getPagamentos()) {
+            seqParCpg = 0;
+            Date dataParcela = new Date();
+            ParcelaParametro parcelaParametro = ParcelaParametro.definirValorParcela(pagto);
+            pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
+            List<HashMap<String, Object>> pacelasPagto = new ArrayList<>();
+            for (Parcela parcela : pagto.getCondicao().getParcelas()) {
+                for (int i = 0; i < parcela.getQtdPar(); i++) {
+                    seqPar++;
+                    seqParCpg++;
+                    dataParcela = PedidoUtils.definirDataParcela(dataParcela, parcela.getDiaPar());
+                    HashMap<String, Object> paramsParcela = new HashMap<>();
+                    paramsParcela.put("numPar", String.valueOf(seqPar));
+                    paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
+                    paramsParcela.put("vctPar", dateFormat.format(dataParcela));
+                    paramsParcela.put("vctDat", dataParcela);
+                    paramsParcela.put("vlrPar", PedidoUtils.getVlrPar(parcelaParametro, seqParCpg, pagto, parcela));
+                    paramsParcela.put("tipInt", pagto.getForma().getTipInt());
+                    paramsParcela.put("banOpe", pagto.getBanOpe());
+                    paramsParcela.put("catTef", pagto.getCatTef());
+                    paramsParcela.put("nsuTef", pagto.getNsuTef());
+                    paramsParcela.put("cgcCre", pagto.getCgcCre());
+
+                    pacelasPagto.add(paramsParcela);
+                }
+            }
+            PedidoUtils.ajustarValores(pacelasPagto, pagto.getValorPago());
+            parcelas.addAll(pacelasPagto);
+        }
+        PedidoUtils.orderParcelas(parcelas);
+        return parcelas;
     }
 }
