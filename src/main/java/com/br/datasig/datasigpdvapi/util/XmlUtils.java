@@ -67,6 +67,28 @@ public class XmlUtils {
         return element.getElementsByTagName(desiredElement).item(0).getTextContent();
     }
 
+    public static String getTextFromXmlElement(String xml, String parentElement, String desiredElement, String namespaceUri)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+        NodeList parentNodes = doc.getElementsByTagNameNS("*", parentElement);
+        if (parentNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element parent = (Element) parentNodes.item(0);
+
+        NodeList desiredNodes = parent.getElementsByTagNameNS(namespaceUri, desiredElement);
+        if (desiredNodes.getLength() == 0) {
+            return null;
+        }
+
+        return desiredNodes.item(0).getTextContent();
+    }
+
     public static NodeList getNodeListByElementName(String xml, String elementName) throws ParserConfigurationException, IOException, SAXException {
         return getNodeListByElementName(xml, elementName, StandardCharsets.UTF_8);
     }
