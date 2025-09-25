@@ -120,22 +120,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static String getVlrDarFormatted(Double vlrDar) {
         if (vlrDar == 0) return "0";
-        return doubleToString(vlrDar);
-    }
-
-    private List<HashMap<String, Object>> getCamposUsuario(PayloadPedido pedido, String clientIP) {
-        HashMap<String, Object> paramsTroco = new HashMap<>();
-        paramsTroco.put("cmpUsu", "USU_VLRTRO");
-        paramsTroco.put("vlrUsu", pedido.getVlrTro() > 0 ? doubleToString(pedido.getVlrTro()) : "0");
-
-        HashMap<String, Object> paramsIP = new HashMap<>();
-        paramsIP.put("cmpUsu", "USU_CodIp");
-        paramsIP.put("vlrUsu", clientIP);
-
-        List<HashMap<String, Object>> list = new ArrayList<>();
-        list.add(paramsTroco);
-        list.add(paramsIP);
-        return list;
+        return PedidoUtils.doubleToString(vlrDar);
     }
 
     private List<HashMap<String, Object>> getCampoUsuario(String campo, String valor) {
@@ -243,10 +228,6 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private static String doubleToString(Double value) {
-        return String.format("%.2f", value).replace(".", ",");
-    }
-
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "respostaPedido", StandardCharsets.ISO_8859_1);
 
@@ -325,7 +306,7 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
-        params.put("usuario", getCamposUsuario(pedido, clientIP));
+        params.put("usuario", PedidoUtils.getCamposUsuario(pedido, clientIP));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);

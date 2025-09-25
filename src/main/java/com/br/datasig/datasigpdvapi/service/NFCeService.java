@@ -257,12 +257,12 @@ public class NFCeService extends WebServiceRequestsService {
         return downloadPDFBase64(paramsImpressao, nfce);
     }
 
-    public RetornoNFCe createNFCeNoOrder(String token, PayloadPedido pedido) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+    public RetornoNFCe createNFCeNoOrder(String token, PayloadPedido pedido, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
         UltimoNumNFC numNfc = getNFCNumber(token);
         NFCeManager.getInstance().addNFCE(numNfc.getUltNum());
-        criarNFC(token, pedido, numNfc.getUltNum());
-        fecharNFC(token, pedido, numNfc.getUltNum());
+        criarNFC(token, pedido, numNfc.getUltNum(), clientIP);
+        fecharNFC(token, pedido, numNfc.getUltNum(), clientIP);
         String chave = consultarSituacaoNFC(paramsImpressao, numNfc);
         NFCeManager.getInstance().removeNFCE(numNfc.getUltNum());
         String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
@@ -301,14 +301,14 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
-    private void criarNFC(String token, PayloadPedido pedido, String numNfc) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
-        HashMap<String, Object> params = createParamsCriarNFC(token, pedido, numNfc);
+    private void criarNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        HashMap<String, Object> params = createParamsCriarNFC(token, pedido, numNfc, clientIP);
         String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
     }
 
-    private void fecharNFC(String token, PayloadPedido pedido, String numNfc) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
-        HashMap<String, Object> params = createParamsFecharNFC(token, pedido, numNfc);
+    private void fecharNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
+        HashMap<String, Object> params = createParamsFecharNFC(token, pedido, numNfc, clientIP);
         String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
     }
@@ -317,7 +317,7 @@ public class NFCeService extends WebServiceRequestsService {
         return soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_notafiscal", "GravarNotasFiscaisSaida_16", token, "0", params, false);
     }
 
-    private HashMap<String, Object> createParamsCriarNFC(String token, PayloadPedido pedido, String numNfc) {
+    private HashMap<String, Object> createParamsCriarNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("tipoProcessamento", "1");
         params.put("prCallMode", "1");
@@ -326,12 +326,12 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("fecNot", "2");
         params.put("cstPar", "1");
         params.put("gerarDocumentoEletronico", "0");
-        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, true));
+        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, true, clientIP));
 
         return params;
     }
 
-    private HashMap<String, Object> createParamsFecharNFC(String token, PayloadPedido pedido, String numNfc) {
+    private HashMap<String, Object> createParamsFecharNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("tipoProcessamento", "2");
         params.put("prCallMode", "1");
@@ -340,12 +340,12 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("fecNot", "1");
         params.put("cstPar", "1");
         params.put("gerarDocumentoEletronico", "0");
-        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, false));
+        params.put("dadosGerais", definirParamsDadosGerais(token, pedido, numNfc, false, clientIP));
 
         return params;
     }
 
-    private HashMap<String, Object> definirParamsDadosGerais(String token, PayloadPedido pedido, String numNfc, boolean addParcelas) {
+    private HashMap<String, Object> definirParamsDadosGerais(String token, PayloadPedido pedido, String numNfc, boolean addParcelas, String clientIP) {
         Date dataAtual = new Date();
 
         HashMap<String, Object> dadosGerais = new HashMap<>();
@@ -363,6 +363,7 @@ public class NFCeService extends WebServiceRequestsService {
         dadosGerais.put("codFpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg());
         dadosGerais.put("datSai", dateFormat.format(dataAtual));
         dadosGerais.put("cifFob", "X");
+        dadosGerais.put("usuario", PedidoUtils.getCamposUsuario(pedido, clientIP));
         dadosGerais.put("produtos", definirParamsItens(pedido));
         if (addParcelas) dadosGerais.put("parcelas", definirParamsParcelas(pedido));
 

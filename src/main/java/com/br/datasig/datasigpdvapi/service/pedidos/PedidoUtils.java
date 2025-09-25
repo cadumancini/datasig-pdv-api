@@ -2,6 +2,7 @@ package com.br.datasig.datasigpdvapi.service.pedidos;
 
 import com.br.datasig.datasigpdvapi.entity.PagamentoPedido;
 import com.br.datasig.datasigpdvapi.entity.Parcela;
+import com.br.datasig.datasigpdvapi.entity.PayloadPedido;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 
 import java.math.BigDecimal;
@@ -115,5 +116,24 @@ public class PedidoUtils {
             codCli = TokensManager.getInstance().getParamsPDVFromToken(token).getCodCli();
 
         return codCli;
+    }
+
+    public static List<HashMap<String, Object>> getCamposUsuario(PayloadPedido pedido, String clientIP) {
+        HashMap<String, Object> paramsTroco = new HashMap<>();
+        paramsTroco.put("cmpUsu", "USU_VLRTRO");
+        paramsTroco.put("vlrUsu", pedido.getVlrTro() > 0 ? doubleToString(pedido.getVlrTro()) : "0");
+
+        HashMap<String, Object> paramsIP = new HashMap<>();
+        paramsIP.put("cmpUsu", "USU_CodIp");
+        paramsIP.put("vlrUsu", clientIP);
+
+        List<HashMap<String, Object>> list = new ArrayList<>();
+        list.add(paramsTroco);
+        list.add(paramsIP);
+        return list;
+    }
+
+    public static String doubleToString(Double value) {
+        return String.format("%.2f", value).replace(".", ",");
     }
 }

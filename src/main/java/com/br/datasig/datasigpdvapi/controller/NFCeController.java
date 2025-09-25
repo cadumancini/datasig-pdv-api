@@ -53,7 +53,8 @@ public class NFCeController extends DataSIGController {
     public RetornoNFCe postNFCeNoOrder(@RequestParam String token, @RequestBody PayloadPedido pedido, HttpServletRequest request)
             throws SOAPClientException, IOException, ParserConfigurationException, SAXException, NfceException, TransformerException {
         if(isTokenValid(token)) {
-            return nfceService.createNFCeNoOrder(token, pedido);
+            String clientIP = getClientIp(request);
+            return nfceService.createNFCeNoOrder(token, pedido, clientIP);
         } else
             throw new InvalidTokenException();
     }
