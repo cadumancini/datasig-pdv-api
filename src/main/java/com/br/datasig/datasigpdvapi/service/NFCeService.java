@@ -437,13 +437,14 @@ public class NFCeService extends WebServiceRequestsService {
         HashMap<String, Object> params = getParamsForConsultaSituacaoNFC(paramsImpressao);
         String additionalTag = "nfe:Documentos";
         String additionalParams = "<nfe:IdentificacaoDocumento>";
-            additionalParams += "<nfe:IdentificadorGerador>" + IDENTIFICADOR_GERADOR + "</nfe:IdentificadorGerador>";
-            additionalParams += "<nfe:CnpjEmissor>" + numNfc.getNumCgc() + "</nfe:CnpjEmissor>";
-            additionalParams += "<nfe:Numero>" + numNfc.getUltNum() + "</nfe:Numero>";
-            additionalParams += "<nfe:Serie>" + numNfc.getCodSel() + "</nfe:Serie>";
+        additionalParams += "<nfe:IdentificadorGerador>" + IDENTIFICADOR_GERADOR + "</nfe:IdentificadorGerador>";
+        additionalParams += "<nfe:CnpjEmissor>" + numNfc.getNumCgc() + "</nfe:CnpjEmissor>";
+        additionalParams += "<nfe:Numero>" + numNfc.getUltNum() + "</nfe:Numero>";
+        additionalParams += "<nfe:Serie>" + numNfc.getCodSel() + "</nfe:Serie>";
         additionalParams += "</nfe:IdentificacaoDocumento>";
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao/wsdl?", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao?wsdl", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
+//        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
         XmlUtils.validateXmlResponse(xml);
 
         return getChaveFromXml(xml, numNfc.getUltNum(), paramsImpressao, token);
@@ -477,7 +478,8 @@ public class NFCeService extends WebServiceRequestsService {
         additionalParams += chave;
         additionalParams += "</arr:string>";
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao/wsdl?", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao?wsdl", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
+//        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
         String msgCritica = XmlUtils.getTextFromXmlElement(xml, "CriticaIntegracaoRetorno", "Critica", "http://schemas.datacontract.org/2004/07/Senior.SapiensNfe.DataAccess.Dados.Documento");
         msgCritica = msgCritica == null ? XmlUtils.getTextFromXmlElement(xml, "ObterCriticasPorIdentificadorResult","Mensagem") : msgCritica;
         throw new NfceException(msgCritica);
