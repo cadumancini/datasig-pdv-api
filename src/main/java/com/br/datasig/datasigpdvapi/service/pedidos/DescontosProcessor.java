@@ -40,6 +40,10 @@ public class DescontosProcessor {
 
         BigDecimal vlrTotPedido = bd(pedido.getVlrTot());
         BigDecimal vlrDarPedido = bd(pedido.getVlrDar());
+        if (vlrDarPedido.compareTo(BigDecimal.ZERO) < 0)
+            vlrDarPedido = vlrDarPedido.multiply(BigDecimal.valueOf(-1));
+
+        vlrTotPedido = vlrTotPedido.add(vlrDarPedido);
 
         if (vlrTotPedido.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Valor total do pedido deve ser maior que zero.");

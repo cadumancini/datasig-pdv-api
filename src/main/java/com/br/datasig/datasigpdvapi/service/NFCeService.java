@@ -37,7 +37,6 @@ public class NFCeService extends WebServiceRequestsService {
     private final boolean isLive;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private static final String IDENTIFICADOR_GERADOR = "ERP Senior";
-
     private static final ConcurrentHashMap<String, ReentrantLock> LOCKS_BY_SNFNFC = new ConcurrentHashMap<>();
 
     public NFCeService(Environment env) {
@@ -263,7 +262,7 @@ public class NFCeService extends WebServiceRequestsService {
         NFCeManager.getInstance().addNFCE(numNfc.getUltNum());
         criarNFC(token, pedido, numNfc.getUltNum(), clientIP);
         fecharNFC(token, pedido, numNfc.getUltNum(), clientIP);
-        String chave = consultarSituacaoNFC(paramsImpressao, numNfc);
+        String chave = consultarSituacaoNFC(paramsImpressao, numNfc, token);
         NFCeManager.getInstance().removeNFCE(numNfc.getUltNum());
         String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
         return new RetornoNFCe(numNfc.getUltNum(), printer, chave);
@@ -290,8 +289,7 @@ public class NFCeService extends WebServiceRequestsService {
     private Map<String, Object> getParamsForNFCNumber(String token) {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
-//        String codSnf = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim(); TODO: remove comment and line below
-        String codSnf = "NFC";
+        String codSnf = TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim();
 
         Map<String, Object> params = new HashMap<>();
         params.put("codEmp", codEmp);
@@ -351,8 +349,7 @@ public class NFCeService extends WebServiceRequestsService {
         HashMap<String, Object> dadosGerais = new HashMap<>();
         dadosGerais.put("codEmp", TokensManager.getInstance().getCodEmpFromToken(token));
         dadosGerais.put("codFil", TokensManager.getInstance().getCodFilFromToken(token));
-//        dadosGerais.put("codSnf", TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim()); //TODO: remove comment
-        dadosGerais.put("codSnf", "NFC"); //TODO: remove line
+        dadosGerais.put("codSnf", TokensManager.getInstance().getParamsImpressaoFromToken(token).getSnfNfc().trim());
         dadosGerais.put("numNfv", numNfc);
         dadosGerais.put("codEdc", "65");
         dadosGerais.put("tnsPro", TokensManager.getInstance().getParamsPDVFromToken(token).getTnsNfv());
@@ -436,7 +433,7 @@ public class NFCeService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private String consultarSituacaoNFC(ParamsImpressao paramsImpressao, UltimoNumNFC numNfc) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+    private String consultarSituacaoNFC(ParamsImpressao paramsImpressao, UltimoNumNFC numNfc, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
         HashMap<String, Object> params = getParamsForConsultaSituacaoNFC(paramsImpressao);
         String additionalTag = "nfe:Documentos";
         String additionalParams = "<nfe:IdentificacaoDocumento>";
@@ -446,16 +443,15 @@ public class NFCeService extends WebServiceRequestsService {
             additionalParams += "<nfe:Serie>" + numNfc.getCodSel() + "</nfe:Serie>";
         additionalParams += "</nfe:IdentificacaoDocumento>";
 
-        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
-//        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao/wsdl?", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams);
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao/wsdl?", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
         XmlUtils.validateXmlResponse(xml);
 
-        return getChaveFromXml(xml, numNfc.getUltNum(), paramsImpressao);
+        return getChaveFromXml(xml, numNfc.getUltNum(), paramsImpressao, token);
     }
 
-    private String getChaveFromXml(String xml, String numNfc, ParamsImpressao paramsImpressao) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+    private String getChaveFromXml(String xml, String numNfc, ParamsImpressao paramsImpressao, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         if (xml.contains("<Codigo>999</Codigo>")) // Nota com erro
-            return consultaMensagemCriticasSde(paramsImpressao, ""); // TODO: buscar chave
+            consultaMensagemCriticasSde(paramsImpressao, getChaveNfc(numNfc, token));
         else if (xml.contains("<Codigo>602</Codigo>")) // Nota rejeitada
             throw new NfceException(XmlUtils.getTextFromXmlElement(xml, "ConsultarSituacaoDocumentosResult", "Mensagem"));
         else if (xml.contains("<Situacao>5</Situacao>")) // Nota inutilizada
@@ -466,37 +462,41 @@ public class NFCeService extends WebServiceRequestsService {
         return XmlUtils.getTextFromXmlElement(xml, "Documento", "ChaveDocumento");
     }
 
+    private String getChaveNfc(String numNfc, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        Map<String, Object> params = getParamsForNFCNumber(token);
+        params.put("numNfc", numNfc);
+        String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaChave", "Consultar", token, "0", params, false);
+        XmlUtils.validateXmlResponse(xml);
+        return XmlUtils.getTextFromXmlElement(xml, "result", "chvNfc");
+    }
+
     private String consultaMensagemCriticasSde(ParamsImpressao paramsImpressao, String chave) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         HashMap<String, Object> params = getParamsForConsultaCriticasNFC(paramsImpressao);
         String additionalTag = "nfe:Identificadores";
         String additionalParams = "<arr:string>";
         additionalParams += chave;
-        additionalParams += "<arr:string>";
+        additionalParams += "</arr:string>";
 
-        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
-        return XmlUtils.getTextFromXmlElement(xml, "CriticaIntegracaoRetorno", "Critica", "http://schemas.datacontract.org/2004/07/Senior.SapiensNfe.DataAccess.Dados.Documento");
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao/wsdl?", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
+        String msgCritica = XmlUtils.getTextFromXmlElement(xml, "CriticaIntegracaoRetorno", "Critica", "http://schemas.datacontract.org/2004/07/Senior.SapiensNfe.DataAccess.Dados.Documento");
+        msgCritica = msgCritica == null ? XmlUtils.getTextFromXmlElement(xml, "ObterCriticasPorIdentificadorResult","Mensagem") : msgCritica;
+        throw new NfceException(msgCritica);
     }
 
     private HashMap<String, Object> getParamsForConsultaSituacaoNFC(ParamsImpressao paramsImpressao) {
         HashMap<String, Object> params = new HashMap<>();
-//        params.put("nfe:usuario", paramsImpressao.getLogNfc());
-        params.put("nfe:usuario", "sde2");
-//        params.put("nfe:senha", paramsImpressao.getSenNfc());
-        params.put("nfe:senha", "sde2");
-//        params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
-        params.put("nfe:tipoDocumento", "8");
+        params.put("nfe:usuario", paramsImpressao.getLogNfc());
+        params.put("nfe:senha", paramsImpressao.getSenNfc());
+        params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
         params.put("nfe:tipoProcessamento", "1");
         return params;
     }
 
     private HashMap<String, Object> getParamsForConsultaCriticasNFC(ParamsImpressao paramsImpressao) {
         HashMap<String, Object> params = new HashMap<>();
-//        params.put("nfe:usuario", paramsImpressao.getLogNfc());
-        params.put("nfe:usuario", "sde2");
-//        params.put("nfe:senha", paramsImpressao.getSenNfc());
-        params.put("nfe:senha", "sde2");
-//        params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
-        params.put("nfe:tipoDocumento", "8");
+        params.put("nfe:usuario", paramsImpressao.getLogNfc());
+        params.put("nfe:senha", paramsImpressao.getSenNfc());
+        params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
         return params;
     }
 }
