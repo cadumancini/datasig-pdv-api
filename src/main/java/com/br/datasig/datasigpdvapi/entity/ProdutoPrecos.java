@@ -15,5 +15,6 @@ public class ProdutoPrecos {
     private String datIni;
     private String desPro;
     private String tnsPed;
+    private String tnsNfv;
     private List<FaixaPreco> faixasPreco;
 }

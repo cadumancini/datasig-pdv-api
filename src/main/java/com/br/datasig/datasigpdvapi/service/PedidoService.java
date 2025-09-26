@@ -3,6 +3,8 @@ package com.br.datasig.datasigpdvapi.service;
 import com.br.datasig.datasigpdvapi.entity.*;
 import com.br.datasig.datasigpdvapi.exceptions.OrderException;
 import com.br.datasig.datasigpdvapi.exceptions.WebServiceRuntimeException;
+import com.br.datasig.datasigpdvapi.service.pedidos.ParcelaParametro;
+import com.br.datasig.datasigpdvapi.service.pedidos.PedidoUtils;
 import com.br.datasig.datasigpdvapi.soap.SOAPClientException;
 import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
@@ -88,7 +90,7 @@ public class PedidoService extends WebServiceRequestsService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("codEmp", pedido.getCodEmp());
         params.put("codFil", pedido.getCodFil());
-        params.put("codCli", definirCodCli(pedido.getCodCli(), token));
+        params.put("codCli", PedidoUtils.definirCodCli(pedido.getCodCli(), token));
         params.put("codCpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodCpg());
         params.put("codFpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg());
         params.put("codRep", pedido.getCodRep());
@@ -118,22 +120,7 @@ public class PedidoService extends WebServiceRequestsService {
 
     private static String getVlrDarFormatted(Double vlrDar) {
         if (vlrDar == 0) return "0";
-        return doubleToString(vlrDar);
-    }
-
-    private List<HashMap<String, Object>> getCamposUsuario(PayloadPedido pedido, String clientIP) {
-        HashMap<String, Object> paramsTroco = new HashMap<>();
-        paramsTroco.put("cmpUsu", "USU_VLRTRO");
-        paramsTroco.put("vlrUsu", pedido.getVlrTro() > 0 ? doubleToString(pedido.getVlrTro()) : "0");
-
-        HashMap<String, Object> paramsIP = new HashMap<>();
-        paramsIP.put("cmpUsu", "USU_CodIp");
-        paramsIP.put("vlrUsu", clientIP);
-
-        List<HashMap<String, Object>> list = new ArrayList<>();
-        list.add(paramsTroco);
-        list.add(paramsIP);
-        return list;
+        return PedidoUtils.doubleToString(vlrDar);
     }
 
     private List<HashMap<String, Object>> getCampoUsuario(String campo, String valor) {
@@ -160,13 +147,6 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    private String definirCodCli(String codCli, String token) {
-        if (codCli == null || codCli.isEmpty())
-            codCli = TokensManager.getInstance().getParamsPDVFromToken(token).getCodCli();
-
-        return codCli;
-    }
-
     List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido, String tnsPed) {
         List<HashMap<String, Object>> listaItens = new ArrayList<>();
         pedido.getItens().forEach(itemPedido -> {
@@ -177,12 +157,12 @@ public class PedidoService extends WebServiceRequestsService {
             } else {
                 paramsItem.put("codPro", itemPedido.getCodPro());
                 paramsItem.put("codDer", itemPedido.getCodDer());
-                paramsItem.put("qtdPed", normalizeQtdPed(itemPedido.getQtdPed()));
+                paramsItem.put("qtdPed", PedidoUtils.normalizeQtdPed(itemPedido.getQtdPed()));
                 paramsItem.put("codTpr", itemPedido.getCodTpr());
                 paramsItem.put("obsIpd", itemPedido.getObsIpd());
-                paramsItem.put("vlrDsc", formatValue(itemPedido.getVlrDsc()));
-                paramsItem.put("perDsc", formatValue(itemPedido.getPerDsc()));
-                paramsItem.put("perAcr", formatValue(itemPedido.getPerAcr()));
+                paramsItem.put("vlrDsc", PedidoUtils.formatValue(itemPedido.getVlrDsc()));
+                paramsItem.put("perDsc", PedidoUtils.formatValue(itemPedido.getPerDsc()));
+                paramsItem.put("perAcr", PedidoUtils.formatValue(itemPedido.getPerAcr()));
                 paramsItem.put("codDep", itemPedido.getCodDep());
                 paramsItem.put("tnsPro", definirTnsPedItem(pedido, tnsPed, itemPedido));
                 paramsItem.put("resEst", "N");
@@ -211,15 +191,6 @@ public class PedidoService extends WebServiceRequestsService {
         }
     }
 
-    private String formatValue(String vlr) {
-        if (vlr == null) return "0,00";
-        return vlr.trim().isEmpty() ? "0,0" : vlr.replace(".","");
-    }
-
-    private String normalizeQtdPed(String vlr) {
-        return vlr.replace(".",",");
-    }
-
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
         List<HashMap<String, Object>> parcelas = new ArrayList<>();
         int seqPar = 0;
@@ -227,21 +198,21 @@ public class PedidoService extends WebServiceRequestsService {
         for(PagamentoPedido pagto : pedido.getPagamentos()) {
             seqParCpg = 0;
             Date dataParcela = new Date();
-            ParcelaParametro parcelaParametro = definirValorParcela(pagto);
+            ParcelaParametro parcelaParametro = ParcelaParametro.definirValorParcela(pagto);
             pagto.getCondicao().getParcelas().sort(Comparator.comparing(Parcela::getSeqIcp));
             List<HashMap<String, Object>> pacelasPagto = new ArrayList<>();
             for (Parcela parcela : pagto.getCondicao().getParcelas()) {
                 for (int i = 0; i < parcela.getQtdPar(); i++) {
                     seqPar++;
                     seqParCpg++;
-                    dataParcela = definirDataParcela(dataParcela, parcela.getDiaPar());
+                    dataParcela = PedidoUtils.definirDataParcela(dataParcela, parcela.getDiaPar());
                     HashMap<String, Object> paramsParcela = new HashMap<>();
                     paramsParcela.put("opeExe", "I");
                     paramsParcela.put("seqPar", String.valueOf(seqPar));
                     paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
                     paramsParcela.put("vctPar", dateFormat.format(dataParcela));
                     paramsParcela.put("vctDat", dataParcela);
-                    paramsParcela.put("vlrPar", getVlrPar(parcelaParametro, seqParCpg, pagto, parcela));
+                    paramsParcela.put("vlrPar", PedidoUtils.getVlrPar(parcelaParametro, seqParCpg, pagto, parcela));
                     paramsParcela.put("tipInt", pagto.getForma().getTipInt());
                     paramsParcela.put("banOpe", pagto.getBanOpe());
                     paramsParcela.put("catTef", pagto.getCatTef());
@@ -250,133 +221,11 @@ public class PedidoService extends WebServiceRequestsService {
                     pacelasPagto.add(paramsParcela);
                 }
             }
-            ajustarValores(pacelasPagto, pagto.getValorPago());
+            PedidoUtils.ajustarValores(pacelasPagto, pagto.getValorPago());
             parcelas.addAll(pacelasPagto);
         }
-        orderParcelas(parcelas);
+        PedidoUtils.orderParcelas(parcelas);
         return parcelas;
-    }
-
-    private void ajustarValores(List<HashMap<String, Object>> lista, double valorPago) {
-        // Convert "vlrPar" strings to doubles
-        List<Double> valores = new ArrayList<>();
-        for (Map<String, Object> map : lista) {
-            String valorStr = (String) map.get("vlrPar");
-            double valor = Double.parseDouble(valorStr.replace(",", "."));
-            valores.add(valor);
-        }
-
-        // Calculate sum
-        double soma = valores.stream().mapToDouble(Double::doubleValue).sum();
-
-        // Difference
-        double diff = valorPago - soma;
-
-        if (Math.abs(diff) > 0.00001) { // If adjustment needed
-            // Find index of max value
-            int idxMax = 0;
-            for (int i = 1; i < valores.size(); i++) {
-                if (valores.get(i) > valores.get(idxMax)) {
-                    idxMax = i;
-                }
-            }
-
-            // Adjust the highest value
-            double novoValor = valores.get(idxMax) + diff;
-            valores.set(idxMax, novoValor);
-
-            // Update back in the list (converting dot back to comma)
-            for (int i = 0; i < lista.size(); i++) {
-                String formatted = String.format(Locale.US, "%.2f", valores.get(i)).replace(".", ",");
-                lista.get(i).put("vlrPar", formatted);
-            }
-        }
-    }
-
-    private void orderParcelas(List<HashMap<String, Object>> parcelas) {
-        parcelas.sort((map1, map2) -> {
-            // Comparar por data
-            var data1 = (Comparable) map1.get("vctDat");
-            var data2 = (Comparable) map2.get("vctDat");
-
-            int result = data1.compareTo(data2);
-
-            // Se forem iguais, comparar por foma de pagto.
-            if (result == 0) {
-                var fpg1 = (Comparable) map1.get("codFpg");
-                var fpg2 = (Comparable) map2.get("codFpg");
-                result = fpg1.compareTo(fpg2);
-            }
-
-            return result;
-        });
-
-        // Redefinir seqPar
-        int seqPar = 0;
-        for (HashMap<String, Object> parcela : parcelas) {
-            seqPar++;
-            parcela.put("seqPar", String.valueOf(seqPar));
-        }
-    }
-
-    private static String getVlrPar(ParcelaParametro parcelaParametro, int seqPar, PagamentoPedido pagto, Parcela parcela) {
-        if (pagto.getCondicao().getTipPar().equals("1")) {
-            if (seqPar == 1) return parcelaParametro.vlrMaior;
-            else return parcelaParametro.vlrPar;
-        } else if (pagto.getCondicao().getTipPar().equals("2")) {
-            if (seqPar == pagto.getCondicao().getQtdParCpg()) return parcelaParametro.vlrMaior;
-            else return parcelaParametro.vlrPar;
-        }
-        return calcVlrPerc(pagto, parcela);
-    }
-
-    private static String calcVlrPerc(PagamentoPedido pagto, Parcela parcela) {
-        double perParDouble = Double.parseDouble(parcela.getPerPar().replace(",", "."));
-        BigDecimal perPar = BigDecimal.valueOf(perParDouble);
-        BigDecimal vlrPago = BigDecimal.valueOf(pagto.getValorPago());
-        BigDecimal vlrPar = perPar.multiply(vlrPago).divide(BigDecimal.valueOf(100));
-        return toFormattedString(vlrPar);
-    }
-
-    private static String doubleToString(Double value) {
-        return String.format("%.2f", value).replace(".", ",");
-    }
-
-    private ParcelaParametro definirValorParcela(PagamentoPedido pagto) {
-        double valorParcela = pagto.getValorPago() / pagto.getCondicao().getQtdParCpg();
-        BigDecimal bdVlr = toRoundedBigDecimal(valorParcela);
-
-        BigDecimal bdVlrMaior = calcValorMaior(pagto, bdVlr);
-
-        String vlrParStr = toFormattedString(bdVlr);
-        String vlrMaiorStr = toFormattedString(bdVlrMaior);
-        return new ParcelaParametro(vlrParStr, vlrMaiorStr);
-    }
-
-    private static BigDecimal calcValorMaior(PagamentoPedido pagto, BigDecimal bdVlr) {
-        BigDecimal valueToSubtract = bdVlr.multiply(BigDecimal.valueOf(pagto.getCondicao().getQtdParCpg()));
-        BigDecimal vlrRestante = pagto.getCondicao().getQtdParCpg() == 1 ?
-                                    BigDecimal.valueOf(0) :
-                                    BigDecimal.valueOf(pagto.getValorPago())
-                                        .subtract(valueToSubtract);
-        return bdVlr.add(vlrRestante);
-    }
-
-    private static String toFormattedString(BigDecimal bdPrc) {
-        return String.format("%.2f", bdPrc).replace(".", ",");
-    }
-
-    private static BigDecimal toRoundedBigDecimal(double percentualParcela) {
-        BigDecimal bdPrc = BigDecimal.valueOf(percentualParcela);
-        bdPrc = bdPrc.setScale(2, RoundingMode.FLOOR);
-        return bdPrc;
-    }
-
-    private Date definirDataParcela(Date date, int days) {
-        Calendar c = Calendar.getInstance();
-        c.setTime(date);
-        c.add(Calendar.DATE, days);
-        return c.getTime();
     }
 
     private RetornoPedido getRetornoPedidoFromXml(String xml) throws ParserConfigurationException, IOException, SAXException {
@@ -457,7 +306,7 @@ public class PedidoService extends WebServiceRequestsService {
         if (pedido.isFechar()) {
             params.put("fecPed", "S");
         }
-        params.put("usuario", getCamposUsuario(pedido, clientIP));
+        params.put("usuario", PedidoUtils.getCamposUsuario(pedido, clientIP));
 
         List<HashMap<String, Object>> parcelas = definirParamsParcelas(pedido);
         params.put("parcelas", parcelas);
@@ -584,10 +433,10 @@ public class PedidoService extends WebServiceRequestsService {
             pedido.setCodFil(TokensManager.getInstance().getCodFilFromToken(token));
             pedido.setFechar(true);
             alterarTransacao(pedido, token, clientIp);
-            fecharOrcamentoComObs(pedido, token);
+            fecharOrcamentoComObs(pedido, token, clientIp);
         }
         verificarEAjustarParcelas(token, numPed, clientIp);
-        return altSituacaoPedido(token, numPed, sitPedCancelado);
+        return altSituacaoPedido(token, numPed, sitPedCancelado, clientIp);
     }
 
     public void verificarEAjustarParcelas(String token, String numPed, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException, ParseException {
@@ -639,16 +488,16 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private void fecharOrcamentoComObs(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(pedido);
+    private void fecharOrcamentoComObs(PayloadPedido pedido, String token, String clientIP) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(pedido, clientIP);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
     }
 
-    private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForAltSituacaoPedido(token, numPed, sitPedDest);
+    private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForAltSituacaoPedido(token, numPed, sitPedDest, clientIP);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
@@ -656,7 +505,7 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(PayloadPedido pedido) {
+    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(PayloadPedido pedido, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -666,12 +515,13 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("opeExe", "A");
         params.put("fecPed", "S");
         params.put("obsPed", "Pedido de Orçamento Cancelado");
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest) {
+    private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -680,6 +530,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("numPed", numPed);
         params.put("opeExe", "A");
         params.put("sitPed", sitPedDest);
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
@@ -696,11 +547,5 @@ public class PedidoService extends WebServiceRequestsService {
         BigDecimal bdPrc = BigDecimal.valueOf(valor).setScale(4, RoundingMode.HALF_UP);
         BigDecimal newValue = BigDecimal.valueOf(vlrPro).subtract(bdPrc).setScale(2, RoundingMode.HALF_UP);
         return String.format("%.2f", newValue).replace(",", ".");
-    }
-
-    @AllArgsConstructor
-    private static class ParcelaParametro {
-        String vlrPar;
-        String vlrMaior;
     }
 }

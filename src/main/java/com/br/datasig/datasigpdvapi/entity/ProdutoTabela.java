@@ -15,6 +15,7 @@ public class ProdutoTabela {
     private String datIni;
     private String desPro;
     private String tnsPed;
+    private String tnsNfv;
     private Double preBas;
     private int qtdMax;
 
@@ -33,10 +34,15 @@ public class ProdutoTabela {
             tnsPed = element.getElementsByTagName("tnsPed").item(0).getTextContent().trim();
         } catch (Exception ignored) {}
 
+        String tnsNfv = "";
+        try {
+            tnsNfv = element.getElementsByTagName("tnsNfv").item(0).getTextContent().trim();
+        } catch (Exception ignored) {}
+
         desPro += " " + desDer;
         Double preBas = Double.parseDouble(element.getElementsByTagName("preBas").item(0).getTextContent().replace(",", "."));
         int qtdMax = Integer.parseInt(element.getElementsByTagName("qtdMax").item(0).getTextContent());
 
-        return new ProdutoTabela(codPro, codDer, codBar, codTpr, datIni, desPro, tnsPed, preBas, qtdMax);
+        return new ProdutoTabela(codPro, codDer, codBar, codTpr, datIni, desPro, tnsPed, tnsNfv, preBas, qtdMax);
     }
 }

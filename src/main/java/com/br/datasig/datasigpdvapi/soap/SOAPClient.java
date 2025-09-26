@@ -15,6 +15,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -24,6 +28,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,9 +61,8 @@ public class SOAPClient {
         return makeRequest(url, xmlBody);
     }
 
-    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
-        String xmlBody = prepareXmlBodyNFE(service, params);
-        String soapAction = service.equals("BaixarPdf") ? "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf" : "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir";
+    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params, boolean isDownloadProcess, String additionalTag, String additionalParams, String soapAction) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
+        String xmlBody = prepareXmlBodyNFE(service, params, isDownloadProcess, additionalTag, additionalParams);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
         return makeRequest(wsUrl, xmlBody, soapAction);
     }
@@ -106,7 +110,7 @@ public class SOAPClient {
         return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
     }
 
-    String prepareXmlBodyNFE(String service, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
+    String prepareXmlBodyNFE(String service, Map<String, Object> params, boolean isDownloadProcess, String additionalTag, String additionalParams) throws ParserConfigurationException, TransformerException, IOException, SAXException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -129,8 +133,17 @@ public class SOAPClient {
         appendElementWithText(doc, serviceElement, "nfe:usuario", params.get("nfe:usuario").toString());
         appendElementWithText(doc, serviceElement, "nfe:senha", params.get("nfe:senha").toString());
         appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
-        if (service.equals("BaixarPdf")) appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
-        else appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
+        var tipoProcessamento = params.getOrDefault("nfe:tipoProcessamento", null);
+        if (tipoProcessamento != null) appendElementWithText(doc, serviceElement, "nfe:tipoProcessamento", tipoProcessamento.toString());
+        if (isDownloadProcess) {
+            if (service.equals("BaixarPdf"))
+                appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
+            else
+                appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
+        }
+        if (!additionalTag.isEmpty()) {
+            appendElementWithXml(doc, serviceElement, additionalTag, additionalParams);
+        }
         return transformDocumentToString(doc);
     }
 
@@ -208,6 +221,25 @@ public class SOAPClient {
         parent.appendChild(element);
     }
 
+    private void appendElementWithXml(Document doc, Element parent, String tagName, String xmlContent) throws ParserConfigurationException, IOException, SAXException {
+        Element element = doc.createElement(tagName);
+
+        // Parse the xmlContent string into a temporary Document
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document tempDoc = builder.parse(new InputSource(new StringReader("<root xmlns:nfe=\"http://www.senior.com.br/nfe\" xmlns:arr=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\">" + xmlContent + "</root>")));
+
+        // Import all children from tempDoc's root into your element
+        NodeList children = tempDoc.getDocumentElement().getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node imported = doc.importNode(children.item(i), true);
+            element.appendChild(imported);
+        }
+
+        parent.appendChild(element);
+    }
+
     private String transformDocumentToString(Document doc) throws TransformerException {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         // Disable external entity processing to prevent XXE
@@ -245,7 +277,7 @@ public class SOAPClient {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.addHeader("Content-Type", contentType);
-        httpRequest.addHeader("SOAPAction", soapAction);
+        if(!soapAction.isEmpty()) httpRequest.addHeader("SOAPAction", soapAction);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
