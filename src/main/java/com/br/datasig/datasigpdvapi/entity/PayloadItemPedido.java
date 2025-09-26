@@ -16,5 +16,6 @@ public class PayloadItemPedido {
     private String perAcr;
     private String codDep;
     private String tnsPed;
+    private String tnsNfv;
     private boolean excluir;
 }

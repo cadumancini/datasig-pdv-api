@@ -52,6 +52,12 @@ public class XmlUtils {
                 logger.error(executionError);
                 throw new WebServiceRuntimeException(executionError);
             }
+        } else if (xml.contains("<retornosNotasSaida>")) {
+            String retornoMsg = getTextFromXmlElement(xml, "retornosNotasSaida", "retorno");
+            if (!retornoMsg.equals("OK")) {
+                logger.error(retornoMsg);
+                throw new WebServiceRuntimeException(retornoMsg);
+            }
         }
     }
 
@@ -59,6 +65,28 @@ public class XmlUtils {
         NodeList nListError = getNodeListByElementName(xml, parentElement);
         Element element = (Element) nListError.item(0);
         return element.getElementsByTagName(desiredElement).item(0).getTextContent();
+    }
+
+    public static String getTextFromXmlElement(String xml, String parentElement, String desiredElement, String namespaceUri)
+            throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+        NodeList parentNodes = doc.getElementsByTagNameNS("*", parentElement);
+        if (parentNodes.getLength() == 0) {
+            return null;
+        }
+
+        Element parent = (Element) parentNodes.item(0);
+
+        NodeList desiredNodes = parent.getElementsByTagNameNS(namespaceUri, desiredElement);
+        if (desiredNodes.getLength() == 0) {
+            return null;
+        }
+
+        return desiredNodes.item(0).getTextContent();
     }
 
     public static NodeList getNodeListByElementName(String xml, String elementName) throws ParserConfigurationException, IOException, SAXException {
