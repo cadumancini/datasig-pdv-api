@@ -433,10 +433,10 @@ public class PedidoService extends WebServiceRequestsService {
             pedido.setCodFil(TokensManager.getInstance().getCodFilFromToken(token));
             pedido.setFechar(true);
             alterarTransacao(pedido, token, clientIp);
-            fecharOrcamentoComObs(pedido, token);
+            fecharOrcamentoComObs(pedido, token, clientIp);
         }
         verificarEAjustarParcelas(token, numPed, clientIp);
-        return altSituacaoPedido(token, numPed, sitPedCancelado);
+        return altSituacaoPedido(token, numPed, sitPedCancelado, clientIp);
     }
 
     public void verificarEAjustarParcelas(String token, String numPed, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException, ParseException {
@@ -488,16 +488,16 @@ public class PedidoService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    private void fecharOrcamentoComObs(PayloadPedido pedido, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(pedido);
+    private void fecharOrcamentoComObs(PayloadPedido pedido, String token, String clientIP) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForFecharPedidoComObs(pedido, clientIP);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
         validateRetornoPedido(retornoFecharPedido);
     }
 
-    private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
-        HashMap<String, Object> paramsFecharPedido = prepareParamsForAltSituacaoPedido(token, numPed, sitPedDest);
+    private RetornoPedido altSituacaoPedido(String token, String numPed, String sitPedDest, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, TransformerException {
+        HashMap<String, Object> paramsFecharPedido = prepareParamsForAltSituacaoPedido(token, numPed, sitPedDest, clientIP);
         String xml = makeRequest(token, paramsFecharPedido);
         XmlUtils.validateXmlResponse(xml);
         RetornoPedido retornoFecharPedido = getRetornoPedidoFromXml(xml);
@@ -505,7 +505,7 @@ public class PedidoService extends WebServiceRequestsService {
         return retornoFecharPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(PayloadPedido pedido) {
+    private HashMap<String, Object> prepareParamsForFecharPedidoComObs(PayloadPedido pedido, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -515,12 +515,13 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("opeExe", "A");
         params.put("fecPed", "S");
         params.put("obsPed", "Pedido de Orçamento Cancelado");
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         paramsPedido.put("pedido", params);
         return paramsPedido;
     }
 
-    private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest) {
+    private HashMap<String, Object> prepareParamsForAltSituacaoPedido(String token, String numPed, String sitPedDest, String clientIP) {
         HashMap<String, Object> paramsPedido = new HashMap<>();
 
         HashMap<String, Object> params = new HashMap<>();
@@ -529,6 +530,7 @@ public class PedidoService extends WebServiceRequestsService {
         params.put("numPed", numPed);
         params.put("opeExe", "A");
         params.put("sitPed", sitPedDest);
+        params.put("usuario", getCampoUsuario("USU_CodIp", clientIP));
 
         paramsPedido.put("pedido", params);
         return paramsPedido;

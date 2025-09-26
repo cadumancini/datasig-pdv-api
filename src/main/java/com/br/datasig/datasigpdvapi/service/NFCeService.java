@@ -260,12 +260,18 @@ public class NFCeService extends WebServiceRequestsService {
         ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
         UltimoNumNFC numNfc = getNFCNumber(token);
         NFCeManager.getInstance().addNFCE(numNfc.getUltNum());
-        criarNFC(token, pedido, numNfc.getUltNum(), clientIP);
-        fecharNFC(token, pedido, numNfc.getUltNum(), clientIP);
-        String chave = consultarSituacaoNFC(paramsImpressao, numNfc, token);
-        NFCeManager.getInstance().removeNFCE(numNfc.getUltNum());
-        String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
-        return new RetornoNFCe(numNfc.getUltNum(), printer, chave);
+        try {
+            criarNFC(token, pedido, numNfc.getUltNum(), clientIP);
+            fecharNFC(token, pedido, numNfc.getUltNum(), clientIP);
+            String chave = consultarSituacaoNFC(paramsImpressao, numNfc, token);
+            NFCeManager.getInstance().removeNFCE(numNfc.getUltNum());
+            String printer = isLive ? TokensManager.getInstance().getParamsImpressaoFromToken(token).getNomImp() : "";
+            return new RetornoNFCe(numNfc.getUltNum(), printer, chave);
+        } catch (SOAPClientException | IOException | ParserConfigurationException | TransformerException |
+                 SAXException e) {
+            NFCeManager.getInstance().removeNFCE(numNfc.getUltNum());
+            throw e;
+        }
     }
 
     private UltimoNumNFC getNFCNumber(String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
@@ -435,7 +441,7 @@ public class NFCeService extends WebServiceRequestsService {
 
     private String consultarSituacaoNFC(ParamsImpressao paramsImpressao, UltimoNumNFC numNfc, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
         HashMap<String, Object> params = getParamsForConsultaSituacaoNFC(paramsImpressao);
-        String additionalTag = "nfe:Documentos";
+        String additionalTag = "nfe:documentos";
         String additionalParams = "<nfe:IdentificacaoDocumento>";
         additionalParams += "<nfe:IdentificadorGerador>" + IDENTIFICADOR_GERADOR + "</nfe:IdentificadorGerador>";
         additionalParams += "<nfe:CnpjEmissor>" + numNfc.getNumCgc() + "</nfe:CnpjEmissor>";
@@ -444,7 +450,6 @@ public class NFCeService extends WebServiceRequestsService {
         additionalParams += "</nfe:IdentificacaoDocumento>";
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao?wsdl", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
-//        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ConsultarSituacaoDocumentos", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ConsultarSituacaoDocumentos");
         XmlUtils.validateXmlResponse(xml);
 
         return getChaveFromXml(xml, numNfc.getUltNum(), paramsImpressao, token);
@@ -479,7 +484,6 @@ public class NFCeService extends WebServiceRequestsService {
         additionalParams += "</arr:string>";
 
         String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Integracao?wsdl", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
-//        String xml = soapClient.requestFromSdeWS("http://192.168.11.197:8989/SDE/Integracao?wsdl", "ObterCriticasPorIdentificador", params, false, additionalTag, additionalParams, "http://www.senior.com.br/nfe/IIntegracaoDocumento/ObterCriticasPorIdentificador");
         String msgCritica = XmlUtils.getTextFromXmlElement(xml, "CriticaIntegracaoRetorno", "Critica", "http://schemas.datacontract.org/2004/07/Senior.SapiensNfe.DataAccess.Dados.Documento");
         msgCritica = msgCritica == null ? XmlUtils.getTextFromXmlElement(xml, "ObterCriticasPorIdentificadorResult","Mensagem") : msgCritica;
         throw new NfceException(msgCritica);
