@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Deprecated(forRemoval = true)
 public class DescontosProcessor {
     public static class ResultadoItem {
         private final String seqIpd;

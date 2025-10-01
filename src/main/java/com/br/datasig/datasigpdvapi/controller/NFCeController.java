@@ -45,6 +45,7 @@ public class NFCeController extends DataSIGController {
             throw new InvalidTokenException();
     }
 
+    @Deprecated(forRemoval = true)
     @Operation(
             summary = "Gerar NFC-e sem pedido",
             description = "Geração de NFC-e sem geração de pedido"
