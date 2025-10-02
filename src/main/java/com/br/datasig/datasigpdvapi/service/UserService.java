@@ -33,7 +33,7 @@ public class UserService extends WebServiceRequestsService {
     }
 
     public String login(String user, String pswd, String clientIp) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
-//        clientIp = "192.168.12.105";
+        clientIp = "192.168.12.105";
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -106,8 +106,8 @@ public class UserService extends WebServiceRequestsService {
         HashMap<String, Object> params = prepareParamsForParamsImpressao(codEmp, codFil, clientIP);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaImpressora", "Consulta", user, pswd, "0", params);
 
-        if (xml.contains("<erroExecucao xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>") && (!isLive))
-            return null;
+//        if (xml.contains("<erroExecucao xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/>") && (!isLive))
+//            return null;
 
         XmlUtils.validateXmlResponse(xml);
         return getParamsImpressaoFromXml(xml);
@@ -166,7 +166,11 @@ public class UserService extends WebServiceRequestsService {
                 token.getCodIp(),
                 paramsImpressao == null ? "N" : paramsImpressao.getIndImp(),
                 paramsImpressao == null ? "1" : paramsImpressao.getQtdImp(),
-                paramsPDV.getCodCli());
+                paramsPDV.getCodCli(),
+                paramsPDV.getBotOrc(),
+                paramsPDV.getBotPed(),
+                paramsPDV.getBotPnf(),
+                paramsPDV.getBotNfc());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 
