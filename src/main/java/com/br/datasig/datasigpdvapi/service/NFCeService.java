@@ -256,7 +256,6 @@ public class NFCeService extends WebServiceRequestsService {
         return downloadPDFBase64(paramsImpressao, nfce);
     }
 
-    @Deprecated(forRemoval = true)
     public RetornoNFCe createNFCeNoOrder(String token, PayloadPedido pedido, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         ParamsImpressao paramsImpressao = TokensManager.getInstance().getParamsImpressaoFromToken(token);
         UltimoNumNFC numNfc = getNFCNumber(token);
@@ -275,7 +274,6 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    @Deprecated(forRemoval = true)
     private UltimoNumNFC getNFCNumber(String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForNFCNumber(token);
         String xml = soapClient.requestFromSeniorWS("PDV_DS_ConsultaNumeroNFC", "NumeroNFC", token, "0", params, false);
@@ -283,7 +281,6 @@ public class NFCeService extends WebServiceRequestsService {
         return getUltimoNumNFC(xml);
     }
 
-    @Deprecated(forRemoval = true)
     private static UltimoNumNFC getUltimoNumNFC(String xml) throws ParserConfigurationException, IOException, SAXException {
         NodeList nList = XmlUtils.getNodeListByElementName(xml, "ultimoNumero");
         for (int i = 0; i < nList.getLength(); i++) {
@@ -295,7 +292,6 @@ public class NFCeService extends WebServiceRequestsService {
         return null;
     }
 
-    @Deprecated(forRemoval = true)
     private Map<String, Object> getParamsForNFCNumber(String token) {
         String codEmp = TokensManager.getInstance().getCodEmpFromToken(token);
         String codFil = TokensManager.getInstance().getCodFilFromToken(token);
@@ -309,26 +305,22 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
-    @Deprecated(forRemoval = true)
     private void criarNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
         HashMap<String, Object> params = createParamsCriarNFC(token, pedido, numNfc, clientIP);
         String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
     }
 
-    @Deprecated(forRemoval = true)
     private void fecharNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         HashMap<String, Object> params = createParamsFecharNFC(token, pedido, numNfc, clientIP);
         String xml = makeRequest(token, params);
         XmlUtils.validateXmlResponse(xml);
     }
 
-    @Deprecated(forRemoval = true)
     private String makeRequest(String token, HashMap<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
         return soapClient.requestFromSeniorWS("com_senior_g5_co_mcm_ven_notafiscal", "GravarNotasFiscaisSaida_16", token, "0", params, false);
     }
 
-    @Deprecated(forRemoval = true)
     private HashMap<String, Object> createParamsCriarNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("tipoProcessamento", "1");
@@ -343,7 +335,6 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
-    @Deprecated(forRemoval = true)
     private HashMap<String, Object> createParamsFecharNFC(String token, PayloadPedido pedido, String numNfc, String clientIP) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("tipoProcessamento", "2");
@@ -358,7 +349,6 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
-    @Deprecated(forRemoval = true)
     private HashMap<String, Object> definirParamsDadosGerais(String token, PayloadPedido pedido, String numNfc, boolean addParcelas, String clientIP) {
         Date dataAtual = new Date();
 
@@ -383,7 +373,6 @@ public class NFCeService extends WebServiceRequestsService {
         return dadosGerais;
     }
 
-    @Deprecated(forRemoval = true)
     private List<HashMap<String, Object>> definirParamsItens(PayloadPedido pedido) {
         setSeqIpdToItems(pedido);
         var descontosMap = DescontosProcessor.calcularDescontos(pedido);
@@ -405,8 +394,7 @@ public class NFCeService extends WebServiceRequestsService {
         return itens;
     }
 
-    @Deprecated(forRemoval = true)
-    private void setSeqIpdToItems(PayloadPedido pedido) {
+    private static void setSeqIpdToItems(PayloadPedido pedido) {
         int seqIpd = 0;
         for(var item : pedido.getItens()) {
             seqIpd++;
@@ -414,7 +402,6 @@ public class NFCeService extends WebServiceRequestsService {
         }
     }
 
-    @Deprecated(forRemoval = true)
     private List<HashMap<String, Object>> definirParamsParcelas(PayloadPedido pedido) {
         List<HashMap<String, Object>> parcelas = new ArrayList<>();
         int seqPar = 0;
@@ -452,7 +439,6 @@ public class NFCeService extends WebServiceRequestsService {
         return parcelas;
     }
 
-    @Deprecated(forRemoval = true)
     private String consultarSituacaoNFC(ParamsImpressao paramsImpressao, UltimoNumNFC numNfc, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
         HashMap<String, Object> params = getParamsForConsultaSituacaoNFC(paramsImpressao);
         String additionalTag = "nfe:documentos";
@@ -469,7 +455,6 @@ public class NFCeService extends WebServiceRequestsService {
         return getChaveFromXml(xml, numNfc.getUltNum(), paramsImpressao, token);
     }
 
-    @Deprecated(forRemoval = true)
     private String getChaveFromXml(String xml, String numNfc, ParamsImpressao paramsImpressao, String token) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         if (xml.contains("<Codigo>999</Codigo>")) // Nota com erro
             consultaMensagemCriticasSde(paramsImpressao, getChaveNfc(numNfc, token));
@@ -483,7 +468,6 @@ public class NFCeService extends WebServiceRequestsService {
         return XmlUtils.getTextFromXmlElement(xml, "Documento", "ChaveDocumento");
     }
 
-    @Deprecated(forRemoval = true)
     private String getChaveNfc(String numNfc, String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
         Map<String, Object> params = getParamsForNFCNumber(token);
         params.put("numNfc", numNfc);
@@ -492,7 +476,6 @@ public class NFCeService extends WebServiceRequestsService {
         return XmlUtils.getTextFromXmlElement(xml, "result", "chvNfc");
     }
 
-    @Deprecated(forRemoval = true)
     private String consultaMensagemCriticasSde(ParamsImpressao paramsImpressao, String chave) throws SOAPClientException, ParserConfigurationException, IOException, TransformerException, SAXException {
         HashMap<String, Object> params = getParamsForConsultaCriticasNFC(paramsImpressao);
         String additionalTag = "nfe:Identificadores";
@@ -506,7 +489,6 @@ public class NFCeService extends WebServiceRequestsService {
         throw new NfceException(msgCritica);
     }
 
-    @Deprecated(forRemoval = true)
     private HashMap<String, Object> getParamsForConsultaSituacaoNFC(ParamsImpressao paramsImpressao) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("nfe:usuario", paramsImpressao.getLogNfc());
@@ -516,7 +498,6 @@ public class NFCeService extends WebServiceRequestsService {
         return params;
     }
 
-    @Deprecated(forRemoval = true)
     private HashMap<String, Object> getParamsForConsultaCriticasNFC(ParamsImpressao paramsImpressao) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("nfe:usuario", paramsImpressao.getLogNfc());
