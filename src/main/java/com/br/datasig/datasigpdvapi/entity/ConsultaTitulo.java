@@ -76,7 +76,7 @@ public class ConsultaTitulo {
         };
     }
 
-    private static String getDesSitDoe(String sitDoe) {
+    public static String getDesSitDoe(String sitDoe) {
         return switch (Integer.parseInt(sitDoe)) {
             case 1 -> "Não Enviada";
             case 2 -> "Enviada";
