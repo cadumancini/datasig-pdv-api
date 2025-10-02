@@ -85,7 +85,7 @@ public class NFCeService extends WebServiceRequestsService {
     private String downloadPDFBase64(ParamsImpressao paramsImpressao, String chave) throws ParserConfigurationException, IOException, SAXException, SOAPClientException, TransformerException {
         Map<String, Object> params = getParamsForImpressaoSDE(paramsImpressao, chave);
 
-        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Download?wsdl", "BaixarPdf", params, true, "", "", "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf");
+        String xml = soapClient.requestFromSdeWS(paramsImpressao.getUrlSde() + "Download?wsdl", "BaixarPdf", params, true, "http://www.senior.com.br/nfe/IDownloadServico/BaixarPdf");
         XmlUtils.validateXmlResponse(xml);
         return getPdfStringBase64(xml);
     }
@@ -104,7 +104,6 @@ public class NFCeService extends WebServiceRequestsService {
         params.put("nfe:usuario", paramsImpressao.getLogNfc());
         params.put("nfe:senha", paramsImpressao.getSenNfc());
         params.put("nfe:tipoDocumento", paramsImpressao.getTipDoc());
-        params.put("nfe:chaveDocumento", chave);
         params.put("nfe:chave", chave);
         return params;
     }

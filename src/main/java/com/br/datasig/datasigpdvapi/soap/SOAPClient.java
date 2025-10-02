@@ -61,8 +61,8 @@ public class SOAPClient {
         return makeRequest(url, xmlBody);
     }
 
-    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params, boolean isDownloadProcess, String additionalTag, String additionalParams, String soapAction) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {
-        String xmlBody = prepareXmlBodyNFE(service, params, isDownloadProcess, additionalTag, additionalParams);
+    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params, boolean isDownloadProcess, String soapAction) throws SOAPClientException, ParserConfigurationException, TransformerException {
+        String xmlBody = prepareXmlBodyNFE(service, params, isDownloadProcess);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
         return makeRequest(wsUrl, xmlBody, soapAction);
     }
@@ -110,7 +110,7 @@ public class SOAPClient {
         return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
     }
 
-    String prepareXmlBodyNFE(String service, Map<String, Object> params, boolean isDownloadProcess, String additionalTag, String additionalParams) throws ParserConfigurationException, TransformerException, IOException, SAXException {
+    String prepareXmlBodyNFE(String service, Map<String, Object> params, boolean isDownloadProcess) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -135,15 +135,9 @@ public class SOAPClient {
         appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
         var tipoProcessamento = params.getOrDefault("nfe:tipoProcessamento", null);
         if (tipoProcessamento != null) appendElementWithText(doc, serviceElement, "nfe:tipoProcessamento", tipoProcessamento.toString());
-        if (isDownloadProcess) {
-            if (service.equals("BaixarPdf"))
-                appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
-            else
-                appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
-        }
-        if (!additionalTag.isEmpty()) {
-            appendElementWithXml(doc, serviceElement, additionalTag, additionalParams);
-        }
+        if (isDownloadProcess && service.equals("BaixarPdf"))
+            appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
+
         return transformDocumentToString(doc);
     }
 
@@ -218,25 +212,6 @@ public class SOAPClient {
     private void appendElementWithText(Document doc, Element parent, String tagName, String textContent) {
         Element element = doc.createElement(tagName);
         element.appendChild(doc.createTextNode(textContent));
-        parent.appendChild(element);
-    }
-
-    private void appendElementWithXml(Document doc, Element parent, String tagName, String xmlContent) throws ParserConfigurationException, IOException, SAXException {
-        Element element = doc.createElement(tagName);
-
-        // Parse the xmlContent string into a temporary Document
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document tempDoc = builder.parse(new InputSource(new StringReader("<root xmlns:nfe=\"http://www.senior.com.br/nfe\" xmlns:arr=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\">" + xmlContent + "</root>")));
-
-        // Import all children from tempDoc's root into your element
-        NodeList children = tempDoc.getDocumentElement().getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            Node imported = doc.importNode(children.item(i), true);
-            element.appendChild(imported);
-        }
-
         parent.appendChild(element);
     }
 
