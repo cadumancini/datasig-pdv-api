@@ -267,7 +267,7 @@ public class NFCeService extends WebServiceRequestsService {
         try {
             logger.info("Iniciando chamada para gerar NFCe sem pedido. Thread: {}", Thread.currentThread().getName());
             nfceCriada = criarNFC(token, pedido, clientIP);
-            logger.info("Finalizando chamada de geração de NFCe sem pedido pedido.");
+            logger.info("Finalizando chamada de geração de NFCe sem pedido.");
         } finally {
             lock.unlock();
             LOCKS_BY_SNFNFC.remove(snfNfc, lock);
@@ -292,7 +292,7 @@ public class NFCeService extends WebServiceRequestsService {
 
     private void validateNfceCriada(RetornoNFCeCriada nfceCriada) {
         if (nfceCriada.getSucesso().equals("false")) throw new NfceException(nfceCriada.getMensagem());
-        else if (!nfceCriada.getSitNfv().isEmpty()) {
+        else if (!nfceCriada.getSitNfv().equals("3")) {
             String sitDoe = ConsultaTitulo.getDesSitDoe(nfceCriada.getSitNfv());
             String mensagem = String.join(" ", nfceCriada.getMensagem(), sitDoe);
             throw new NfceException(mensagem);
@@ -312,6 +312,8 @@ public class NFCeService extends WebServiceRequestsService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("prCallMode", "1");
         params.put("dadosGerais", definirParamsDadosGerais(token, pedido, clientIP));
+        params.put("itens", definirParamsItens(pedido));
+        params.put("parcelas", definirParamsParcelas(pedido));
 
         return params;
     }
@@ -331,8 +333,6 @@ public class NFCeService extends WebServiceRequestsService {
         dadosGerais.put("codFpg", TokensManager.getInstance().getParamsPDVFromToken(token).getCodFpg());
         dadosGerais.put("codIp", clientIP);
         dadosGerais.put("vlrTro", pedido.getVlrTro() > 0 ? PedidoUtils.doubleToString(pedido.getVlrTro()) : "0,00");
-        dadosGerais.put("produtos", definirParamsItens(pedido));
-        dadosGerais.put("parcelas", definirParamsParcelas(pedido));
 
         return dadosGerais;
     }
