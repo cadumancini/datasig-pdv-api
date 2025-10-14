@@ -21,4 +21,9 @@ public class ParamsPDVResponse {
     private String codIp;
     private String indImp;
     private String qtdImp;
+    private String codCli;
+    private String botOrc;
+    private String botPed;
+    private String botPnf;
+    private String botNfc;
 }

@@ -15,6 +15,10 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -24,6 +28,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,10 +61,10 @@ public class SOAPClient {
         return makeRequest(url, xmlBody);
     }
 
-    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params) throws SOAPClientException, ParserConfigurationException, TransformerException {
-        String xmlBody = prepareXmlBodyNFE(service, params);
+    public String requestFromSdeWS(String wsUrl, String service, Map<String, Object> params, boolean isDownloadProcess, String soapAction) throws SOAPClientException, ParserConfigurationException, TransformerException {
+        String xmlBody = prepareXmlBodyNFE(service, params, isDownloadProcess);
         logger.info(REQUEST_LOG_MESSAGE, wsUrl, params);
-        return makeRequest(wsUrl, xmlBody, "http://www.senior.com.br/nfe/IImpressaoRemotaServico/Imprimir");
+        return makeRequest(wsUrl, xmlBody, soapAction);
     }
 
     private String getIdentificadorSistema(boolean includeIdentificador, String token) {
@@ -105,7 +110,7 @@ public class SOAPClient {
         return prepareXmlBodyCommon(service, usr, pswd, encryption, params, identificador, false);
     }
 
-    String prepareXmlBodyNFE(String service, Map<String, Object> params) throws ParserConfigurationException, TransformerException {
+    String prepareXmlBodyNFE(String service, Map<String, Object> params, boolean isDownloadProcess) throws ParserConfigurationException, TransformerException {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -128,7 +133,11 @@ public class SOAPClient {
         appendElementWithText(doc, serviceElement, "nfe:usuario", params.get("nfe:usuario").toString());
         appendElementWithText(doc, serviceElement, "nfe:senha", params.get("nfe:senha").toString());
         appendElementWithText(doc, serviceElement, "nfe:tipoDocumento", params.get("nfe:tipoDocumento").toString());
-        appendElementWithText(doc, serviceElement, "nfe:chaveDocumento", params.get("nfe:chaveDocumento").toString());
+        var tipoProcessamento = params.getOrDefault("nfe:tipoProcessamento", null);
+        if (tipoProcessamento != null) appendElementWithText(doc, serviceElement, "nfe:tipoProcessamento", tipoProcessamento.toString());
+        if (isDownloadProcess && service.equals("BaixarPdf"))
+            appendElementWithText(doc, serviceElement, "nfe:chave", params.get("nfe:chave").toString());
+
         return transformDocumentToString(doc);
     }
 
@@ -243,7 +252,7 @@ public class SOAPClient {
         HttpClient client = HttpClientBuilder.create().build();
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.addHeader("Content-Type", contentType);
-        httpRequest.addHeader("SOAPAction", soapAction);
+        if(!soapAction.isEmpty()) httpRequest.addHeader("SOAPAction", soapAction);
         StringEntity xmlEntity = new StringEntity(xmlBody);
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);

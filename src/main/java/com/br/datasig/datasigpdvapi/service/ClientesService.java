@@ -9,6 +9,7 @@ import com.br.datasig.datasigpdvapi.token.TokensManager;
 import com.br.datasig.datasigpdvapi.util.XmlUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -80,7 +81,7 @@ public class ClientesService extends WebServiceRequestsService{
         }
     }
 
-    public ClienteResponse putCliente(String token, ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, WebServiceRuntimeException, TransformerException {
+    public ClienteResponse postCliente(String token, ClientePayload cliente) throws SOAPClientException, ParserConfigurationException, IOException, SAXException, WebServiceRuntimeException, TransformerException {
         HashMap<String, Object> params = prepareParams(token, cliente);
         String xml = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_cad_clientes", "GravarClientes_5", token, "0", params, true);
 
@@ -103,6 +104,7 @@ public class ClientesService extends WebServiceRequestsService{
         String cplEnd = sanitizeString(cliente.getCplEnd().trim(), false);
         String cepCli = sanitizeString(cliente.getCepCli().trim(), false).replace("-", "");
         String cgcCpf = sanitizeString(cliente.getCgcCpf().trim(), false).replace("-", "").replace(".", "").replace("/", "");
+        String cidCli = cliente.getCidCli().trim().toUpperCase();
 
         cgcCpf = removeLeadingZeros(cgcCpf);
 
@@ -120,7 +122,7 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDadosGerais.put("nenCli", cliente.getNenCli().trim());
         paramsDadosGerais.put("cplEnd", cplEnd);
         paramsDadosGerais.put("baiCli", baiCli);
-        paramsDadosGerais.put("cidCli", cliente.getCidCli().trim().toUpperCase());
+        paramsDadosGerais.put("cidCli", cidCli);
         paramsDadosGerais.put("sigUfs", cliente.getSigUfs().trim());
         paramsDadosGerais.put("fonCli", cliente.getFonCli().trim());
         paramsDadosGerais.put("fonCl2", cliente.getFonCli().trim());
@@ -146,6 +148,17 @@ public class ClientesService extends WebServiceRequestsService{
         paramsDefinicoesCliente.put("exiLcp", "N");
         listaDefinicoes.add(paramsDefinicoesCliente);
         paramsDadosGerais.put("definicoesCliente", listaDefinicoes);
+
+        List<HashMap<String, Object>> listaCadastroCep = new ArrayList<>();
+        HashMap<String, Object> paramsCadastroCep = new HashMap<>();
+        paramsCadastroCep.put("cepIni", cepCli);
+        paramsCadastroCep.put("cepFim", cepCli);
+        paramsCadastroCep.put("codRai", cliente.getCodRai());
+        paramsCadastroCep.put("nomCid", cidCli);
+        paramsCadastroCep.put("baiCid", baiCli);
+        paramsCadastroCep.put("endCid", endCli);
+        listaCadastroCep.add(paramsCadastroCep);
+        paramsDadosGerais.put("cadastroCEP", listaCadastroCep);
 
         HashMap<String, Object> params = new HashMap<>();
         params.put("dadosGeraisCliente", paramsDadosGerais);
@@ -189,22 +202,31 @@ public class ClientesService extends WebServiceRequestsService{
         params.put("sitCli", "A");
     }
 
-    public ConsultaCEP getInformacoesCEP(String numCep) throws IOException, ParserConfigurationException, SAXException {
+    public ConsultaCEP getInformacoesCEP(String numCep) throws IOException {
         logger.info("Buscando informações para o CEP {}", numCep);
-        HttpResponse response = consultaCEPClient.getRequest(numCep + "/xml/");
-        String xmlResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
-        XmlUtils.validateXmlResponse(xmlResponse);
-        NodeList nList = XmlUtils.getNodeListByElementName(xmlResponse, "xmlcep");
+        HttpResponse response = consultaCEPClient.getRequest(numCep + ".json");
+        validateResponse(numCep, response);
+        return parseCEP(response);
+    }
 
-        if (nList.getLength() > 0) {
-            Node nNode = nList.item(0);
-            if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                return ConsultaCEP.fromXml(nNode);
-            }
+    private void validateResponse(String numCep, HttpResponse response) {
+        if (response.getStatusLine().getStatusCode() != 200) {
+            logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
+            throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
         }
+    }
 
-        logger.error("Informação de CEP não encontrada para o CEP {}", numCep);
-        throw new ResourceNotFoundException("Informação de CEP não encontrada para o CEP " + numCep);
+    private ConsultaCEP parseCEP(HttpResponse response) throws IOException {
+        String jsonResponse = EntityUtils.toString(response.getEntity(), "UTF-8");
+        JSONObject obj = new JSONObject(jsonResponse);
+        return new ConsultaCEP(
+                obj.getString("cep"),
+                obj.getString("logradouro"),
+                obj.getString("bairro"),
+                obj.getString("localidade"),
+                obj.getString("uf"),
+                obj.getString("ibge")
+        );
     }
 
     public List<ClienteSimplified> getClientesSimplified(String token) throws SOAPClientException, ParserConfigurationException, TransformerException, IOException, SAXException {

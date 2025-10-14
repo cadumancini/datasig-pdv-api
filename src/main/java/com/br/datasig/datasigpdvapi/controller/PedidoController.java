@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 @RestController
@@ -28,9 +29,9 @@ public class PedidoController extends DataSIGController {
             summary = "Gerar pedido",
             description = "Geração de pedido"
     )
-    @PutMapping(value = "", produces = "application/json", consumes = "application/json")
+    @PostMapping(value = "", produces = "application/json", consumes = "application/json")
     @ResponseStatus(code = HttpStatus.CREATED)
-    public RetornoPedido putPedido(@RequestParam String token, @RequestBody PayloadPedido pedido, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+    public RetornoPedido postPedido(@RequestParam String token, @RequestBody PayloadPedido pedido, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token)) {
             String clientIP = getClientIp(request);
             return pedidoService.createPedido(token, pedido, clientIP);
@@ -44,15 +45,31 @@ public class PedidoController extends DataSIGController {
             description = "Busca de pedidos para consulta no PDV"
     )
     @GetMapping(value = "", produces = "application/json")
-    public List<ConsultaPedido> getPedidos(@RequestParam String token,
+    public List<PedidoConsultavel> getPedidos(@RequestParam String token,
                                            @RequestParam BuscaPedidosTipo tipo,
                                            @RequestParam BuscaPedidosSituacao situacao,
                                            @RequestParam String order,
                                            @RequestParam(required = false) String numPed,
                                            @RequestParam(required = false) String datIni,
-                                           @RequestParam(required = false) String datFim) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+                                           @RequestParam(required = false) String datFim,
+                                           @RequestParam(required = false) String codCli,
+                                           @RequestParam(required = false) String codRep,
+                                           @RequestParam(required = false) boolean detalhado) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
         if(isTokenValid(token))
-            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim);
+            return pedidoService.getPedidos(token, tipo, situacao, order, numPed, datIni, datFim, codCli, codRep, detalhado);
+        else
+            throw new InvalidTokenException();
+    }
+
+    @Operation(
+            summary = "Buscar pedido detalhado",
+            description = "Busca de dados de pedido para consulta no PDV"
+    )
+    @GetMapping(value = "/{numPed}", produces = "application/json")
+    public ConsultaPedidoDetalhes getPedido(@RequestParam String token,
+                                              @PathVariable String numPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
+        if(isTokenValid(token))
+            return pedidoService.getPedido(token, numPed);
         else
             throw new InvalidTokenException();
     }
@@ -62,9 +79,12 @@ public class PedidoController extends DataSIGController {
             description = "Cancelamento de pedido"
     )
     @PostMapping(value = "cancelar", produces = "application/json")
-    public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed, @RequestParam String sitPed) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException {
-        if(isTokenValid(token))
-            return pedidoService.cancelarPedido(token, numPed, sitPed);
+    public RetornoPedido cancelarPedido(@RequestParam String token, @RequestParam String numPed,
+                                        @RequestParam String sitPed, HttpServletRequest request) throws SOAPClientException, IOException, ParserConfigurationException, SAXException, TransformerException, ParseException {
+        if(isTokenValid(token)) {
+            String clientIP = getClientIp(request);
+            return pedidoService.cancelarPedido(token, numPed, sitPed, clientIP);
+        }
         else
             throw new InvalidTokenException();
     }

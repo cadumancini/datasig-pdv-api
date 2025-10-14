@@ -33,6 +33,7 @@ public class UserService extends WebServiceRequestsService {
     }
 
     public String login(String user, String pswd, String clientIp) throws IOException, ParserConfigurationException, SAXException, SOAPClientException, NotAllowedUserException, TransformerException {
+//        clientIp = "192.168.12.105";
         HashMap<String, Object> emptyParams = new HashMap<>();
         logger.info("Tentativa de login para usuário {}", user);
         String response = soapClient.requestFromSeniorWS("com_senior_g5_co_ger_sid", "Executar", user, pswd, "0", emptyParams);
@@ -164,7 +165,12 @@ public class UserService extends WebServiceRequestsService {
                 token.getUserName(),
                 token.getCodIp(),
                 paramsImpressao == null ? "N" : paramsImpressao.getIndImp(),
-                paramsImpressao == null ? "1" : paramsImpressao.getQtdImp());
+                paramsImpressao == null ? "1" : paramsImpressao.getQtdImp(),
+                paramsPDV.getCodCli(),
+                paramsPDV.getBotOrc(),
+                paramsPDV.getBotPed(),
+                paramsPDV.getBotPnf(),
+                paramsPDV.getBotNfc());
         return new TokenResponse(token.getUserName(), token.getCodEmp(), token.getCodFil(), paramsPDVResponse);
     }
 
