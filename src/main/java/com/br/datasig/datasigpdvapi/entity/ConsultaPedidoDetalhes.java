@@ -100,7 +100,7 @@ public class ConsultaPedidoDetalhes implements PedidoConsultavel {
     }
 
     private static String getTipDsc(String perDsc, String vlrDsc, String perAcr) {
-        if (!perDsc.equals("0,00") || !perAcr.equals("0,00")) return "porcentagem";
+        if (!perDsc.equals("0,0000") || !perAcr.equals("0,00")) return "porcentagem";
         else if (!vlrDsc.equals("0,00")) return "valor";
         return "";
     }
