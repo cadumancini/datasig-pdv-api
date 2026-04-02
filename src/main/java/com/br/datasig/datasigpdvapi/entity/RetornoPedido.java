@@ -37,7 +37,7 @@ public class RetornoPedido {
         String sitPed = element.getElementsByTagName("sitPed").item(0).getTextContent();
         String tipPed = element.getElementsByTagName("tipPed").item(0).getTextContent();
         String tipRet = element.getElementsByTagName("tipRet").item(0).getTextContent();
-
+        
         List<RetornoItemPedido> gridProList = getRetornoItensPedido(element);
         List<RetornoParcela> gridParList = getRetornoParcelas(element);
 

@@ -27,6 +27,7 @@ public class ConsultaPedidoDetalhes implements PedidoConsultavel {
     private String vlrTro;
     private String staPed;
     private String tipPed;
+    private String obsPed;
     private List<ConsultaItemPedido> itens;
     private List<ConsultaParcelaPedido> parcelas;
 
@@ -47,11 +48,13 @@ public class ConsultaPedidoDetalhes implements PedidoConsultavel {
         String vlrTro = element.getElementsByTagName("vlrTro").item(0).getTextContent();
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
+        String obsPed = element.getElementsByTagName("obsPed").item(0).getTextContent();
+
         List<ConsultaItemPedido> itens = getItensPedido(element);
         List<ConsultaParcelaPedido> parcelas = getParcelasPedido(element);
 
         return new ConsultaPedidoDetalhes(codCli, codCpg, codEmp, codFil, codFpg, codRep, codTns, datEmi, numPed, sitPed,
-                vlrDar, perDs1, vlrTro, staPed, tipPed, itens, parcelas);
+                vlrDar, perDs1, vlrTro, staPed, tipPed, obsPed, itens, parcelas);
     }
 
     private static String defineTipPed(String codTns, String tnsOrc) {

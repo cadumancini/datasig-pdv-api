@@ -23,6 +23,7 @@ public class ConsultaPedido implements PedidoConsultavel {
     private String vlrTro;
     private String staPed;
     private String tipPed;
+   // private String obsPed;
 
     public static ConsultaPedido fromXml(Node node, String tnsOrc) {
         Element element = (Element) node;
@@ -39,6 +40,7 @@ public class ConsultaPedido implements PedidoConsultavel {
         String vlrDar = element.getElementsByTagName("vlrDar").item(0).getTextContent();
         String perDs1 = element.getElementsByTagName("perDs1").item(0).getTextContent();
         String vlrTro = element.getElementsByTagName("vlrTro").item(0).getTextContent();
+        //String obsPed = element.getElementsByTagName("obsPed").item(0).getTextContent();
         String staPed = defineStaPed(sitPed);
         String tipPed = defineTipPed(codTns, tnsOrc);
 

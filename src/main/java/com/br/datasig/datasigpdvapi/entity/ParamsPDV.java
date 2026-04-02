@@ -45,6 +45,7 @@ public class ParamsPDV {
     private String botPed;
     private String botPnf;
     private String botNfc;
+    private String indObs;
     private List<Deposito> depositos;
     private List<Caixa> caixas;
     private List<RamoAtividade> ramos;
@@ -89,11 +90,12 @@ public class ParamsPDV {
         String botPed = el.getElementsByTagName("botPed").item(0).getTextContent();
         String botPnf = el.getElementsByTagName("botPnf").item(0).getTextContent();
         String botNfc = el.getElementsByTagName("botNfc").item(0).getTextContent();
+        String indObs = el.getElementsByTagName("botNfc").item(0).getTextContent();
 
         return new ParamsPDV(codCli, codDep, codInt, codSnf, codTpr, dscTot, ideCsc, numCsc,
                 sigInt, snfNfc, tnsNfv, tnsPed, pedTns, tnsOrc, codCpg, codFpg, regCan, regFat,
                 regInu, regRet, nomEmp, nomFil, cofAbr, cofFec, cofSan, cxaAbr, cxaFec, cxaSan,
-                regBai, botOrc, botPed, botPnf, botNfc,
+                regBai, botOrc, botPed, botPnf, botNfc, indObs,
                 getDepositos(element), getCaixas(element), getRamos(element));
     }
 
