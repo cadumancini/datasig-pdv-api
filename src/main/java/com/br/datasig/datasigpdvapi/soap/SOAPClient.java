@@ -5,8 +5,10 @@ import com.br.datasig.datasigpdvapi.token.TokensManager;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -238,10 +240,24 @@ public class SOAPClient {
     }
 
     private static String postRequest(String url, String xmlBody, String header) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(300000)
+            .setConnectionRequestTimeout(300000)
+            .setSocketTimeout(300000)
+            .build();
+
+        HttpClient client = HttpClientBuilder.create()
+            .setDefaultRequestConfig(requestConfig)
+            .build();
+
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.setHeader("Content-Type", header);
-        StringEntity xmlEntity = new StringEntity(xmlBody, "UTF-8");
+        // header may include parameters (e.g. "text/xml;charset=UTF-8").
+        // ContentType.create() expects a MIME type without parameters, so
+        // strip any parameters before creating the ContentType to avoid
+        // "MIME type may not contain reserved characters" errors.
+        String mimeType = header.contains(";") ? header.split(";", 2)[0].trim() : header;
+        StringEntity xmlEntity = new StringEntity(xmlBody, ContentType.create(mimeType, "UTF-8"));
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
         validateStatusCode(httpResponse.getStatusLine().getStatusCode());
@@ -249,11 +265,20 @@ public class SOAPClient {
     }
 
     private static String postRequestSDE(String url, String xmlBody, String contentType, String soapAction) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
+        RequestConfig requestConfig = RequestConfig.custom()
+            .setConnectTimeout(30000)
+            .setConnectionRequestTimeout(30000)
+            .setSocketTimeout(30000)
+            .build();
+
+        HttpClient client = HttpClientBuilder.create()
+            .setDefaultRequestConfig(requestConfig)
+            .build();
+
         HttpPost httpRequest = new HttpPost(url);
         httpRequest.addHeader("Content-Type", contentType);
         if(!soapAction.isEmpty()) httpRequest.addHeader("SOAPAction", soapAction);
-        StringEntity xmlEntity = new StringEntity(xmlBody);
+        StringEntity xmlEntity = new StringEntity(xmlBody, ContentType.create(contentType, "UTF-8"));
         httpRequest.setEntity(xmlEntity);
         HttpResponse httpResponse = client.execute(httpRequest);
         validateStatusCode(httpResponse.getStatusLine().getStatusCode());
