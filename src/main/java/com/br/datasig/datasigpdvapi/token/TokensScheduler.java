@@ -15,8 +15,10 @@ import java.util.List;
 @NoArgsConstructor
 public class TokensScheduler {
     private static final Logger logger = LoggerFactory.getLogger(TokensScheduler.class);
-    private static final int EXECUTION_RATE = 300000; // 5 minutes
-    private static final int EXPIRATION_TIME = 14400000; // 4 hours
+    //private static final int EXECUTION_RATE = 300000; // 5 minutes
+    //private static final int EXPIRATION_TIME = 14400000; // 4 hours
+    private static final int EXECUTION_RATE = 600000; // 10 minutes
+    private static final int EXPIRATION_TIME = 18000000; // 5 horas
 
     @Scheduled(fixedRate = EXECUTION_RATE)
     public static void checkIfAnyTokenShouldBeDeleted() {
