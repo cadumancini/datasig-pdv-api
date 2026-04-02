@@ -207,7 +207,10 @@ public class PedidoService extends WebServiceRequestsService {
                     seqParCpg++;
                     dataParcela = PedidoUtils.definirDataParcela(dataParcela, parcela.getDiaPar());
                     HashMap<String, Object> paramsParcela = new HashMap<>();
-                    paramsParcela.put("opeExe", "I");
+                    // Se for o primeiro registro de parcela, marcar como alteração ('A'),
+                    // caso contrário inserir ('I').
+                    String opeExe = (seqPar == 1) ? "A" : "I";
+                    paramsParcela.put("opeExe", opeExe);
                     paramsParcela.put("seqPar", String.valueOf(seqPar));
                     paramsParcela.put("codFpg", pagto.getForma().getCodFpg());
                     paramsParcela.put("vctPar", dateFormat.format(dataParcela));
